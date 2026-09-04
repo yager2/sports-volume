@@ -76,7 +76,11 @@ def main() -> int:
         path = os.path.join(HERE, name)
         if not os.path.exists(path):
             continue
-        r = subprocess.run([rclone, "copy", path, dest, "--no-traverse"],
+        # No --no-traverse: Google Drive allows duplicate filenames in one
+        # folder, and skipping the directory listing (what --no-traverse does)
+        # makes rclone miss the existing file and upload a second copy instead
+        # of updating it in place. A full listing of this small folder is cheap.
+        r = subprocess.run([rclone, "copy", path, dest],
                            capture_output=True, text=True, timeout=180)
         (pushed if r.returncode == 0 else failed).append(name)
         if r.returncode != 0:
