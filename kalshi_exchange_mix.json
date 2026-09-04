@@ -1,0 +1,43 @@
+{
+ "as_of": "2026-09-02",
+ "sampled_trades": 3244911,
+ "avg_price": 0.2776,
+ "groups": [
+  {
+   "name": "Combos & exotics",
+   "contracts_pct": 47.37,
+   "notional_pct": 11.03
+  },
+  {
+   "name": "Sports",
+   "contracts_pct": 30.07,
+   "notional_pct": 50.38
+  },
+  {
+   "name": "Crypto",
+   "contracts_pct": 18.62,
+   "notional_pct": 33.68
+  },
+  {
+   "name": "Politics & elections",
+   "contracts_pct": 0.38,
+   "notional_pct": 0.39
+  },
+  {
+   "name": "Economics & financials",
+   "contracts_pct": 2.4,
+   "notional_pct": 4.05
+  },
+  {
+   "name": "Other",
+   "contracts_pct": 1.16,
+   "notional_pct": 0.47
+  }
+ ],
+ "parlay": {
+  "contracts_pct": 48.156,
+  "notional_pct": 11.057,
+  "pct_of_sports_contracts": 61.56,
+  "pct_of_sports_notional": 18.0
+ }
+}

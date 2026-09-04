@@ -1,0 +1,876 @@
+<meta charset="utf-8">
+<title>Sports Exchange Volume</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+:root {
+  color-scheme: light;
+  --bg:            #e9edf2;
+  --surface:       #ffffff;
+  --surface-2:     #f3f6f9;
+  --surface-3:     #e8edf3;
+  --border:        #d9e0e9;
+  --border-strong: #c3ccd8;
+  --ink:           #16202c;
+  --ink-dim:       #566a7e;
+  --ink-mute:      #8494a5;
+  --accent:        #96631a;
+  --accent-ink:    #ffffff;
+  --accent-soft:   #f0e6d3;
+  --pos:           #0a8a12;
+  --neg:           #c33f3c;
+  --v1: #2a78d6; --v2: #eb6834; --v3: #1baf7a; --v4: #c07d00; --v5: #d95f8c; --v6: #7d5bd0; --v7: #0f9bb0; --v8: #5a49c0; --kx-other: #93a0ad;
+  --grid:          #e6eaf0;
+  --shadow:        0 1px 2px rgba(20,32,44,.04), 0 8px 24px -12px rgba(20,32,44,.12);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg:            #0e151f;
+    --surface:       #161f2b;
+    --surface-2:     #1b2735;
+    --surface-3:     #223044;
+    --border:        #29394c;
+    --border-strong: #3a4d63;
+    --ink:           #e7eef6;
+    --ink-dim:       #93a6bb;
+    --ink-mute:      #6a7f95;
+    --accent:        #d8a24a;
+    --accent-ink:    #1a1206;
+    --accent-soft:   #33291a;
+    --pos:           #40ba5d;
+    --neg:           #e06b68;
+    --v1: #3987e5; --v2: #d95926; --v3: #199e70; --v4: #c98500; --v5: #d55181; --v6: #8a6ae0; --v7: #159aad; --v8: #9085e9; --kx-other: #6f8195;
+    --grid:          #223142;
+    --shadow:        0 1px 2px rgba(0,0,0,.3), 0 10px 30px -14px rgba(0,0,0,.55);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg:            #0e151f;
+  --surface:       #161f2b;
+  --surface-2:     #1b2735;
+  --surface-3:     #223044;
+  --border:        #29394c;
+  --border-strong: #3a4d63;
+  --ink:           #e7eef6;
+  --ink-dim:       #93a6bb;
+  --ink-mute:      #6a7f95;
+  --accent:        #d8a24a;
+  --accent-ink:    #1a1206;
+  --accent-soft:   #33291a;
+  --pos:           #40ba5d;
+  --neg:           #e06b68;
+  --v1: #3987e5; --v2: #d95926; --v3: #199e70; --v4: #c98500; --v5: #d55181; --v6: #8a6ae0; --v7: #159aad; --v8: #9085e9; --kx-other: #6f8195;
+  --grid:          #223142;
+  --shadow:        0 1px 2px rgba(0,0,0,.3), 0 10px 30px -14px rgba(0,0,0,.55);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+.mono { font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
+.tnum { font-variant-numeric: tabular-nums; }
+
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 20px 72px; }
+
+/* ---------- header ---------- */
+header {
+  position: sticky; top: 0; z-index: 30;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+}
+.headrow {
+  max-width: 1120px; margin: 0 auto; padding: 14px 20px;
+  display: flex; align-items: center; gap: 16px 20px; flex-wrap: wrap;
+}
+.brand { display: flex; align-items: baseline; gap: 10px; margin-right: auto; }
+.brand h1 {
+  font-size: 17px; font-weight: 600; letter-spacing: -0.01em; text-wrap: balance;
+}
+.brand .tick {
+  font-family: "IBM Plex Mono", monospace; font-size: 11px; font-weight: 500;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent);
+}
+.asof {
+  font-family: "IBM Plex Mono", monospace; font-size: 11.5px; color: var(--ink-mute);
+  letter-spacing: 0.03em;
+}
+.asof b { color: var(--ink-dim); font-weight: 500; }
+
+.toggle {
+  display: inline-flex; background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 2px; gap: 2px;
+}
+.toggle button {
+  font: inherit; font-size: 12px; font-weight: 500; cursor: pointer;
+  border: 0; background: transparent; color: var(--ink-dim);
+  padding: 5px 11px; border-radius: 6px; letter-spacing: 0.01em;
+}
+.toggle button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.toggle button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.ghost-btn {
+  font: inherit; font-size: 12px; font-weight: 500; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--surface); border: 1px solid var(--border-strong); color: var(--ink-dim);
+  padding: 6px 12px; border-radius: 8px;
+}
+.ghost-btn:hover { border-color: var(--accent); color: var(--ink); }
+.ghost-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.ghost-btn[hidden] { display: none; }
+
+/* ---------- section scaffold ---------- */
+section { margin-top: 34px; }
+.sec-label {
+  font-family: "IBM Plex Mono", monospace; font-size: 11px; font-weight: 500;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-mute);
+  margin-bottom: 14px; display: flex; align-items: center; gap: 10px;
+}
+.sec-label::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 14px; box-shadow: var(--shadow);
+}
+
+/* ---------- hero ---------- */
+.hero { padding: 26px 28px; display: grid; grid-template-columns: 1fr auto; gap: 28px; align-items: center; }
+.hero-figure .lbl {
+  font-size: 12px; color: var(--ink-dim); letter-spacing: 0.02em; margin-bottom: 6px;
+}
+.hero-figure .val {
+  font-size: clamp(38px, 6vw, 56px); font-weight: 600; letter-spacing: -0.02em;
+  line-height: 1; color: var(--accent);
+}
+.hero-figure .val .cur { font-size: 0.5em; font-weight: 500; color: var(--ink-mute); margin-right: 2px; vertical-align: 0.18em; }
+.hero-sub { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: baseline; }
+.delta { font-family: "IBM Plex Mono", monospace; font-size: 13px; font-weight: 500; display: inline-flex; align-items: center; gap: 4px; }
+.delta.up { color: var(--pos); }
+.delta.down { color: var(--neg); }
+.hero-sub .meta { font-size: 12.5px; color: var(--ink-dim); }
+.hero-sub .meta b { color: var(--ink); font-weight: 600; font-family: "IBM Plex Mono", monospace; }
+.hero-spark { width: 300px; max-width: 40vw; }
+.hero-spark svg { display: block; width: 100%; height: auto; }
+.hero-spark figcaption { font-size: 10.5px; color: var(--ink-mute); text-align: right; margin-top: 4px; font-family: "IBM Plex Mono", monospace; letter-spacing: 0.04em; }
+
+/* ---------- venue cards ---------- */
+.venues { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+@media (max-width: 900px) { .venues { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 560px) { .venues { grid-template-columns: repeat(2, 1fr); } }
+.vcard { padding: 16px 16px 12px; position: relative; overflow: hidden; }
+.vcard .accent-rail { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
+.vcard .vhead { display: flex; align-items: center; gap: 7px; margin-bottom: 12px; }
+.vcard .dot { width: 9px; height: 9px; border-radius: 3px; flex: none; }
+.vcard .vname { font-size: 13px; font-weight: 600; letter-spacing: -0.005em; }
+.vcard .vshare { margin-left: auto; font-family: "IBM Plex Mono", monospace; font-size: 11px; color: var(--ink-mute); }
+.vcard .vval { font-family: "IBM Plex Mono", monospace; font-size: 22px; font-weight: 500; letter-spacing: -0.01em; line-height: 1.1; }
+.vcard .vval .cur { font-size: 0.6em; color: var(--ink-mute); }
+.vcard .vrow2 { display: flex; align-items: baseline; gap: 10px; margin-top: 3px; }
+.vcard .vd { font-family: "IBM Plex Mono", monospace; font-size: 11.5px; font-weight: 500; }
+.vcard .vd.up { color: var(--pos); } .vcard .vd.down { color: var(--neg); } .vcard .vd.flat { color: var(--ink-mute); }
+.vcard .vsub { font-size: 11px; color: var(--ink-mute); }
+.vcard .vspark { margin-top: 10px; }
+.vcard .vspark svg { display: block; width: 100%; height: 40px; }
+.vcard .vcombo { margin-top: 8px; font-size: 10.5px; color: var(--ink-mute); font-family: "IBM Plex Mono", monospace; letter-spacing: 0.02em; }
+
+/* ---------- kalshi whole-exchange ---------- */
+.kx-card { padding: 22px 24px 18px; }
+.kx-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
+.kx-stat { padding: 14px 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-2); }
+.kx-stat.kx-hl { border-color: var(--v5); background: color-mix(in srgb, var(--v5) 8%, var(--surface-2)); }
+.kx-lbl { font-size: 11.5px; color: var(--ink-dim); margin-bottom: 6px; }
+.kx-big { font-family: "IBM Plex Mono", monospace; font-size: 26px; font-weight: 500; letter-spacing: -0.01em; line-height: 1.1; }
+.kx-hl .kx-big { color: var(--v5); }
+.kx-note { font-size: 11px; color: var(--ink-mute); margin-top: 5px; }
+.kx-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-bottom: 12px; }
+.kx-legend .li { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--ink-dim); }
+.kx-legend .sw { width: 11px; height: 11px; border-radius: 3px; }
+.kx-bar { display: flex; width: 100%; height: 46px; border-radius: 8px; overflow: hidden; gap: 2px; background: var(--surface); }
+.kx-bar .seg { position: relative; display: flex; align-items: center; justify-content: center; min-width: 2px; transition: flex-basis .35s cubic-bezier(.4,0,.2,1); }
+.kx-bar .seg span { font-family: "IBM Plex Mono", monospace; font-size: 10.5px; font-weight: 500; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.35); white-space: nowrap; }
+.kx-foot { font-size: 11px; color: var(--ink-mute); margin-top: 12px; line-height: 1.55; }
+@media (max-width: 620px) { .kx-stats { grid-template-columns: 1fr; } }
+
+/* ---------- main chart ---------- */
+.chartcard { padding: 20px 22px 18px; }
+.chart-head { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.chart-head h3 { font-size: 14px; font-weight: 600; }
+.chart-head .hint { font-size: 11.5px; color: var(--ink-mute); }
+.panels { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px 20px; }
+@media (max-width: 900px) { .panels { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .panels { grid-template-columns: 1fr; } }
+.panel { cursor: crosshair; }
+.panel .p-head { display: flex; align-items: center; gap: 7px; margin-bottom: 7px; }
+.panel .p-dot { width: 8px; height: 8px; border-radius: 2px; flex: none; }
+.panel .p-name { font-size: 12px; font-weight: 600; color: var(--ink); }
+.panel .p-max { margin-left: auto; font-family: "IBM Plex Mono", monospace; font-size: 10px; color: var(--ink-mute); }
+.panel svg { display: block; width: 100%; height: 96px; overflow: visible; }
+.panel .p-x { display: flex; justify-content: space-between; font-family: "IBM Plex Mono", monospace; font-size: 9.5px; color: var(--ink-mute); margin-top: 3px; letter-spacing: 0.03em; }
+.axis text { font-family: "IBM Plex Mono", monospace; font-size: 10px; fill: var(--ink-mute); }
+
+.tip {
+  position: fixed; z-index: 50; pointer-events: none; opacity: 0; transition: opacity .12s;
+  background: var(--surface); border: 1px solid var(--border-strong); border-radius: 10px;
+  box-shadow: var(--shadow); padding: 10px 12px; font-size: 12px; min-width: 180px;
+}
+.tip.on { opacity: 1; }
+.tip .td { font-family: "IBM Plex Mono", monospace; font-size: 11px; color: var(--ink-mute); letter-spacing: 0.04em; margin-bottom: 6px; }
+.tip .tr { display: flex; align-items: center; gap: 8px; padding: 2px 0; }
+.tip .tr .sw { width: 8px; height: 8px; border-radius: 2px; flex: none; }
+.tip .tr .nm { color: var(--ink-dim); }
+.tip .tr .vv { margin-left: auto; font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums; color: var(--ink); }
+.tip .tot { margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--border); display: flex; }
+.tip .tot .nm { color: var(--ink-dim); font-weight: 600; } .tip .tot .vv { margin-left: auto; font-family: "IBM Plex Mono", monospace; font-weight: 600; }
+
+/* ---------- table ---------- */
+.tablecard { padding: 6px 2px 2px; }
+.tbl-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+thead th {
+  position: sticky; top: 61px; background: var(--surface); z-index: 5;
+  font-family: "IBM Plex Mono", monospace; font-weight: 500; font-size: 10.5px;
+  letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-mute);
+  text-align: right; padding: 12px 14px 10px; border-bottom: 1px solid var(--border-strong);
+  white-space: nowrap;
+}
+thead th:first-child { text-align: left; }
+tbody td {
+  padding: 8px 14px; text-align: right; border-bottom: 1px solid var(--border);
+  font-family: "IBM Plex Mono", monospace; font-variant-numeric: tabular-nums;
+  color: var(--ink-dim); white-space: nowrap;
+}
+tbody td:first-child { text-align: left; color: var(--ink-mute); letter-spacing: 0.02em; }
+tbody td.tot { color: var(--ink); font-weight: 500; }
+tbody tr:hover td { background: var(--surface-2); }
+tbody td.lead { color: var(--ink); box-shadow: inset 2px 0 0 var(--lead-c); background: color-mix(in srgb, var(--lead-c) 8%, transparent); }
+tbody tr:last-child td { border-bottom: 0; }
+
+footer {
+  margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border);
+  font-size: 11.5px; color: var(--ink-mute); line-height: 1.6;
+}
+footer b { color: var(--ink-dim); font-weight: 600; }
+footer .mono { font-size: 11px; }
+
+@media (max-width: 640px) {
+  .hero { grid-template-columns: 1fr; }
+  .hero-spark { width: 100%; max-width: none; }
+  thead th { top: 57px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+.rise { animation: rise .5s cubic-bezier(.22,.61,.36,1) both; }
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+</style>
+
+<header>
+  <div class="headrow">
+    <div class="brand">
+      <span class="tick" aria-hidden="true">VOL</span>
+      <h1>Sports Exchange Volume</h1>
+    </div>
+    <span class="asof">through <b id="asof-date">—</b></span>
+    <div class="toggle" role="group" aria-label="Volume measure">
+      <button id="u-n" aria-pressed="true">Notional&nbsp;$</button>
+      <button id="u-c" aria-pressed="false">Contracts</button>
+    </div>
+    <button class="ghost-btn" id="import-btn" hidden>
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 10V2M8 2 5 5m3-3 3 3M2.5 9.5v3a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1v-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Update data
+    </button>
+    <input type="file" id="file-in" accept=".csv,text/csv" hidden>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <section aria-labelledby="h-total">
+    <div class="sec-label" id="h-total">Whole market · latest day</div>
+    <div class="card hero rise">
+      <div class="hero-figure">
+        <div class="lbl" id="hero-lbl">Total volume traded</div>
+        <div class="val" id="hero-val">—</div>
+        <div class="hero-sub">
+          <span class="delta" id="hero-delta"></span>
+          <span class="meta">August to date <b id="hero-sum">—</b></span>
+          <span class="meta">Kalshi whole&#8209;exchange &middot; the rest sports&#8209;only</span>
+        </div>
+      </div>
+      <figure class="hero-spark">
+        <svg id="hero-spark" viewBox="0 0 300 52" preserveAspectRatio="none" role="img" aria-label="Daily total volume, August 2026"></svg>
+        <figcaption>Aug 1 – 31</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-venues">
+    <div class="sec-label" id="h-venues">By venue · latest day</div>
+    <div class="venues" id="venues"></div>
+  </section>
+
+  <section aria-labelledby="h-kalshi" id="kx-section" hidden>
+    <div class="sec-label" id="h-kalshi">Kalshi &mdash; whole exchange</div>
+    <div class="card kx-card rise">
+      <div class="kx-stats">
+        <div class="kx-stat">
+          <div class="kx-lbl">Total volume &middot; <span id="kx-date">&ndash;</span></div>
+          <div class="kx-big" id="kx-total">&ndash;</div>
+          <div class="kx-note">all categories &middot; August to date <span id="kx-mtd">&ndash;</span></div>
+        </div>
+        <div class="kx-stat kx-hl">
+          <div class="kx-lbl">Combos &amp; exotics <span id="kx-basis">by contracts</span></div>
+          <div class="kx-big" id="kx-combo-pct">&ndash;</div>
+          <div class="kx-note" id="kx-combo-note">parlays &amp; multi-event markets</div>
+        </div>
+        <div class="kx-stat">
+          <div class="kx-lbl">Sports <span id="kx-basis2">by contracts</span></div>
+          <div class="kx-big" id="kx-sports-pct">&ndash;</div>
+          <div class="kx-note">the slice compared against the other six venues</div>
+        </div>
+      </div>
+      <div class="kx-legend" id="kx-legend"></div>
+      <div class="kx-bar" id="kx-bar"></div>
+      <p class="kx-foot" id="kx-foot"></p>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-chart">
+    <div class="sec-label" id="h-chart">Daily trend by venue</div>
+    <div class="card chartcard rise">
+      <div class="chart-head">
+        <h3 id="chart-title">Daily volume through August</h3>
+        <span class="hint">hover any panel for that day across all venues</span>
+      </div>
+      <div class="panels" id="panels"></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-table">
+    <div class="sec-label" id="h-table">Daily detail</div>
+    <div class="card tablecard rise">
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr id="thead-row"></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p><b>Comparable across all seven.</b> <b>Contracts</b> = contracts traded, one-sided (a buy matched with a sell is one), each a $1-max-payout instrument &mdash; this is the metric every one of these venues reports as its own "volume," and what DeFi Rate / DefiLlama / Pew publish. <b>Notional&nbsp;$</b> re-weights each contract by its volume-weighted traded price &mdash; roughly the dollars that actually changed hands (~⅓ of the contract figure). Same definition for every venue in both columns.</p>
+    <p style="margin-top:7px"><b>Two things the metric can't normalise out.</b> <i>Market-making:</i> Kalshi runs aggressive maker-incentive programs (the CFTC warned it about them in Aug&nbsp;2026), so a larger share of its reported volume is automated liquidity than at the others &mdash; a real difference between the exchanges, not a counting artifact. <i>Reporting lag:</i> Kalshi's daily total (DeFi Rate) trails ~2 days; DKeX / UDX / Rothera finalise overnight, so a hard-outlier-low latest day is marked <i>provisional</i>.</p>
+    <p style="margin-top:7px"><b>Coverage.</b> Kalshi is its whole exchange (every category); Polymarket&nbsp;US is prefix-filtered to sports; Novig / DKeX / UDX are 100% sports. <b>Crypto.com</b> is the Nadex / CDNA "EVENTS" book &mdash; Crypto.com's own OG prediction market <i>plus</i> FanDuel Predicts, whose entire sports flow clears there since mid-2026 &mdash; less a ~0.2% non-sports tail; its $-price has no per-market feed so its Notional&nbsp;$ uses the day's cross-venue average price. <b>Rothera</b> is the CFTC exchange behind <i>Robinhood</i>'s prediction market (Part-16 daily report), prefix-filtered to sports &mdash; MLB-heavy &mdash; dropping a small US-macro / elections tail. <b>Combo&nbsp;%</b> is parlay volume over that venue's sports book. Novig / DKeX / Polymarket&nbsp;US / UDX / Crypto.com come from each one's combo product line. <b>Kalshi</b> is its multi-event parlay engine (the `KXMVE` series — a leg-check found these ~100% sports legs despite the "cross-category" name), measured from a ~3M-trade sample of the public feed and scaled to the daily total, so its figure moves less day to day than the report-based ones. Kalshi's % is of its <i>whole-exchange</i> volume (matching its main column) — <b>~48% by contracts, ~11% by dollars</b>; parlay legs are many and cheap. The table's Combo column blends the five report-based venues on a common base; Kalshi's sits on its card and the Parlay-share tab. Rothera runs no on-exchange parlay.</p>
+    <p style="margin-top:8px" class="mono" id="foot-src">snapshot loaded Sep 1 2026</p>
+  </footer>
+</div>
+
+<div class="tip" id="tip" role="status" aria-live="off"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  // combo = index into row.cp (parlay % for that venue), or null if no product.
+  // blend = counted in the table's blended Combo column (Kalshi's % is of its
+  // sports book, not its whole-exchange column, so it is shown but not blended).
+  var VENUES = [
+    { name: "Kalshi",        v: "--v1", combo: 5,    blend: false },
+    { name: "Polymarket US", v: "--v2", combo: 0,    blend: true },
+    { name: "Novig",         v: "--v3", combo: 1,    blend: true },
+    { name: "DKeX",          v: "--v4", combo: 2,    blend: true },
+    { name: "UDX",           v: "--v5", combo: 3,    blend: true },
+    { name: "Crypto.com",    v: "--v6", combo: 4,    blend: true },
+    { name: "Rothera",       v: "--v7", combo: null, blend: false }
+  ];
+
+  // Kalshi whole-exchange category groups (legend order + fixed colors).
+  var KX_GROUPS = [
+    { name: "Combos & exotics",        v: "--v5" },
+    { name: "Sports",                  v: "--v1" },
+    { name: "Crypto",                  v: "--v3" },
+    { name: "Politics & elections",    v: "--v4" },
+    { name: "Economics & financials",  v: "--v8" },
+    { name: "Other",                   v: "--kx-other" }
+  ];
+
+  // ---- embedded snapshot (regenerated by refresh_dashboard.py) ----
+  var SNAPSHOT = {
+    through: "2026-09-03",
+    loaded: "2026-09-04",
+    rows: [{"date":"2026-08-01","c":[1410000000.0,133399888.66,null,983501.0,2081593.92,37126212.0,4370899.0],"n":[391416000.0,50986272.22,null,436176.76,597930.11,10664366.25,2035457.65],"cp":[0.0,null,0.0,0.3,40.73,48.16]},{"date":"2026-08-02","c":[1240000000.0,134065934.54,null,1048537.0,2149081.97,38450418.0,7690938.0],"n":[344224000.0,51144509.72,null,484971.88,621319.9,11116379.04,3928624.18],"cp":[0.0,null,0.0,0.05,34.89,48.16]},{"date":"2026-08-03","c":[826100000.0,85344135.1,null,361422.0,1380684.94,19894868.0,9061437.0],"n":[229325360.0,31777180.84,null,165403.4,398283.4,5739032.4,4372698.14],"cp":[0.0,null,0.0,0.13,28.12,48.16]},{"date":"2026-08-04","c":[1150000000.0,120394335.41,17996650.04,472924.0,1239940.57,28109914.0,16424385.0],"n":[319240000.0,47471997.74,6356251.37,222905.14,362261.57,8212604.46,8062430.32],"cp":[0.0,39.31,0.0,3.87,36.95,48.16]},{"date":"2026-08-05","c":[1300000000.0,125055737.8,20682990.79,605580.0,2819039.99,30549431.0,25367258.0],"n":[360880000.0,47948549.82,7561907.44,292548.17,822855.03,8917132.41,12897725.83],"cp":[0.0,30.82,0.0,24.86,37.82,48.16]},{"date":"2026-08-06","c":[1180000000.0,141146850.05,18363859.9,655143.0,5010366.56,33554487.0,23442413.0],"n":[327568000.0,50551741.94,7229157.84,314539.43,1460836.55,9783240.49,11914017.45],"cp":[0.0,30.06,0.0,22.04,35.46,48.16]},{"date":"2026-08-07","c":[1160000000.0,117925601.54,15826632.35,614652.0,3319144.65,27906906.0,18014225.0],"n":[322016000.0,44939973.52,4663406.57,280061.26,962747.51,8094646.96,8768403.85],"cp":[0.0,35.17,0.0,35.02,35.41,48.16]},{"date":"2026-08-08","c":[1290000000.0,119094679.49,20822561.28,1178183.0,9583995.71,30827753.0,23158725.0],"n":[358104000.0,44015511.37,7466670.66,545929.65,2779825.18,8941548.68,11672366.2],"cp":[0.0,32.98,0.0,44.45,40.75,48.16]},{"date":"2026-08-09","c":[1170000000.0,126075255.12,18043033.81,936332.0,9966584.19,35738569.0,33913543.0],"n":[324792000.0,48533344.05,6159576.07,391311.2,2933210.13,10518020.08,17131109.38],"cp":[0.0,32.87,0.0,40.33,34.83,48.16]},{"date":"2026-08-10","c":[861600000.0,76773291.01,16189968.12,315621.0,7862717.9,14446381.0,11323712.0],"n":[239180160.0,28141958.88,5783341.08,146839.93,2270938.56,4172455.9,5809820.01],"cp":[0.01,36.21,0.0,53.87,35.7,48.16]},{"date":"2026-08-11","c":[1180000000.0,86060025.34,20926301.85,737122.0,10423439.05,21750613.0,19659153.0],"n":[327568000.0,32573678.23,8237000.57,342568.77,3016973.98,6295526.18,9689300.88],"cp":[0.06,33.35,0.0,49.48,45.69,48.16]},{"date":"2026-08-12","c":[1300000000.0,114182203.82,22182572.72,957673.0,11663866.53,28597603.0,23900271.0],"n":[360880000.0,44020201.24,8739413.83,463531.04,3398793.0,8333200.03,11689925.33],"cp":[0.07,32.97,0.0,46.58,40.16,48.16]},{"date":"2026-08-13","c":[1220000000.0,130618679.53,19980748.26,839703.0,15012128.02,31481714.0,24114127.0],"n":[338672000.0,47519466.33,6578982.54,401500.01,4351928.21,9126364.98,11390787.92],"cp":[0.27,33.08,0.0,50.97,37.73,48.16]},{"date":"2026-08-14","c":[1200000000.0,122512075.89,21714770.99,1294705.0,13855386.15,29346117.0,13420824.0],"n":[333120000.0,44967846.15,6848767.95,598777.14,3991051.15,8453164.18,5908662.92],"cp":[1.3,39.07,0.0,54.18,34.44,48.16]},{"date":"2026-08-15","c":[1500000000.0,135215397.14,26328429.67,2039246.0,17116844.44,38397221.0,23624339.0],"n":[416400000.0,48968794.7,8232801.42,899431.51,4926894.39,11052215.46,11142968.25],"cp":[2.13,39.94,0.0,44.93,40.45,48.16]},{"date":"2026-08-16","c":[1400000000.0,146617403.12,20291070.01,1359591.0,14195115.2,45384680.0,24327302.0],"n":[388640000.0,56978627.74,5253664.07,644960.33,4127549.32,13196617.46,11565704.7],"cp":[1.68,33.54,0.0,46.09,35.66,48.16]},{"date":"2026-08-17","c":[926400000.0,100434174.96,17248459.41,1210622.0,11337468.16,19510640.0,11675481.0],"n":[257168640.0,36933011.94,6582665.07,587784.12,3290649.79,5662876.63,5508381.8],"cp":[2.01,34.86,0.0,45.49,28.26,48.16]},{"date":"2026-08-18","c":[1160000000.0,104121932.82,20729166.99,557181.0,12627740.01,25338493.0,14628870.0],"n":[322016000.0,38002578.37,7373273.33,262338.04,3637816.9,7299548.29,6862320.27],"cp":[5.36,34.4,0.0,55.7,36.98,48.16]},{"date":"2026-08-19","c":[1370000000.0,122677612.96,23043283.69,1450093.0,15105978.17,31726890.0,21296436.0],"n":[380312000.0,44708007.56,7699311.71,691813.04,4357451.88,9151899.65,10373288.39],"cp":[9.0,32.56,0.0,52.71,38.97,48.16]},{"date":"2026-08-20","c":[1190000000.0,132905659.86,19460265.91,895848.0,13770677.81,31622879.0,24665675.0],"n":[330344000.0,44439935.08,5997303.28,426029.96,3954335.84,9080706.52,11601612.35],"cp":[10.64,28.13,0.0,47.13,31.13,48.16]},{"date":"2026-08-21","c":[1260000000.0,118302722.67,22591885.42,1198992.0,16590934.97,27015692.0,9456461.0],"n":[349776000.0,35142057.4,9390952.41,577229.27,4683619.92,7626528.18,3594255.85],"cp":[27.92,31.46,0.0,54.82,35.4,48.16]},{"date":"2026-08-22","c":[1680000000.0,146513108.49,34454101.03,1122513.0,25849266.6,43263715.0,21014051.0],"n":[466368000.0,43271898.85,11415691.98,545961.96,7292030.85,12204614.9,9618578.71],"cp":[23.52,38.56,0.0,51.03,37.35,48.16]},{"date":"2026-08-23","c":[1480000000.0,144797057.56,25659770.52,1532660.0,16408150.57,42928282.0,21174047.0],"n":[410848000.0,45249277.15,8441476.46,678289.72,4661314.97,12195295.41,10104181.45],"cp":[21.67,37.65,0.0,48.38,36.27,48.16]},{"date":"2026-08-24","c":[1120000000.0,97537800.47,21651553.57,525316.0,13798244.33,24088002.0,11503296.0],"n":[310912000.0,31464287.45,6064427.21,240533.84,3901805.72,6811497.3,5132563.13],"cp":[17.71,36.47,0.0,51.78,30.03,48.16]},{"date":"2026-08-25","c":[1320000000.0,122103455.85,25712632.31,689662.0,12631632.8,29867189.0,16332836.0],"n":[366432000.0,38650744.49,7634695.65,345067.73,3577500.59,8458913.27,7469897.21],"cp":[21.2,38.61,0.0,55.28,38.11,48.16]},{"date":"2026-08-26","c":[1420000000.0,146265225.05,26242191.02,2557592.0,11278878.58,36702356.0,22808657.0],"n":[394192000.0,47820263.66,9260973.61,1170559.87,3228105.93,10504510.02,10604681.86],"cp":[21.32,32.11,2.87,44.34,36.46,48.16]},{"date":"2026-08-27","c":[1190000000.0,110832888.3,18973251.97,9547705.0,12827436.18,28817964.0,22948569.0],"n":[330344000.0,33469362.8,6610438.95,3504492.28,3640510.96,8178728.19,9864047.33],"cp":[22.26,34.33,30.0,46.98,31.26,48.16]},{"date":"2026-08-28","c":[1490000000.0,97591814.65,28162072.11,14809135.0,18367442.31,19724574.0,14181446.0],"n":[413624000.0,30161405.65,9490626.81,5547393.25,5186852.71,5570098.34,5642292.92],"cp":[22.68,38.98,28.84,56.07,38.06,48.16]},{"date":"2026-08-29","c":[1930000000.0,164444551.54,34918943.24,28273980.0,18842311.25,27697702.0,25879178.0],"n":[535768000.0,46737225.01,11632838.68,10477277.08,5320793.3,7821426.22,11977848.09],"cp":[28.27,37.62,27.33,49.36,40.3,48.16]},{"date":"2026-08-30","c":[1700000000.0,152797571.95,25897044.82,4910082.0,13252847.35,32311102.0,30594436.0],"n":[471920000.0,45961937.88,7924109.45,1721674.99,3750230.46,9143248.68,14143642.2],"cp":[26.18,36.58,33.76,48.76,39.39,48.16]},{"date":"2026-08-31","c":[1400000000.0,112904481.21,24833122.69,15463.0,7051751.21,30583073.0,10653135.0],"n":[388640000.0,36710222.03,8164954.36,7580.34,1996993.35,8660854.79,4972134.8],"cp":[23.86,43.01,3.84,60.58,31.96,48.16]},{"date":"2026-09-01","c":[1520000000.0,111143033.33,30033982.35,17941206.0,5769286.27,41027931.0,17975675.0],"n":[421952000.0,33583851.03,8422284.43,7000711.88,1629086.86,11585152.88,8253527.4],"cp":[29.87,47.4,28.1,83.71,31.68,48.16]},{"date":"2026-09-02","c":[384741577.16,132482292.68,26868942.32,21144810.0,9396009.67,29542204.0,24222748.0],"n":[106804261.82,39009606.34,6948205.54,7686788.4,2745965.83,8633652.53,11819801.92],"cp":[30.19,42.34,34.54,71.92,34.39,48.16]},{"date":"2026-09-03","c":[197601342.62,null,null,null,null,29986046.5,27056266.0],"n":[54854132.71,null,null,null,null,9091275.08,13258351.53],"cp":[null,null,null,null,28.25,48.16]}],
+    kalshiMix: {"as_of":"2026-09-02","sampled_trades":3244911,"avg_price":0.2776,"groups":[{"name":"Combos & exotics","contracts_pct":47.37,"notional_pct":11.03},{"name":"Sports","contracts_pct":30.07,"notional_pct":50.38},{"name":"Crypto","contracts_pct":18.62,"notional_pct":33.68},{"name":"Politics & elections","contracts_pct":0.38,"notional_pct":0.39},{"name":"Economics & financials","contracts_pct":2.4,"notional_pct":4.05},{"name":"Other","contracts_pct":1.16,"notional_pct":0.47}],"parlay":{"contracts_pct":48.156,"notional_pct":11.057,"pct_of_sports_contracts":61.56,"pct_of_sports_notional":18.0}},
+    kalshiProjected: ["2026-09-02","2026-09-03"]
+  };
+
+  var state = { unit: "n", data: SNAPSHOT };
+  var css = function (n) { return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); };
+
+  // ---------- formatting ----------
+  function fmt(x, withCur) {
+    if (x == null || isNaN(x)) return "–";
+    var s = "", n = Math.abs(x);
+    if (n >= 1e9) s = (x / 1e9).toFixed(2) + "B";
+    else if (n >= 1e8) s = (x / 1e6).toFixed(0) + "M";
+    else if (n >= 1e6) s = (x / 1e6).toFixed(1) + "M";
+    else if (n >= 1e3) s = (x / 1e3).toFixed(0) + "K";
+    else s = x.toFixed(0);
+    return (withCur && state.unit === "n" ? "$" : "") + s;
+  }
+  function fmtPct(x) { return (x > 0 ? "+" : "") + x.toFixed(1) + "%"; }
+  function niceCeil(x) {
+    if (x <= 0) return 1;
+    var p = Math.pow(10, Math.floor(Math.log10(x)));
+    var m = x / p;
+    var step = m <= 1 ? 1 : m <= 1.5 ? 1.5 : m <= 2 ? 2 : m <= 3 ? 3
+            : m <= 4 ? 4 : m <= 5 ? 5 : m <= 6 ? 6 : m <= 8 ? 8 : 10;
+    return step * p;
+  }
+  function shortDate(d) {
+    var mo = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    var p = d.split("-");
+    return mo[+p[1] - 1] + " " + (+p[2]);
+  }
+  function niceDate(iso) {
+    if (!iso || !/^\d{4}-\d\d-\d\d$/.test(iso)) return iso || "";
+    return shortDate(iso) + " " + iso.slice(0, 4);
+  }
+
+  function series(row) { return state.unit === "n" ? row.n : row.c; }
+
+  // last present, non-outlier value at or before idx, and the clean one before it
+  function cleanIdx(vals, idx) {
+    function outlier(k) {
+      var w = vals.slice(Math.max(0, k - 7), k).filter(function (v) { return v != null; });
+      if (w.length < 4) return false;
+      w.sort(function (a, b) { return a - b; });
+      var med = w[w.length >> 1];
+      return med > 0 && vals[k] < med * 0.3;
+    }
+    var i = idx;
+    while (i > 0 && (vals[i] == null || outlier(i))) i--;
+    var p = i - 1;
+    while (p > 0 && (vals[p] == null || outlier(p))) p--;
+    return { i: i, p: p };
+  }
+
+  // ---------- render ----------
+  function render() {
+    var rows = state.data.rows;
+    var isN = state.unit === "n";
+    var proj = state.data.kalshiProjected || [];
+    // "latest day" = the last day with a firm (non-projected) Kalshi total, since
+    // Kalshi dwarfs the others and its DeFi Rate feed lags ~2 days.
+    var li = rows.length - 1;
+    while (li > 0 && (rows[li].c[0] == null || proj.indexOf(rows[li].date) >= 0)) li--;
+    var last = rows[li];
+    var prev = rows[li - 1] || rows[li];
+
+    document.getElementById("asof-date").textContent = shortDate(state.data.through) + " 2026";
+    document.getElementById("u-n").setAttribute("aria-pressed", isN);
+    document.getElementById("u-c").setAttribute("aria-pressed", !isN);
+    document.getElementById("hero-lbl").textContent =
+      (isN ? "Total notional traded" : "Total contracts traded") + " · " + shortDate(last.date);
+    document.getElementById("chart-title").textContent =
+      "Daily " + (isN ? "notional traded" : "contracts traded");
+
+    // hero
+    var tot = function (r) { return series(r).reduce(function (a, b) { return a + (b || 0); }, 0); };
+    var lt = tot(last), pt = tot(prev);
+    document.getElementById("hero-val").innerHTML =
+      (isN ? '<span class="cur">$</span>' : "") + fmt(lt, false).replace(/^\$/, "");
+    var dpc = pt ? (lt - pt) / pt * 100 : 0;
+    var de = document.getElementById("hero-delta");
+    de.className = "delta " + (dpc >= 0 ? "up" : "down");
+    de.innerHTML = (dpc >= 0 ? "&#9650; " : "&#9660; ") + fmtPct(dpc) + " vs prior day";
+    var sum = rows.reduce(function (a, r) { return a + tot(r); }, 0);
+    document.getElementById("hero-sum").textContent = fmt(sum, true);
+
+    drawSpark(document.getElementById("hero-spark"), rows.map(tot), css("--accent"), 300, 52);
+
+    // venue cards
+    var venEl = document.getElementById("venues");
+    venEl.innerHTML = "";
+    VENUES.forEach(function (vn, i) {
+      var vals = rows.map(function (r) { return series(r)[i]; });
+      var rawLastI = vals.length - 1;
+      while (rawLastI > 0 && vals[rawLastI] == null) rawLastI--;
+      // for Kalshi (i=0), step past projected days to the last firm figure
+      if (i === 0) while (rawLastI > 0 && proj.indexOf(rows[rawLastI].date) >= 0) rawLastI--;
+      var ci = cleanIdx(vals, rawLastI);
+      var vi = ci.i;                       // last clean value
+      var vr = rows[vi];
+      var lv = vals[vi], pv = vals[ci.p];
+      var share = lt ? (lv / lt * 100) : 0;
+      // "provisional" if the venue's true latest day is an outlier we stepped past
+      var prov = rawLastI > vi;
+      var d = (pv && lv != null) ? (lv - pv) / pv * 100 : null;
+      if (d != null && Math.abs(d) > 500) d = null;
+      var col = css(vn.v);
+      var card = document.createElement("div");
+      card.className = "card vcard";
+      var cpv = vn.combo != null ? vr.cp[vn.combo] : null;
+      var comboTxt;
+      if (vn.name === "Kalshi") {
+        comboTxt = '<div class="vcombo">parlay ' + (cpv == null ? "&ndash;" : cpv.toFixed(0) + "%") +
+                   ' of volume' + (proj.length ? " &middot; " + proj.length + "d proj." : "") + '</div>';
+      } else if (vn.combo != null) {
+        comboTxt = '<div class="vcombo">combo ' + (cpv == null ? "&ndash;" : cpv.toFixed(0) + "%") + " of volume</div>";
+      } else {
+        comboTxt = '<div class="vcombo">no combo product</div>';
+      }
+      var altUnit = state.unit === "n"
+        ? fmt(vr.c[i], false) + " contracts"
+        : "$" + fmt(vr.n[i], false).replace(/^\$/, "");
+      var deltaHtml = prov
+        ? '<span class="vd flat">provisional</span>'
+        : '<span class="vd ' + (d == null ? "flat" : d >= 0 ? "up" : "down") + '">' +
+          (d == null ? "new" : (d >= 0 ? "&#9650; " : "&#9660; ") + fmtPct(d)) + '</span>';
+      card.innerHTML =
+        '<span class="accent-rail" style="background:' + col + '"></span>' +
+        '<div class="vhead"><span class="dot" style="background:' + col + '"></span>' +
+        '<span class="vname">' + vn.name + '</span>' +
+        '<span class="vshare">' + (prov ? "&mdash;" : share.toFixed(share < 10 ? 1 : 0) + '% share') + '</span></div>' +
+        '<div class="vval"' + (prov ? ' style="color:var(--ink-mute)"' : '') + '>' +
+        (isN ? '<span class="cur">$</span>' : "") + fmt(lv, false).replace(/^\$/, "") + '</div>' +
+        '<div class="vrow2">' + deltaHtml +
+        '<span class="vsub">' + altUnit + '</span></div>' +
+        '<div class="vspark"><svg viewBox="0 0 200 40" preserveAspectRatio="none"></svg></div>' +
+        comboTxt;
+      venEl.appendChild(card);
+      drawSpark(card.querySelector(".vspark svg"), vals.slice(0, vi + 1), col, 200, 40);
+    });
+
+    drawKalshi();
+    drawPanels();
+    drawTable();
+  }
+
+  // ---------- Kalshi whole-exchange: category mix ----------
+  var KX_COLOR = {};
+  KX_GROUPS.forEach(function (g) { KX_COLOR[g.name] = g.v; });
+
+  function drawKalshi() {
+    var mix = state.data.kalshiMix;
+    var sec = document.getElementById("kx-section");
+    if (!mix || !mix.groups) { sec.hidden = true; return; }
+    sec.hidden = false;
+
+    var isDollars = state.unit === "n";
+    var pctKey = isDollars ? "notional_pct" : "contracts_pct";
+    var basisTxt = isDollars ? "by $ traded" : "by contracts";
+    var groups = mix.groups.slice().filter(function (g) { return g[pctKey] > 0; })
+      .sort(function (a, b) { return b[pctKey] - a[pctKey]; });
+
+    var byName = {};
+    mix.groups.forEach(function (g) { byName[g.name] = g; });
+    var combo = byName["Combos & exotics"] || { contracts_pct: 0, notional_pct: 0 };
+    var sport = byName["Sports"] || { contracts_pct: 0, notional_pct: 0 };
+
+    // Kalshi total = venue-0 column; last day with a firm (non-projected) figure.
+    var rows = state.data.rows, key = isDollars ? "n" : "c";
+    var proj = state.data.kalshiProjected || [];
+    var ki = rows.length - 1;
+    while (ki > 0 && (rows[ki].c[0] == null || proj.indexOf(rows[ki].date) >= 0)) ki--;
+    var lastK = rows[ki][key][0], mtdK = rows.reduce(function (a, r) { return a + (r[key][0] || 0); }, 0);
+    document.getElementById("kx-date").textContent = shortDate(rows[ki].date);
+    document.getElementById("kx-total").innerHTML =
+      (isDollars ? '<span style="font-size:.6em;color:var(--ink-mute)">$</span>' : "") +
+      fmt(lastK, false).replace(/^\$/, "");
+    document.getElementById("kx-mtd").textContent = fmt(mtdK, true);
+
+    document.getElementById("kx-basis").textContent = basisTxt;
+    document.getElementById("kx-basis2").textContent = basisTxt;
+    document.getElementById("kx-combo-pct").textContent = Math.round(combo[pctKey]) + "%";
+    document.getElementById("kx-sports-pct").textContent = Math.round(sport[pctKey]) + "%";
+    document.getElementById("kx-combo-note").textContent = isDollars
+      ? "parlay legs price in pennies, so far less of the money"
+      : "parlays & multi-event — the single biggest slice by count";
+
+    // legend (fixed order, all groups)
+    document.getElementById("kx-legend").innerHTML = KX_GROUPS.map(function (g) {
+      return '<span class="li"><span class="sw" style="background:' + css(g.v) + '"></span>' + g.name + '</span>';
+    }).join("");
+
+    // horizontal 100% bar
+    var bar = document.getElementById("kx-bar");
+    bar.innerHTML = groups.map(function (g) {
+      var p = g[pctKey];
+      var label = p >= 7 ? '<span>' + g.name.replace(" & exotics", "").replace(" & elections", "").replace(" & financials", "") + " " + Math.round(p) + '%</span>' : "";
+      return '<div class="seg" title="' + g.name + ': ' + p.toFixed(1) + '%" style="flex:0 0 ' + p + '%;background:' + css(KX_COLOR[g.name] || "--kx-other") + '">' + label + '</div>';
+    }).join("");
+
+    var sm = mix.sampled_trades ? (mix.sampled_trades / 1e6).toFixed(1) + "M" : "sampled";
+    var np = (state.data.kalshiProjected || []).length;
+    document.getElementById("kx-foot").innerHTML =
+      "Daily total from DeFi Rate's Kalshi volume table (built from Kalshi's own API; its monthly " +
+      "sum matches the “$33.7B so far in August” Kalshi reported)." +
+      (np ? " DeFi Rate lags ~2 days, so the last " + np + " day(s), marked <b>~</b>, are projected " +
+        "from our own verified Kalshi <i>sports</i> figure ÷ its recent share of the total." : "") +
+      " Category split is from " + sm + " trades sampled off the public trade feed: combos &amp; exotics is <b>" +
+      Math.round(combo.contracts_pct) + "% of contracts traded but " +
+      Math.round(combo.notional_pct) + "% of the dollars</b> — a multi-leg parlay contract " +
+      "sells for a few cents.";
+  }
+
+  // ---------- sparkline ----------
+  function drawSpark(svg, vals, color, W, H) {
+    var pad = 3;
+    var pts = vals.map(function (v, i) { return { i: i, v: v }; }).filter(function (p) { return p.v != null; });
+    if (pts.length < 2) { svg.innerHTML = ""; return; }
+    var max = Math.max.apply(null, pts.map(function (p) { return p.v; }));
+    var n = vals.length - 1;
+    var X = function (i) { return pad + i / n * (W - 2 * pad); };
+    var Y = function (v) { return H - pad - (v / max) * (H - 2 * pad); };
+    var line = pts.map(function (p, k) { return (k ? "L" : "M") + X(p.i).toFixed(1) + " " + Y(p.v).toFixed(1); }).join(" ");
+    var last = pts[pts.length - 1];
+    var area = line + " L" + X(last.i).toFixed(1) + " " + (H - pad) + " L" + X(pts[0].i).toFixed(1) + " " + (H - pad) + " Z";
+    svg.innerHTML =
+      '<path d="' + area + '" fill="' + color + '" fill-opacity="0.12"/>' +
+      '<path d="' + line + '" fill="none" stroke="' + color + '" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>' +
+      '<circle cx="' + X(last.i).toFixed(1) + '" cy="' + Y(last.v).toFixed(1) + '" r="2.6" fill="' + color + '" stroke="var(--surface)" stroke-width="1.4"/>';
+  }
+
+  // ---------- small-multiple trend panels (shared hover) ----------
+  function drawPanels() {
+    var rows = state.data.rows;
+    var host = document.getElementById("panels");
+    host.innerHTML = "";
+    var n = rows.length;
+    var W = 240, H = 92, pT = 7, pB = 4, pL = 2, pR = 2;
+    var isN = state.unit === "n";
+    var panels = [];
+    var tip = document.getElementById("tip");
+
+    VENUES.forEach(function (vn, vi) {
+      var vals = rows.map(function (r) { return series(r)[vi]; });
+      var pts = vals.map(function (v, i) { return { i: i, v: v }; }).filter(function (p) { return p.v != null; });
+      var vmax = pts.length ? Math.max.apply(null, pts.map(function (p) { return p.v; })) : 1;
+      var col = css(vn.v);
+      var X = function (i) { return pL + i / (n - 1) * (W - pL - pR); };
+      var Y = function (v) { return H - pB - (v / vmax) * (H - pT - pB); };
+      var line = pts.map(function (p, k) { return (k ? "L" : "M") + X(p.i).toFixed(1) + " " + Y(p.v).toFixed(1); }).join(" ");
+      var last = pts[pts.length - 1] || { i: n - 1, v: 0 };
+      var first = pts[0] || { i: 0 };
+      var area = pts.length > 1
+        ? line + " L" + X(last.i).toFixed(1) + " " + (H - pB) + " L" + X(first.i).toFixed(1) + " " + (H - pB) + " Z"
+        : "";
+
+      var el = document.createElement("div");
+      el.className = "panel";
+      el.innerHTML =
+        '<div class="p-head"><span class="p-dot" style="background:' + col + '"></span>' +
+        '<span class="p-name">' + vn.name + '</span>' +
+        '<span class="p-max">peak ' + (isN ? "$" : "") + fmt(vmax, false).replace(/^\$/, "") + '</span></div>' +
+        '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" role="img" aria-label="' + vn.name + ' daily volume, August 2026">' +
+        '<line x1="' + pL + '" y1="' + Y(vmax).toFixed(1) + '" x2="' + (W - pR) + '" y2="' + Y(vmax).toFixed(1) +
+        '" stroke="var(--grid)" stroke-width="1" vector-effect="non-scaling-stroke"/>' +
+        (area ? '<path d="' + area + '" fill="' + col + '" fill-opacity="0.13"/>' : '') +
+        '<path d="' + line + '" fill="none" stroke="' + col + '" stroke-width="1.75" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>' +
+        '<line class="pl-cross" x1="0" y1="0" x2="0" y2="' + H + '" stroke="var(--ink-dim)" stroke-width="1" vector-effect="non-scaling-stroke" style="opacity:0"/>' +
+        '<circle class="pl-end" cx="' + X(last.i).toFixed(1) + '" cy="' + Y(last.v).toFixed(1) + '" r="3.4" fill="' + col +
+        '" stroke="var(--surface)" stroke-width="2" vector-effect="non-scaling-stroke"/>' +
+        '<circle class="pl-hit" r="3.4" fill="' + col + '" stroke="var(--surface)" stroke-width="2" vector-effect="non-scaling-stroke" style="opacity:0"/>' +
+        '</svg>' +
+        '<div class="p-x"><span>' + shortDate(rows[0].date) + '</span><span>' +
+        shortDate(rows[n >> 1].date) + '</span><span>' + shortDate(rows[n - 1].date) + '</span></div>';
+      host.appendChild(el);
+      panels.push({ el: el, svg: el.querySelector("svg"), vals: vals, X: X, Y: Y });
+    });
+
+    function showAt(di, evt) {
+      panels.forEach(function (p) {
+        var cx = p.X(di);
+        var cr = p.svg.querySelector(".pl-cross");
+        cr.setAttribute("x1", cx); cr.setAttribute("x2", cx); cr.style.opacity = 1;
+        var v = p.vals[di], hit = p.svg.querySelector(".pl-hit");
+        if (v == null) { hit.style.opacity = 0; }
+        else { hit.setAttribute("cx", cx); hit.setAttribute("cy", p.Y(v)); hit.style.opacity = 1; }
+      });
+      var r = rows[di];
+      var total = series(r).reduce(function (a, b) { return a + (b || 0); }, 0);
+      tip.innerHTML = '<div class="td">' + shortDate(r.date) + ' 2026</div>' +
+        VENUES.map(function (vn, vi) {
+          return '<div class="tr"><span class="sw" style="background:' + css(vn.v) + '"></span>' +
+            '<span class="nm">' + vn.name + '</span><span class="vv">' + fmt(series(r)[vi], true) + '</span></div>';
+        }).join("") +
+        '<div class="tot"><span class="nm">Total</span><span class="vv">' +
+        (state.unit === "n" ? "$" : "") + fmt(total, false).replace(/^\$/, "") + '</span></div>';
+      tip.classList.add("on");
+      moveTip(evt);
+    }
+    function hide() {
+      panels.forEach(function (p) {
+        p.svg.querySelector(".pl-cross").style.opacity = 0;
+        p.svg.querySelector(".pl-hit").style.opacity = 0;
+      });
+      tip.classList.remove("on");
+    }
+    function moveTip(e) {
+      if (!e) return;
+      var pad = 14, w = tip.offsetWidth, hh = tip.offsetHeight;
+      var x = e.clientX + pad, y = e.clientY + pad;
+      if (x + w > innerWidth - 8) x = e.clientX - w - pad;
+      if (y + hh > innerHeight - 8) y = e.clientY - hh - pad;
+      tip.style.left = x + "px"; tip.style.top = y + "px";
+    }
+    panels.forEach(function (p) {
+      function handle(e) {
+        var rect = p.svg.getBoundingClientRect();
+        var di = Math.round((e.clientX - rect.left) / rect.width * (n - 1));
+        showAt(Math.max(0, Math.min(n - 1, di)), e);
+      }
+      p.el.addEventListener("mousemove", handle);
+      p.el.addEventListener("mouseleave", hide);
+    });
+  }
+
+  // ---------- table ----------
+  function drawTable() {
+    var rows = state.data.rows;
+    var head = ["Date"].concat(VENUES.map(function (v) { return v.name; })).concat(["Total", "Combo"]);
+    document.getElementById("thead-row").innerHTML = head.map(function (h) { return "<th>" + h + "</th>"; }).join("");
+    var proj = state.data.kalshiProjected || [];
+    var tb = document.getElementById("tbody");
+    tb.innerHTML = rows.map(function (r) {
+      var vs = series(r);
+      var kp = proj.indexOf(r.date) >= 0;   // Kalshi value projected this day
+      var tt = vs.reduce(function (a, b) { return a + (b || 0); }, 0);
+      var lead = vs.indexOf(Math.max.apply(null, vs.map(function (x) { return x || 0; })));
+      // volume-weighted combo % across the sports-book venues that run a parlay
+      // (Kalshi's parlay % is of its sports book, not its whole-exchange column,
+      // so it shows on its own card but is not folded into this blend)
+      var cn = 0, cd = 0;
+      VENUES.forEach(function (vn, vi) {
+        if (!vn.blend || vn.combo == null) return;
+        var cp = r.cp[vn.combo];
+        if (cp == null || vs[vi] == null) return;
+        cn += cp / 100 * vs[vi]; cd += vs[vi];
+      });
+      var combo = cd ? (cn / cd * 100) : null;
+      var tds = '<td>' + shortDate(r.date) + '</td>';
+      vs.forEach(function (val, vi) {
+        var cls = vi === lead ? ' class="lead"' : "";
+        var st = vi === lead ? ' style="--lead-c:' + css(VENUES[vi].v) + '"' : "";
+        var mark = (vi === 0 && kp && val != null)
+          ? '<span title="projected from Kalshi sports volume" style="color:var(--ink-mute)">~</span>' : "";
+        tds += '<td' + cls + st + '>' + mark + fmt(val, true) + '</td>';
+      });
+      tds += '<td class="tot">' + (state.unit === "n" ? "$" : "") + fmt(tt, false).replace(/^\$/, "") + '</td>';
+      tds += '<td>' + (combo == null ? "–" : combo.toFixed(0) + "%") + '</td>';
+      return "<tr>" + tds + "</tr>";
+    }).join("");
+  }
+
+  // ---------- unit toggle ----------
+  document.getElementById("u-n").addEventListener("click", function () { state.unit = "n"; render(); });
+  document.getElementById("u-c").addEventListener("click", function () { state.unit = "c"; render(); });
+
+  // ---------- CSV import ----------
+  function parseCSV(text) {
+    var lines = text.trim().split(/\r?\n/);
+    var head = lines[0].split(",").map(function (s) { return s.trim(); });
+    var ix = {};
+    head.forEach(function (h, i) { ix[h] = i; });
+    function num(cells, key) {
+      var v = cells[ix[key]];
+      return (v == null || v === "") ? null : Math.round(parseFloat(v) * 100) / 100;
+    }
+    var out = [];
+    for (var i = 1; i < lines.length; i++) {
+      if (!lines[i].trim()) continue;
+      var c = lines[i].split(",");
+      out.push({
+        date: c[ix["date"]].trim(),
+        c: [num(c, "kalshi_contracts"), num(c, "polymarket_us_contracts"), num(c, "novig_contracts"), num(c, "dkex_contracts"), num(c, "udx_contracts"), num(c, "cdna_contracts"), num(c, "rothera_contracts")],
+        n: [num(c, "kalshi_notional_est"), num(c, "polymarket_us_notional_est"), num(c, "novig_notional_est"), num(c, "dkex_notional_est"), num(c, "udx_notional_est"), num(c, "cdna_notional_est"), num(c, "rothera_notional_est")],
+        cp: [num(c, "polymarket_us_combo_pct"), num(c, "novig_combo_pct"), num(c, "dkex_combo_pct"), num(c, "udx_combo_pct"), num(c, "cdna_combo_pct"), num(c, "kalshi_combo_pct")]
+      });
+    }
+    if (!out.length || !out[0].date.match(/^\d{4}-\d{2}-\d{2}$/)) throw new Error("Unrecognised CSV");
+    return out;
+  }
+
+  var dbNs = null;
+  document.getElementById("import-btn").addEventListener("click", function () {
+    document.getElementById("file-in").click();
+  });
+  document.getElementById("file-in").addEventListener("change", function (e) {
+    var f = e.target.files[0];
+    if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function () {
+      try {
+        var rows = parseCSV(String(rd.result));
+        var payload = {
+          through: rows[rows.length - 1].date,
+          loaded: new Date().toISOString().slice(0, 10),
+          rows: rows,
+          kalshiMix: (state.data && state.data.kalshiMix) || SNAPSHOT.kalshiMix || null,
+          importedAt: Date.now()
+        };
+        state.data = payload;
+        render();
+        setSource(payload, true);
+        if (dbNs) dbNs.doc("dashboard/unified").set(payload).catch(function () {});
+      } catch (err) {
+        alert("Could not read that file.\n\nExpected unified_sports_volume.csv (the file run_all.py produces).\n\n" + err.message);
+      }
+    };
+    rd.readAsText(f);
+    e.target.value = "";
+  });
+
+  function setSource(d, live) {
+    document.getElementById("foot-src").textContent =
+      (live ? "imported " : "snapshot loaded ") + niceDate(d.loaded || SNAPSHOT.loaded) +
+      (live ? "  ·  syncs to every device opening this link"
+            : "  ·  open on the source laptop and use “Update data” to refresh");
+  }
+
+  // ---------- boot ----------
+  render();
+  setSource(SNAPSHOT, false);
+
+  // charts bake theme colors in at draw time, so redraw when the viewer's
+  // theme changes (OS setting or Claude's light/dark toggle).
+  var reRender = function () { render(); };
+  if (window.matchMedia) {
+    try { matchMedia("(prefers-color-scheme: dark)").addEventListener("change", reRender); }
+    catch (e) { /* older Safari */ }
+  }
+  new MutationObserver(reRender).observe(document.documentElement,
+    { attributes: true, attributeFilter: ["data-theme"] });
+
+  if (window.claude && claude.use) {
+    claude.use("db").then(function (db) {
+      if (!db) return;
+      dbNs = db;
+      document.getElementById("import-btn").hidden = false;
+      db.doc("dashboard/unified").onSnapshot(function (snap) {
+        var d = snap && (snap.data ? snap.data() : null);
+        // ignore a stale doc from an older schema (pre-Crypto.com had 5 venues)
+        var ok = d && d.rows && d.rows.length &&
+                 d.rows[0].c && d.rows[0].c.length >= SNAPSHOT.rows[0].c.length;
+        if (ok) {
+          state.data = d;
+          render();
+          setSource(d, true);
+        }
+      });
+    }).catch(function () {});
+  }
+})();
+</script>

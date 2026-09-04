@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dashboard-api",
+      "runtimeExecutable": "C:\\Users\\yager\\OneDrive\\Desktop\\mention-edge\\.venv\\Scripts\\python.exe",
+      "runtimeArgs": ["C:\\Users\\yager\\OneDrive\\Desktop\\mention-edge\\poll_markets\\run_dashboard.py"],
+      "port": 8001
+    },
+    {
+      "name": "dashboard-static",
+      "runtimeExecutable": "C:\\Users\\yager\\OneDrive\\Desktop\\mention-edge\\.venv\\Scripts\\python.exe",
+      "runtimeArgs": ["-m", "http.server", "8080", "--directory", "C:\\Users\\yager\\OneDrive\\Desktop\\mention-edge\\poll_markets\\static"],
+      "port": 8080
+    }
+  ]
+}

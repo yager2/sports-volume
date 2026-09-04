@@ -1,0 +1,61 @@
+name: daily-volume
+
+on:
+  schedule:
+    - cron: "0 20 * * *"     # 20:00 UTC = 3pm CT / 4pm ET - after DKeX finalises the prior day
+  workflow_dispatch: {}        # "Run workflow" button for manual / first runs
+
+permissions:
+  contents: write             # commit the refreshed CSV/xlsx/html back to the repo
+
+concurrency:
+  group: daily-volume
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      RCLONE_CONF: ${{ secrets.RCLONE_CONF }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0        # full history so the commit-back / rebase works
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: System deps (pdftotext)
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends poppler-utils
+
+      - name: Python deps
+        run: pip install --quiet openpyxl pdfplumber requests
+
+      - name: Run the pipeline
+        run: python run_all.py
+        continue-on-error: true   # a transient source failure shouldn't block commit / upload
+
+      - name: Commit refreshed data
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "data refresh $(date -u +'%Y-%m-%d %H:%M UTC')" || echo "nothing changed"
+          git pull --rebase --autostash || true
+          git push
+
+      # --- copy outputs to Google Drive so a second computer can open them ---
+      # Needs a repo secret RCLONE_CONF = the full contents of your rclone.conf
+      # (the [gdrive] block). Skipped automatically if the secret isn't set.
+      - name: Push to Google Drive
+        if: ${{ env.RCLONE_CONF != '' }}
+        run: |
+          curl -fsSL https://rclone.org/install.sh | sudo bash
+          mkdir -p ~/.config/rclone
+          printf '%s' "$RCLONE_CONF" > ~/.config/rclone/rclone.conf
+          for f in unified_sports_volume.xlsx unified_sports_volume.csv dashboard.html VOLUME_METHODOLOGY.md; do
+            [ -f "$f" ] && rclone copy "$f" gdrive:SportsVolume --no-traverse
+          done
+          echo "pushed to gdrive:SportsVolume"

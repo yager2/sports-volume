@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+
+# Logs
+*.log
+
+# Big / regenerable - CI rebuilds these each run
+kalshi_market_cache.json
+
+# Local raw report caches - CI re-downloads them (small)
+dkex_raw_cache/
+udx_raw_cache/
+polymarket_us_raw_cache/
+raw_cache/
+rothera_raw_cache/
+
+# CDNA: keep the extracted .txt (small), never the 40 MB source PDFs
+cdna_raw_cache/*.pdf

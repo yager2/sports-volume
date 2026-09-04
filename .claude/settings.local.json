@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find \"C:\\\\Users\\\\yager\\\\OneDrive\\\\Desktop\" -maxdepth 3 -iname \"*.env*\" -o -maxdepth 3 -iname \"docker-compose*\" 2>/dev/null)",
+      "Bash(find \"C:\\\\Users\\\\yager\\\\OneDrive\\\\Desktop\" -maxdepth 4 -iname \"docker-compose*\" 2>/dev/null; echo \"---\"; find \"C:\\\\Users\\\\yager\" -maxdepth 3 -iname \"*mention*\" 2>/dev/null; echo \"---dirs on desktop---\"; ls -la \"C:\\\\Users\\\\yager\\\\OneDrive\\\\Desktop\")",
+      "Bash(tar -tzf \"C:\\\\Users\\\\yager\\\\Downloads\\\\mention-edge.tar.gz\")",
+      "Bash(unzip -l \"C:\\\\Users\\\\yager\\\\OneDrive\\\\Desktop\\\\Mention folder.zip\")",
+      "Bash(tar -tzf \"/c/Users/yager/Downloads/mention-edge.tar.gz\")",
+      "Bash(tar -xzOf \"/c/Users/yager/Downloads/mention-edge.tar.gz\" \"mention-edge/docker-compose.yml\")",
+      "Bash(tar -xzOf \"/c/Users/yager/Downloads/mention-edge.tar.gz\" \"mention-edge/.env.example\")",
+      "Bash(docker compose *)",
+      "Bash(mkdir -p \"/c/Users/yager/OneDrive/Desktop/mention-edge-extract\")",
+      "Bash(tar -xzf \"/c/Users/yager/Downloads/mention-edge.tar.gz\" -C \"/c/Users/yager/OneDrive/Desktop/mention-edge-extract\")",
+      "Bash(mv \"/c/Users/yager/OneDrive/Desktop/mention-edge-extract/mention-edge\" \"/c/Users/yager/OneDrive/Desktop/mention-edge\")",
+      "Bash(rmdir \"/c/Users/yager/OneDrive/Desktop/mention-edge-extract\")",
+      "PowerShell(Start-Process \"C:\\\\Program Files\\\\Docker\\\\Docker\\\\Docker Desktop.exe\")",
+      "Bash(cp \"/c/Users/yager/OneDrive/Desktop/mention-edge/.env.example\" \"/c/Users/yager/OneDrive/Desktop/mention-edge/.env\" *)",
+      "Bash(docker exec *)",
+      "Bash(python -m venv .venv)",
+      "Bash(\".venv/Scripts/python.exe\" -m pip install --upgrade pip -q)",
+      "Bash(\".venv/Scripts/python.exe\" -m pip install -r poll_markets/requirements.txt)",
+      "Bash(python3 -m venv .venv)",
+      "Bash(py -0)",
+      "Bash(py -m venv .venv)",
+      "Bash(\"../.venv/Scripts/python.exe\" test_parsing.py)",
+      "Bash(DATABASE_URL=\"postgresql://postgres:mention_edge_dev@localhost:5432/mention_edge\" \"../.venv/Scripts/python.exe\" ingest.py)",
+      "WebFetch(domain:www.fiftyplusone.news)",
+      "WebSearch",
+      "Bash(.venv/Scripts/python.exe -c ' *)",
+      "Bash(cp /tmp_poll_page.html \"C:\\\\Users\\\\yager\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-yager-OneDrive-Desktop-Mention-folder\\\\e3649841-c2fb-4a2e-8ec0-075f5e1a11f9\\\\scratchpad\\\\poll_page.html\")",
+      "Bash(cat /tmp_poll_page.html)",
+      "mcp__claude-in-chrome__tabs_context_mcp"
+    ]
+  }
+}
