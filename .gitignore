@@ -17,3 +17,6 @@ rothera_raw_cache/
 
 # CDNA: keep the extracted .txt (small), never the 40 MB source PDFs
 cdna_raw_cache/*.pdf
+
+# Claude Code local project state
+.claude/
