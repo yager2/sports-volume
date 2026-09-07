@@ -126,6 +126,9 @@ def parse_report(path: str) -> dict:
     unknown: dict = {}
     non_sports = 0.0
 
+    all_total = 0.0          # whole Rothera book - sports + US macro + elections
+    all_notional = 0.0
+
     with open(path, newline="", encoding="utf-8") as f:
         for row in csv.DictReader(f):
             try:
@@ -137,6 +140,8 @@ def parse_report(path: str) -> dict:
             prefix = (row.get("product") or "").split("-")[0].upper()
             if not prefix:
                 continue
+            all_total += vol
+            all_notional += vol * _price(row)
             if is_non_sports(prefix):
                 non_sports += vol
                 continue
@@ -150,6 +155,8 @@ def parse_report(path: str) -> dict:
         "total_volume": total,
         "notional_est": notional,
         "non_sports_volume": non_sports,
+        "all_volume": all_total,
+        "all_notional_est": all_notional,
         "by_sport": by_sport,
         "unknown": unknown,
     }
@@ -173,6 +180,8 @@ def main():
             "date": date,
             "total_volume": round(parsed["total_volume"], 2),
             "notional_est": round(parsed["notional_est"], 2),
+            "all_volume": round(parsed["all_volume"], 2),
+            "all_notional_est": round(parsed["all_notional_est"], 2),
         })
         for sport, vol in parsed["by_sport"].items():
             sport_rows.append({"date": date, "sport": sport, "volume": round(vol, 2)})
@@ -181,7 +190,9 @@ def main():
         print(f"  {date}: {parsed['total_volume']:,.0f} contracts "
               f"(+{parsed['non_sports_volume']:,.0f} non-sports excluded)")
 
-    vc.write_csv(TOTALS_CSV, ["date", "total_volume", "notional_est"], totals_rows)
+    vc.write_csv(TOTALS_CSV,
+                 ["date", "total_volume", "notional_est", "all_volume", "all_notional_est"],
+                 totals_rows)
     vc.write_csv(BY_SPORT_CSV, ["date", "sport", "volume"], sport_rows)
     if unknown_rows:
         vc.write_csv(UNKNOWN_CSV, ["date", "prefix", "volume"], unknown_rows)

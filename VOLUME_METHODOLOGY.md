@@ -6,6 +6,25 @@ All seven pullers collect **2026-08-01 → yesterday** and refresh daily. The
 start date lives in `volume_common.py` (`START_DATE`). Earlier history is
 intentionally not collected.
 
+### Two aligned views
+
+`unified_sports_volume.py` writes two sheets, so venues can be compared on a
+like-for-like basis:
+
+- **`unified_sports_volume.csv`** — each venue's **sports** volume (single-leg +
+  parlays) + a blended combo %. Novig / DKeX / UDX are sports-only exchanges;
+  Polymarket US, Crypto.com and Rothera are the sports slice of a wider book;
+  Kalshi is its single-leg sports (candlestick method) **plus** its sports
+  parlay engine (sampled — see below).
+- **`unified_total_volume.csv`** — each venue's **whole exchange**, every
+  category. Kalshi from DeFi Rate; Polymarket US = all of QCX; Crypto.com = the
+  whole Nadex/CDNA book (events + the legacy fx / commodity / crypto binaries);
+  Rothera = sports + its US-macro / elections markets. For the three sports-only
+  exchanges this equals their sports figure.
+
+The Excel workbook (`make_excel.py`) renders these as the "Sports volume" and
+"Total exchange" tabs, plus "Parlay share" and "Notes".
+
 Each run rebuilds the whole date range and rewrites its totals CSV, so a
 backfill and a daily update are the same code path and a partial/bad day can
 never get frozen in. The report-based sources (Novig, DKeX, Polymarket US, UDX,

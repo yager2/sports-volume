@@ -150,6 +150,8 @@ def parse_report(text: str) -> dict:
     sports_total = 0.0
     combo_total = 0.0
     sports_notional = 0.0
+    all_total = 0.0          # every market on QCX, all categories
+    all_notional = 0.0
     unknown_prefixes: dict = {}
 
     for row in reader:
@@ -159,6 +161,10 @@ def parse_report(text: str) -> dict:
         prefix = (symbol.split("-")[0] if "-" in symbol else symbol).lower()
         vol_str = row.get("Trade Volume", "")
         vol = float(vol_str) if vol_str else 0.0
+
+        all_total += vol
+        if vol:
+            all_notional += vol * _price_dollars(row)
 
         if prefix in SPORTS_PREFIXES:
             sports_total += vol
@@ -177,6 +183,8 @@ def parse_report(text: str) -> dict:
         "sports_total": sports_total,
         "combo_total": combo_total,
         "sports_notional": sports_notional,
+        "all_total": all_total,
+        "all_notional": all_notional,
         "unknown_prefixes": unknown_prefixes,
     }
 
@@ -224,6 +232,8 @@ def main():
             "combo_volume": round(combo, 2),
             "combo_pct": combo_pct,
             "notional_est": round(result["sports_notional"], 2),
+            "all_volume": round(result["all_total"], 2),
+            "all_notional_est": round(result["all_notional"], 2),
         })
         for prefix, count in result["unknown_prefixes"].items():
             unknown_rows.append({"date": date, "prefix": prefix, "row_count": count})
@@ -232,7 +242,8 @@ def main():
               f"  |  notional est = {result['sports_notional']:,.0f}")
 
     vc.write_csv(TOTALS_CSV,
-                 ["date", "total_volume", "combo_volume", "combo_pct", "notional_est"],
+                 ["date", "total_volume", "combo_volume", "combo_pct", "notional_est",
+                  "all_volume", "all_notional_est"],
                  totals_rows)
     vc.write_csv(UNKNOWN_PREFIXES_CSV,
                  ["date", "prefix", "row_count"], unknown_rows)

@@ -147,6 +147,7 @@ def parse_summary(txt_path: str) -> dict:
     by_sport: dict = {}
     unknown: dict = {}
     non_sports = 0.0
+    all_classes = 0.0       # whole Nadex/CDNA book - EVENTS + fx/commodity/crypto binaries
 
     for line in lines[:end]:
         s = line.strip()
@@ -156,13 +157,14 @@ def parse_summary(txt_path: str) -> dict:
         if not m:
             continue
         _, _itype, cls, desc, vol_raw = m.groups()
-        if cls != "EVENTS":
-            continue
         try:
             vol = float(vol_raw.replace(",", ""))
         except ValueError:
             continue
         if vol == 0:
+            continue
+        all_classes += vol
+        if cls != "EVENTS":
             continue
 
         prefix = re.split(r"[-0-9]", desc, maxsplit=1)[0] or desc
@@ -185,6 +187,7 @@ def parse_summary(txt_path: str) -> dict:
         "combo_volume": combo,
         "total_volume": straight + combo,
         "non_sports_volume": non_sports,
+        "all_volume": all_classes,
         "by_sport": by_sport,
         "unknown": unknown,
     }
@@ -215,6 +218,7 @@ def main():
             "straight_volume": round(parsed["straight_volume"], 2),
             "combo_volume": round(parsed["combo_volume"], 2),
             "combo_pct": round(combo_pct, 2),
+            "all_volume": round(parsed["all_volume"], 2),
         })
         for sport, vol in parsed["by_sport"].items():
             sport_rows.append({"date": date, "sport": sport, "volume": round(vol, 2)})
@@ -222,7 +226,8 @@ def main():
             unknown_rows.append({"date": date, "prefix": pfx, "volume": round(vol, 2)})
 
     vc.write_csv(TOTALS_CSV,
-                 ["date", "total_volume", "straight_volume", "combo_volume", "combo_pct"],
+                 ["date", "total_volume", "straight_volume", "combo_volume", "combo_pct",
+                  "all_volume"],
                  totals_rows)
     vc.write_csv(BY_SPORT_CSV, ["date", "sport", "volume"], sport_rows)
     if unknown_rows:

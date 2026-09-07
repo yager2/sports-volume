@@ -33,5 +33,9 @@ date,total_contracts,total_notional_est,source
 2026-09-01,1520000000.0,421952000.0,defirate
 2026-09-02,1580000000.0,438608000.0,defirate
 2026-09-03,1540000000.0,427504000.0,defirate
+<<<<<<< HEAD
 2026-09-04,1721050019.04,477763485.29,projected
 2026-09-05,2342612096.54,650309118.0,projected
+=======
+2026-09-04,1523154175.75,422827599.19,projected
+>>>>>>> 61fd6b5 (Add Total-exchange view alongside Sports view)
