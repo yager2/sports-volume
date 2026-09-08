@@ -42,8 +42,17 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "data refresh $(date -u +'%Y-%m-%d %H:%M UTC')" || echo "nothing changed"
-          git pull --rebase --autostash || true
+          git commit -m "data refresh $(date -u +'%Y-%m-%d %H:%M UTC')" || { echo "nothing to commit"; exit 0; }
+          git fetch origin main
+          # Reapply this commit on top of whatever's on origin. If that conflicts
+          # (someone pushed code that touches the same generated files), abandon
+          # this run's commit rather than ever committing conflict markers - the
+          # data is regenerated wholesale next run anyway.
+          if ! git rebase origin/main; then
+            echo "::warning::rebase conflict - skipping commit this run, data refreshes next run"
+            git rebase --abort
+            exit 0
+          fi
           git push
 
       # --- copy outputs to Google Drive so a second computer can open them ---
