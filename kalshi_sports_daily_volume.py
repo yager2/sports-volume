@@ -79,7 +79,10 @@ def api_get(path: str, params: dict | None = None) -> dict:
                 backoff = min(backoff * 2, 60)
                 continue
             raise SystemExit(f"Kalshi API {e.code} on {url}: {e.read().decode('utf-8')[:300]}")
-        except (urllib.error.URLError, TimeoutError):
+        except (urllib.error.URLError, TimeoutError, OSError):
+            # OSError also catches ConnectionResetError/ConnectionAbortedError,
+            # which surface here (not as URLError) when the connection drops
+            # mid-read rather than at connect time.
             if attempt < 6:
                 time.sleep(backoff)
                 backoff = min(backoff * 2, 60)

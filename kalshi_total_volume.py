@@ -44,7 +44,6 @@ import json
 import os
 import re
 import sys
-import time
 import urllib.request
 from datetime import datetime, timedelta, timezone
 
@@ -128,13 +127,30 @@ def load_sports() -> dict:
 
 # ---------- category mix from a trade-feed sample ----------
 
+CATALOG_BUILT = os.path.join(HERE, "kalshi_series_catalog.built")
+
+
+def _age_days(date_str) -> float:
+    """Days since `date_str` (YYYY-MM-DD). Deliberately NOT file-mtime-based:
+    a fresh `git checkout` (every CI run) resets mtimes to "now", which would
+    make any mtime-based freshness check always look fresh and never refresh."""
+    try:
+        d = datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+    except (ValueError, TypeError):
+        return 999
+    return (datetime.now(timezone.utc) - d).total_seconds() / 86400
+
+
 def build_catalog() -> dict:
-    if os.path.exists(CATALOG_JSON) and (time.time() - os.path.getmtime(CATALOG_JSON)) / 86400 < 7:
-        return json.load(open(CATALOG_JSON, encoding="utf-8"))
+    if os.path.exists(CATALOG_JSON) and os.path.exists(CATALOG_BUILT):
+        built = open(CATALOG_BUILT, encoding="utf-8").read().strip()
+        if _age_days(built) < 7:
+            return json.load(open(CATALOG_JSON, encoding="utf-8"))
     print("Enumerating the Kalshi series catalog...")
     cat = {s["ticker"]: s.get("category", "?")
            for s in ks._paginate("/series", {"limit": 1000}, "series")}
     json.dump(cat, open(CATALOG_JSON, "w", encoding="utf-8"))
+    open(CATALOG_BUILT, "w", encoding="utf-8").write(datetime.now(timezone.utc).strftime("%Y-%m-%d"))
     return cat
 
 
@@ -236,12 +252,14 @@ def main():
     share = sum(ratios) / len(ratios) if ratios else 0.33
     print(f"  sports is ~{share * 100:.0f}% of the total (recent) -> projecting missing days from it")
 
-    fresh = (os.path.exists(MIX_JSON)
-             and (time.time() - os.path.getmtime(MIX_JSON)) / 86400 < 7
+    cached_mix = json.load(open(MIX_JSON, encoding="utf-8")) if os.path.exists(MIX_JSON) else None
+    fresh = (cached_mix is not None
+             and _age_days(cached_mix.get("as_of")) < 7
              and "--resample" not in sys.argv)
     if fresh:
-        mix = json.load(open(MIX_JSON, encoding="utf-8"))
-        print(f"  cached category mix ({mix.get('sampled_trades', 0):,} trades).")
+        mix = cached_mix
+        print(f"  cached category mix ({mix.get('sampled_trades', 0):,} trades, "
+              f"as of {mix.get('as_of')}).")
     else:
         print("Sampling the trade feed for the category mix...")
         mix = sample_mix(build_catalog())
