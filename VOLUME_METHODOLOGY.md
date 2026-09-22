@@ -32,16 +32,30 @@ Crypto.com/CDNA, Rothera) re-download the trailing `RECHECK_DAYS` (3) in case a
 report was still being finalised when first seen. Kalshi uses the immutable
 trade feed, so it only re-pulls the most recent day.
 
-## The two volume columns
+## The two volume columns: Taker Volume and Notional $
 
-Every venue here reports volume as a **count of contracts traded** — the
-standard CFTC / futures convention where a buy matched with a sell is **one**
-contract, not two. It is *not* double-counted. Each contract is a instrument
-with a **\$1 maximum payout**.
+**`*_contracts` is Taker Volume** — every venue here reports volume as a
+**count of contracts traded**, the standard CFTC / futures convention where a
+buy matched with a sell is **one** contract (the taker's fill against a resting
+maker order), not two. It is *not* double-counted, and it is *not* maker
+volume added on top — one matched trade = one unit. Each contract is an
+instrument with a **\$1 maximum payout**. This is deliberately the single
+metric used to compare venues, because it's the one thing every venue already
+publishes in the same units: Kalshi's own API calls it **"taker volume"**
+outright; the other six are CFTC-regulated DCMs whose Part 16.01 daily
+bulletins report "total volume of trading" in the identical one-sided
+convention. Nobody here is asked to compare apples to oranges.
+
+**Taker Volume is also the more exact of the two columns.** It's a straight
+sum of each venue's own reported number - no estimation anywhere, for any of
+the seven. `notional_est`, by contrast, requires a traded price, and two
+venues (UDX, Crypto.com) don't publish one - see the price-source table below.
+So Taker Volume isn't just the comparable metric, it's the one with the least
+guesswork built in.
 
 | Column | What it is | How it's computed |
 |---|---|---|
-| `*_contracts` | Contracts traded that day. Exact. This is the number the venues themselves publish as "volume". | `sum(trade volume)` straight from each venue's report / trade feed |
+| `*_contracts` (Taker Volume) | Contracts traded that day. Exact. This is the number the venues themselves publish as "volume". | `sum(trade volume)` straight from each venue's report / trade feed |
 | `*_notional_est` | Approx. **USD that actually changed hands** | `sum(contracts × traded price)` |
 
 **Why both:** a contract that trades at \$0.35 moved 35 cents, not a dollar, so
@@ -54,10 +68,69 @@ with a **\$1 maximum payout**.
   Rate, DefiLlama and Pew publish. Kalshi calls it "notional taker volume";
   Novig's `dailyVolume` is the same thing (verified: it equals `sum(qty)/2` from
   the trade file, i.e. the one-sided count = total collateral); the CFTC daily
-  reports (DKeX / Polymarket US / UDX) use the standard futures "total volume of
-  trading" — also one-sided.
+  reports (DKeX / Polymarket US / UDX / Crypto.com / Rothera) use the standard
+  futures "total volume of trading" — also one-sided.
 - `*_notional_est` — the same contracts re-weighted by their volume-weighted
   traded price (≈ USD that changed hands).
+
+### Accuracy audit (2026-09-21)
+
+Every puller's committed output was independently re-derived from a fresh pull
+of its live source and diffed against the currently-committed figures:
+
+| Venue | Result |
+|---|---|
+| Novig, DKeX, UDX, Crypto.com, Rothera, Polymarket US | **Exact match**, byte-for-byte, against a fresh re-download / the current committed data |
+| Kalshi (whole-exchange) | **Exact match** against DeFi Rate's live table for the trailing week |
+
+(An initial re-check flagged Polymarket US as mismatched; that turned out to be
+a false alarm caused by two of my own script invocations racing to write the
+same local cache file during the audit, not a real data issue — a clean,
+single re-run matched the committed figures exactly. Noted here only so it
+doesn't get "rediscovered" — it wasn't a production bug, since the real
+pipeline's `concurrency` guard prevents overlapping runs.)
+
+Two real bugs were found and fixed in the process, both the same root cause:
+
+1. **Kalshi category-mix sample** (feeds the "Combos & exotics" % and the
+   parlay estimate) checked freshness against its cache file's *modified
+   time* — which a `git checkout` resets to "now" on every single CI run, so
+   the 7-day refresh **never actually fired on GitHub**, and the sample had
+   been silently frozen at a 2026-09-02 snapshot for 19 days (`kalshi_total_volume.py`).
+   Forcing a fresh sample (now covering 2026-09-19/20, an NFL Sunday) pulled
+   **5.25M trades** vs. the old snapshot's 3.24M, and moved the parlay share
+   of Kalshi's whole exchange from **48.2% → 63.0%** of contracts. That's a
+   real, large swing, not noise from the fix itself — it's the known weakness
+   called out below (a 2-day/8-hour snapshot lands on whatever mix of
+   sports-heavy vs. quiet hours it happens to sample), just now measured on a
+   plausibly parlay-heavy weekend instead of a stale one. Net effect: Kalshi's
+   *reported single-leg* sports contracts (from the series-level pull, bug #2
+   below) are unaffected by this — this bug only moves the parlay/combo
+   add-on on top of them.
+2. **Kalshi active-series list and sports-category series cache** (which
+   series count as "Sports" and are worth pulling candlesticks for) had the
+   identical bug — `kalshi_active_series.json` and
+   `kalshi_sports_series_cache.json` are both committed to git, so their
+   mtime-based (or, for the series cache, *no-op*) freshness checks never
+   refreshed on CI either. In practice this meant any series that started
+   trading after the cache was first committed could be silently invisible to
+   the daily Kalshi sports pull - exactly the kind of gap that would make the
+   Kalshi sports figure look increasingly wrong as the season went on. Both
+   fixed to key off a recorded build date instead of file mtime
+   (`kalshi_sports_daily_volume.py`). Forcing a full rebuild found **1,810
+   active series vs. 1,547 stale-cached (+17%)**, which raised Kalshi's daily
+   *single-leg* sports contract count by roughly **0.5–7% per day** on recent
+   dates (e.g. 2026-09-18: 418.2M → 447.7M, +7.0%) once every currently-active
+   series was actually being pulled.
+
+**Known limitation, not a bug: the category-mix sample is small.** It's 2
+days × 4 one-hour windows (~5M trades) refreshed weekly, not a full-history
+computation — cheap enough to run in CI, but it means the parlay/combo % (and
+the whole-exchange notional estimate that rides on the same sample) reflects
+whatever those 8 hours looked like, not a stable weekly average. The 48%→63%
+swing above is that limitation showing up in practice. Kalshi's own
+single-leg sports total and the whole-exchange dollar total (both sourced
+independently, DeFi Rate + the per-series pull) are not affected.
 
 **What the shared definition still can't equalise: market-making.** Kalshi runs
 aggressive maker-incentive / volume-rebate programs (the CFTC issued a warning

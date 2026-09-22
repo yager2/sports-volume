@@ -2,12 +2,16 @@ name: daily-volume
 
 on:
   schedule:
-    # 10:00 UTC = 5am CDT (summer) / 4am CST (winter). GitHub cron is UTC and
-    # ignores DST; bump to "0 11 * * *" after the Nov DST change to hold 5am.
+    # 10:07 UTC ~= 5am CDT (summer) / 4am CST (winter). GitHub cron is UTC and
+    # ignores DST; bump to "7 11 * * *" after the Nov DST change to hold 5am.
+    # The :07 offset is deliberate, not a typo - GitHub's own docs warn that
+    # scheduled runs queued for the top of the hour (:00) see the worst delays
+    # under load, and this repo's runs were observed firing 2-5 hours late
+    # every day while pinned to "0 10 * * *".
     # Note: at this hour some venues' prior-day reports (esp. DKeX, which
     # finalises ~noon ET) may still be preliminary - the RECHECK_DAYS re-pull
     # corrects the trailing 3 days on the next morning's run.
-    - cron: "0 10 * * *"
+    - cron: "7 10 * * *"
   workflow_dispatch: {}        # "Run workflow" button for manual / first runs
 
 permissions:

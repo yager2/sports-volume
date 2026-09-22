@@ -60,6 +60,12 @@ SPORTS_PREFIXES = {
     # added after backfill audit:
     "aqc",   # "advance/qualify" contracts - fifa/cfb/mlb/nfl/wnba/atp/cbb (~$15M)
     "adpc",  # athlete draft-pick contracts - mlb/nba/nhl drafts (~$0.6M)
+    # added 2026-09-21 audit: e.g. "sdcnfl-nfl-atl-2026-09-13-qb-coorus" - an
+    # NFL player-prop market. Trivial volume (a few thousand contracts/week)
+    # but unambiguously sports.
+    "sdcnfl",
+    "aoc",  # e.g. "aoc-nfl-ne-sea-2026-09-09-htft-away-tie" - NFL halftime/
+            # fulltime combo outcome markets. Also trivial volume.
 }
 COMBO_PREFIX = "caoc"
 
@@ -78,11 +84,20 @@ NON_SPORTS_PREFIXES = {
     "vsc",   # US gubernatorial (~$0.2M)
     "patc",  # celebrity-attendance novelty markets (~$0.05M)
     "scc", "gsc", "nocc",  # US House / govt-shutdown / misc politics (tiny)
+    # added 2026-09-21 audit, all trivial volume (a few thousand contracts):
+    "cpoc",     # US Senate/gubernatorial races, e.g. "cpoc-ussegubc-oh-..."
+    "rotc",     # weather/temperature markets, e.g. "rotc-t-primet-...-gte80"
+    "aaagaspc", # AAA gas price contracts, e.g. "...usgas-day-...-gt4pt30"
+    "cmovcuss", # US Senate race closeness contracts
+    "cmovcusg", # US gubernatorial race closeness contracts
+    "usmayewc", # US mayoral election winner contracts
+    "ncpdc",    # cabinet/administration personnel contracts, e.g. Trump cabinet
 }
 # Prefixes still not confidently classified - not counted either way, logged
 # to polymarket_us_unknown_prefixes.csv for periodic review. (All the
 # previously-ambiguous large prefixes were resolved in the backfill audit:
-# aqc -> sports, rtc -> non-sports.)
+# aqc -> sports, rtc -> non-sports. The 2026-09-21 audit resolved 9 more small
+# ones - all under ~$0.01M combined - by inspecting example symbols directly.)
 AMBIGUOUS_PREFIXES: set = set()
 
 

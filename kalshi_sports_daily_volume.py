@@ -48,14 +48,40 @@ BASE_URL = "https://external-api.kalshi.com/trade-api/v2"
 TOTALS_CSV = os.path.join(HERE, "kalshi_sports_daily_totals.csv")
 BY_SERIES_CSV = os.path.join(HERE, "kalshi_sports_daily_by_series.csv")
 SERIES_CACHE_JSON = os.path.join(HERE, "kalshi_sports_series_cache.json")
+SERIES_CACHE_BUILT = os.path.join(HERE, "kalshi_sports_series_cache.built")
 ACTIVE_CACHE_JSON = os.path.join(HERE, "kalshi_active_series.json")
+ACTIVE_CACHE_BUILT = os.path.join(HERE, "kalshi_active_series.built")
 MARKET_CACHE_JSON = os.path.join(HERE, "kalshi_market_cache.json")
 
 ET_OFFSET = timedelta(hours=-4)  # EDT, valid for the Aug-Sep window
 HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; mention-edge data pull)"}
 DELAY = 0.15
+SERIES_CACHE_MAX_AGE_DAYS = 7
 ACTIVE_CACHE_MAX_AGE_DAYS = 7
 MARKET_CACHE_MAX_AGE_DAYS = 3
+
+
+def _age_days(date_str) -> float:
+    """Days since `date_str` (YYYY-MM-DD). NOT file-mtime-based: both
+    kalshi_sports_series_cache.json and kalshi_active_series.json are committed
+    to git, and a fresh `git checkout` (every CI run) resets mtimes to "now" -
+    an mtime check would look permanently fresh and never actually refresh.
+    That was a real bug here: the series/active caches were frozen at whatever
+    they were on first commit, silently missing any series that started
+    trading afterward (new weekly matchup series, a new sport added, etc.)."""
+    try:
+        d = datetime.strptime(date_str, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+    except (ValueError, TypeError):
+        return 999
+    return (datetime.now(timezone.utc) - d).total_seconds() / 86400
+
+
+def _read_built(marker_path: str) -> str | None:
+    return open(marker_path, encoding="utf-8").read().strip() if os.path.exists(marker_path) else None
+
+
+def _write_built(marker_path: str) -> None:
+    open(marker_path, "w", encoding="utf-8").write(datetime.now(timezone.utc).strftime("%Y-%m-%d"))
 # Skip markets below this lifetime contract volume. They are the bulk of the
 # market *count* (Kalshi lists thousands of micro player-props) but a low-single-
 # digit % of traded volume. Lower it for more completeness at the cost of a
@@ -107,8 +133,12 @@ def _paginate(path: str, params: dict, key: str):
 
 def sports_category_series() -> set[str]:
     if os.path.exists(SERIES_CACHE_JSON):
-        with open(SERIES_CACHE_JSON, "r", encoding="utf-8") as f:
-            return {s["ticker"] for s in json.load(f)}
+        built = _read_built(SERIES_CACHE_BUILT)
+        # No .built marker (pre-fix cache) is treated as stale, not fresh -
+        # forces one rebuild to start the recorded-date trail.
+        if built is not None and _age_days(built) < SERIES_CACHE_MAX_AGE_DAYS:
+            with open(SERIES_CACHE_JSON, "r", encoding="utf-8") as f:
+                return {s["ticker"] for s in json.load(f)}
     print("Discovering sports-category series (cached after this)...")
     out = [{"ticker": s["ticker"], "title": s.get("title", "")}
            for s in _paginate("/series", {"category": "Sports", "limit": 1000}, "series")]
@@ -116,13 +146,14 @@ def sports_category_series() -> set[str]:
         raise SystemExit("No series for category=Sports.")
     with open(SERIES_CACHE_JSON, "w", encoding="utf-8") as f:
         json.dump(out, f, indent=2)
+    _write_built(SERIES_CACHE_BUILT)
     return {s["ticker"] for s in out}
 
 
 def active_sports_series(force: bool = False) -> list[str]:
     if not force and os.path.exists(ACTIVE_CACHE_JSON):
-        age_days = (time.time() - os.path.getmtime(ACTIVE_CACHE_JSON)) / 86400
-        if age_days < ACTIVE_CACHE_MAX_AGE_DAYS:
+        built = _read_built(ACTIVE_CACHE_BUILT)
+        if built is not None and _age_days(built) < ACTIVE_CACHE_MAX_AGE_DAYS:
             with open(ACTIVE_CACHE_JSON, "r", encoding="utf-8") as f:
                 return json.load(f)
 
@@ -152,6 +183,7 @@ def active_sports_series(force: bool = False) -> list[str]:
     result = sorted(active)
     with open(ACTIVE_CACHE_JSON, "w", encoding="utf-8") as f:
         json.dump(result, f, indent=1)
+    _write_built(ACTIVE_CACHE_BUILT)
     return result
 
 

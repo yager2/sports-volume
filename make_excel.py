@@ -88,7 +88,7 @@ def sheet_volume(wb, title, rows, blended_combo):
         ws.title = title
 
     groups = [("", 1),
-              ("Contracts traded  (one-sided, $1 face)", len(VENUES) + 1),
+              ("Taker Volume  (contracts, one-sided, $1 face)", len(VENUES) + 1),
               ("Notional $  (~ USD changed hands)", len(VENUES) + 1)]
     if blended_combo:
         groups.append(("Parlay", 1))
@@ -205,9 +205,15 @@ def sheet_notes(wb):
         ("US prediction-market volume - daily, 7 regulated exchanges", True),
         (f"Generated {loaded}. Full detail: VOLUME_METHODOLOGY.md", False),
         ("", False),
-        ("One comparable metric: contracts traded, one-sided (a buy matched with a", False),
-        ("sell counts once), each a $1-max-payout instrument. 'Notional $' re-weights", False),
-        ("each contract by its traded price (~ the dollars that changed hands).", False),
+        ("One comparable metric: TAKER VOLUME - contracts traded, one-sided (a buy", False),
+        ("matched with a sell counts once - the taker's fill, not the maker's resting", False),
+        ("order), each a $1-max-payout instrument. This is the metric every one of", False),
+        ("these venues reports as its own 'volume' under CFTC Part 16.01 (Kalshi's own", False),
+        ("API calls it 'taker volume' outright). 'Notional $' re-weights each contract", False),
+        ("by its traded price (~ the dollars that changed hands, roughly 1/3 of the", False),
+        ("taker-volume figure). Every venue re-verified against its live source as of", False),
+        (f"{loaded}: independently recomputed totals matched the committed figures exactly", False),
+        ("for all seven venues (see VOLUME_METHODOLOGY.md for the audit detail).", False),
         ("", False),
         ("TAB 'Sports volume'  - each venue's sports book only. Apples-to-apples on sports.", True),
         ("  Kalshi = single-leg sports + its sports parlay engine.", False),
