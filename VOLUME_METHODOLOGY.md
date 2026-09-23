@@ -140,17 +140,39 @@ others. That is a genuine structural difference between the exchanges, measured
 consistently — not a counting artifact — and there is no public ex-market-maker
 number for any venue to substitute.
 
-### Where each `notional_est` price comes from
+### Where each `notional_est` price comes from — and is it legitimate?
 
-| Venue | Price source | Quality |
+Three tiers, applied consistently below:
+
+- **Real** — the venue's own actual trade or close price. As legitimate as
+  `notional_est` gets.
+- **Proxy** — a real, venue-published quote (a bid/offer or high/low), but a
+  *midpoint stand-in* for the price a trade actually filled at, because the
+  venue's report doesn't carry a realized trade-price column. Still that
+  venue's own data, just not the exact fill.
+- **Estimated** — the venue publishes **no price data of any kind**. The
+  figure is entirely borrowed: that day's contract-weighted average price
+  across the venues that *do* publish one, applied to the venue's own (real)
+  contract count. This is **not** that venue's own number and shouldn't be
+  read as one — treat it as a rough placeholder, not a fact about that venue.
+
+| Venue | Price source | Legitimacy |
 |---|---|---|
-| Kalshi | whole-exchange avg (~\$0.30) from the trade-feed sample × the daily contract total; the sports-only file uses per-candle `mean` (VWAP) | fair (total) / good (sports) |
-| Polymarket US | bid/offer midpoint per market (report has no trade-price column populated) | good |
-| Novig | per-market `close` (falls back to open, then H/L mid) | good |
-| DKeX | per-market `High Price` / `Low Price` midpoint | fair |
-| UDX | **no usable price column** (`low` is always 0). Estimated in `unified_sports_volume.py` as `udx_contracts × that day's contract-weighted average price across the priced venues.` | rough |
-| Crypto.com / CDNA | **no price in the summary section** of the bulletin. Estimated the same way as UDX (`cdna_contracts × the day's cross-venue average price`). | rough |
-| Rothera | per-market `high` / `low` midpoint from the daily report (falls back to `close`/`open`) | good |
+| Kalshi | whole-exchange total: avg price (~\$0.20–0.30, moves with the weekly sample) from the trade-feed sample × the daily contract total; the sports-only file uses per-candle `mean` (VWAP) | **Real** — actual trades, whole-exchange figure is a refreshed weekly sample rather than exhaustive |
+| Polymarket US | bid/offer midpoint per market (report has no trade-price column populated) | **Proxy** |
+| Novig | per-market `close` (falls back to open, then H/L mid) | **Real** |
+| DKeX | per-market `High Price` / `Low Price` midpoint | **Proxy** |
+| UDX | **no usable price column** (`low` is always 0). Estimated in `unified_sports_volume.py` as `udx_contracts × that day's contract-weighted average price across the priced venues.` | **Estimated — not UDX's own data** |
+| Crypto.com / CDNA | **no price in the summary section** of the bulletin. Estimated the same way as UDX (`cdna_contracts × the day's cross-venue average price`). | **Estimated — not Crypto.com's own data** |
+| Rothera | per-market `high` / `low` midpoint from the daily report (falls back to `close`/`open`) | **Proxy** |
+
+None of this touches Taker Volume (contracts) — that column is exact for all
+seven venues regardless of tier, since it's a straight sum of each venue's own
+reported trades, not derived from any price. The tiers above apply only to
+the dollar column, and are now shown directly on the dashboard (a Real /
+Proxy / Estimated pill on every venue card and a full breakdown table) and in
+the workbook (bracketed `[real]` / `[proxy]` / `[EST]` tags on the Notional $
+column headers, plus the same table on the Notes tab).
 
 Sanity check: Polymarket US `notional_est` lands around **\$37–51M/day** for
 August 2026. External estimates put the whole QCX entity (all categories) near

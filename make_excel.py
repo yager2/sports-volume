@@ -35,6 +35,15 @@ VENUES = [
     ("cdna", "Crypto.com"),
     ("rothera", "Rothera"),
 ]
+# Legitimacy of the Notional $ figure - see the "Where the $ comes from" block
+# in sheet_notes(). "real" = venue's own trade/close price. "proxy" = a real
+# quote from that venue, but a midpoint stand-in for the actual fill. "est" =
+# the venue publishes no price at all; borrowed from the other venues' average.
+PRICE_BASIS = {
+    "kalshi": "real", "polymarket_us": "proxy", "novig": "real", "dkex": "proxy",
+    "udx": "est", "cdna": "est", "rothera": "proxy",
+}
+PRICE_TAG = {"real": " [real]", "proxy": " [proxy]", "est": " [EST]"}
 # venues that run a combo / parlay product
 COMBO_VENUES = [
     ("kalshi", "Kalshi"),
@@ -51,6 +60,11 @@ PCTFMT = '0.0%'
 HEAD_FILL = PatternFill("solid", fgColor="1F2A37")
 GROUP_FONT = Font(color="FFFFFF", bold=True, size=10)
 HEAD_FONT = Font(color="FFFFFF", bold=True, size=10)
+PRICE_FONT = {
+    "real":  Font(color="8FE3A6", bold=True, size=10),   # venue's own trade/close price
+    "proxy": Font(color="F2C46B", bold=True, size=10),   # real quote, midpoint stand-in
+    "est":   Font(color="F2938C", bold=True, size=10),   # no price published - borrowed
+}
 KALSHI_FILL = PatternFill("solid", fgColor="EEF3FB")
 TOTAL_FILL = PatternFill("solid", fgColor="F2EEDF")
 THIN = Side(style="thin", color="D9DEE7")
@@ -89,7 +103,7 @@ def sheet_volume(wb, title, rows, blended_combo):
 
     groups = [("", 1),
               ("Taker Volume  (contracts, one-sided, $1 face)", len(VENUES) + 1),
-              ("Notional $  (~ USD changed hands)", len(VENUES) + 1)]
+              ("Notional $  (~ USD changed hands - real / proxy / EST, see Notes tab)", len(VENUES) + 1)]
     if blended_combo:
         groups.append(("Parlay", 1))
     c = 1
@@ -102,15 +116,17 @@ def sheet_volume(wb, title, rows, blended_combo):
             cell.alignment = Alignment(horizontal="center")
         c += span
 
-    headers = (["Date"]
-               + [n for _, n in VENUES] + ["Total"]
-               + [n for _, n in VENUES] + ["Total"])
+    contracts_headers = [n for _, n in VENUES] + ["Total"]
+    notional_headers = [n + PRICE_TAG[PRICE_BASIS[k]] for k, n in VENUES] + ["Total"]
+    headers = ["Date"] + contracts_headers + notional_headers
     if blended_combo:
         headers.append("Combo % (blended)")
+    notional_start = 1 + len(contracts_headers) + 1  # 1-based col of first notional venue
     for j, h in enumerate(headers, start=1):
         cell = ws.cell(row=2, column=j, value=h)
         cell.fill = HEAD_FILL
-        cell.font = HEAD_FONT
+        is_notional_venue = notional_start <= j < notional_start + len(VENUES)
+        cell.font = PRICE_FONT[PRICE_BASIS[VENUES[j - notional_start][0]]] if is_notional_venue else HEAD_FONT
         cell.alignment = Alignment(horizontal="center" if j > 1 else "left", wrap_text=True)
 
     r = 3
@@ -191,10 +207,11 @@ def sheet_parlay(wb, rows):
     ws.cell(row=r + 1, column=1,
             value=("Combo % = parlay volume / that venue's sports book. Kalshi's parlay is its "
                    "KXMVE multi-event engine (leg-checked ~100% sports legs despite the "
-                   "'cross-category' name), from a ~3M-trade sample scaled to the daily total; "
-                   "~62% of Kalshi's sports book by contracts, ~18% by $ (parlay legs are many "
-                   "and cheap). Not folded into the Sports tab's blended Combo % (sample-based, "
-                   "moves less day to day). Rothera runs no on-exchange parlay product."))
+                   "'cross-category' name), from a ~5M-trade sample (refreshed weekly) scaled to "
+                   "the daily total; ~70% of Kalshi's sports book by contracts, ~24% by $ (parlay "
+                   "legs are many and cheap - this sample-based split can move noticeably week to "
+                   "week, see VOLUME_METHODOLOGY.md). Not folded into the Sports tab's blended "
+                   "Combo %. Rothera runs no on-exchange parlay product."))
     ws.cell(row=r + 1, column=1).font = Font(italic=True, size=9, color="666666")
 
 
@@ -229,14 +246,61 @@ def sheet_notes(wb):
         ("", False),
         ("TAB 'Parlay share'  - per-venue combo/parlay volume and % of that venue's sports book.", True),
         ("", False),
-        ("UDX and Crypto.com have no usable price column - their Notional $ is estimated", False),
-        ("with the day's contract-weighted average price across the venues that report one.", False),
+        ("WHERE THE NOTIONAL $ FIGURE COMES FROM  - column headers above are tagged", True),
+        ("[real] / [proxy] / [EST] to match this table. Taker Volume (contracts) needs none", False),
+        ("of this - it's an exact sum of each venue's own reported trades for all seven.", False),
     ]
     for i, (text, bold) in enumerate(lines, start=1):
         cell = n.cell(row=i, column=1, value=text)
         if bold:
             cell.font = Font(bold=True, size=11)
-    n.column_dimensions["A"].width = 95
+
+    price_table = [
+        ("Venue", "Tag", "What the $ is based on"),
+        ("Kalshi", "real",
+         "Volume-weighted avg. from Kalshi's own trade feed - the sports figure prices "
+         "each series off its exact per-trade VWAP; the whole-exchange total uses a "
+         "~5M-trade sample of the public feed, refreshed weekly."),
+        ("Polymarket US", "proxy",
+         "Bid/offer midpoint per market - the daily report has no realized trade-price "
+         "column, so this is the closest published quote to a fill, not the fill itself."),
+        ("Novig", "real",
+         "Each market's actual closing trade price (falls back to open, then the "
+         "high/low midpoint)."),
+        ("DKeX", "proxy",
+         "Each market's daily High/Low midpoint - no single settlement or last-trade "
+         "price is published."),
+        ("UDX", "est",
+         "UDX publishes NO price data at all. This figure is entirely borrowed: the "
+         "day's contract-weighted average price across the venues that do publish one, "
+         "applied to UDX's own (real) contract count. Not UDX's own number."),
+        ("Crypto.com", "est",
+         "The Nadex/CDNA bulletin's summary section carries no price column either - "
+         "same cross-venue-average substitute as UDX. Not Crypto.com's own number."),
+        ("Rothera", "proxy",
+         "Each market's daily high/low midpoint (falls back to close, then open)."),
+    ]
+    start = len(lines) + 2
+    tag_font = {"real": Font(bold=True, size=10, color="1E7A3C"),
+                "proxy": Font(bold=True, size=10, color="9A6A00"),
+                "est": Font(bold=True, size=10, color="B3261E")}
+    tag_word = {"real": "REAL", "proxy": "PROXY", "est": "ESTIMATED"}
+    for i, (venue, tag, basis) in enumerate(price_table):
+        header = i == 0
+        c1 = n.cell(row=start + i, column=1, value=venue)
+        c2 = n.cell(row=start + i, column=2, value=tag_word.get(tag, tag.upper()) if not header else "Legitimacy")
+        c3 = n.cell(row=start + i, column=3, value=basis)
+        if header:
+            for cell in (c1, c2, c3):
+                cell.font = Font(bold=True, size=10, color="FFFFFF")
+                cell.fill = HEAD_FILL
+        else:
+            c1.font = Font(bold=True, size=10)
+            c2.font = tag_font[tag]
+            c3.alignment = Alignment(wrap_text=True, vertical="top")
+    n.column_dimensions["A"].width = 28
+    n.column_dimensions["B"].width = 12
+    n.column_dimensions["C"].width = 90
 
 
 def main():
