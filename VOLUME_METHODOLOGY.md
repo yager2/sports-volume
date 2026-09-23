@@ -174,6 +174,25 @@ Proxy / Estimated pill on every venue card and a full breakdown table) and in
 the workbook (bracketed `[real]` / `[proxy]` / `[EST]` tags on the Notional $
 column headers, plus the same table on the Notes tab).
 
+**A separate, smaller caveat: Kalshi's whole-exchange *contract count* is only
+~3-significant-figure precise, by construction.** This is a precision issue,
+not a legitimacy one - it still counts as "Real" above, but is worth flagging
+(2026-09-23 audit). `kalshi_daily_total.csv`'s `total_volume` comes from
+DeFi Rate's published table, and DeFi Rate itself displays the figure
+abbreviated (e.g. `$2.09B`, `$267.9M`) - Kalshi doesn't publish a whole-exchange
+total anywhere for us to get more precision from. Parsing `"2.09B"` back to a
+number gives exactly `2,090,000,000` with no way to recover the true figure to
+the dollar; verified directly against `defirate_cache.json` (e.g. 2026-09-18's
+cached value is `2089999999.9999998`, the floating-point fingerprint of
+`2.09 × 10⁹`). That's roughly **±\$5M of built-in imprecision on a
+\$1.5-3B day (~±0.2-0.4%)** - coarser than the other six venues, whose sources
+give exact per-market dollar figures. It flows into: the Kalshi row of the
+"Total exchange" tab (both contracts and \$, since \$ = contracts × price);
+and, to a much smaller degree, the "Sports volume" tab's Kalshi column, because
+the parlay/combo add-on there is `mix_parlay_pct × this same rounded total` -
+Kalshi's dominant single-leg sports figure is unaffected, since that comes
+straight from Kalshi's own per-series API pull with no DeFi Rate involved.
+
 Sanity check: Polymarket US `notional_est` lands around **\$37–51M/day** for
 August 2026. External estimates put the whole QCX entity (all categories) near
 \$1.8B/month in May 2026 and growing, of which sports is the largest slice — so

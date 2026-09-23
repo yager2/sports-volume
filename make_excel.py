@@ -260,7 +260,10 @@ def sheet_notes(wb):
         ("Kalshi", "real",
          "Volume-weighted avg. from Kalshi's own trade feed - the sports figure prices "
          "each series off its exact per-trade VWAP; the whole-exchange total uses a "
-         "~5M-trade sample of the public feed, refreshed weekly."),
+         "~5M-trade sample of the public feed, refreshed weekly. Separately: the "
+         "whole-exchange CONTRACT COUNT (not this price) comes from DeFi Rate, who "
+         "display it abbreviated (e.g. \"$2.09B\") - about +/-0.3% built-in rounding "
+         "vs. the exact per-market figures the other six venues give us."),
         ("Polymarket US", "proxy",
          "Bid/offer midpoint per market - the daily report has no realized trade-price "
          "column, so this is the closest published quote to a fill, not the fill itself."),
