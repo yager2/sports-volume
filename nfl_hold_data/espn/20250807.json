@@ -1,0 +1,35 @@
+[
+ {
+  "kickoff_utc": "2025-08-07T23:00Z",
+  "season": 2025,
+  "season_type": "pre",
+  "week": 2,
+  "away": "IND",
+  "home": "BAL",
+  "away_score": 16,
+  "home_score": 24,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-08-07T23:30Z",
+  "season": 2025,
+  "season_type": "pre",
+  "week": 2,
+  "away": "CIN",
+  "home": "PHI",
+  "away_score": 27,
+  "home_score": 34,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-08-08T02:00Z",
+  "season": 2025,
+  "season_type": "pre",
+  "week": 2,
+  "away": "LV",
+  "home": "SEA",
+  "away_score": 23,
+  "home_score": 23,
+  "final": true
+ }
+]

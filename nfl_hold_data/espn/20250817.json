@@ -1,0 +1,24 @@
+[
+ {
+  "kickoff_utc": "2025-08-17T17:00Z",
+  "season": 2025,
+  "season_type": "pre",
+  "week": 3,
+  "away": "JAX",
+  "home": "NO",
+  "away_score": 17,
+  "home_score": 17,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-08-18T00:00Z",
+  "season": 2025,
+  "season_type": "pre",
+  "week": 3,
+  "away": "BUF",
+  "home": "CHI",
+  "away_score": 0,
+  "home_score": 38,
+  "final": true
+ }
+]

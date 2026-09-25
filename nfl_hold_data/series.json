@@ -1,0 +1,533 @@
+{
+ "as_of": "2026-09-25T16:55:47.964601+00:00",
+ "series": {
+  "KXNFL1H": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "Pro Football 1st Half Winner"
+  },
+  "KXNFL1HFT": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "1st Half Fulltime Result"
+  },
+  "KXNFL1HSPREAD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "Pro Football 1st Half Spread"
+  },
+  "KXNFL1HTEAMTOTAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "Pro Football 1st Half Team Total"
+  },
+  "KXNFL1HTOTAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "Pro Football 1st  Half Total Points"
+  },
+  "KXNFL1HWINNER": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "NFL 1st Half Winner"
+  },
+  "KXNFL1Q": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "Pro Football 1st Quarter Winner"
+  },
+  "KXNFL1QBTTS": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "Pro Football Both Teams to Score in 1st Quarter"
+  },
+  "KXNFL1QSPREAD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "Pro Football 1st Quarter Spread"
+  },
+  "KXNFL1QTOTAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "Pro Football 1st Quarter Total"
+  },
+  "KXNFL1QWINNER": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "Pro Football 1st Quarter Winner"
+  },
+  "KXNFL1YDPASS": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Seattle 1 Yard Pass"
+  },
+  "KXNFL2H": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "Pro Football 2nd Half"
+  },
+  "KXNFL2HSPREAD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "Pro Football 2nd Half Spread"
+  },
+  "KXNFL2HTOTAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "Pro Football 2nd Half Total"
+  },
+  "KXNFL2HWINNER": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "NFL 2nd Half Winner"
+  },
+  "KXNFL2PTCONV": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Football 2-Point Conversions"
+  },
+  "KXNFL2Q": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "Pro Football 2nd Quarter Winner"
+  },
+  "KXNFL2QBTTS": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "Pro Football Both Teams to Score in 2nd Quarter"
+  },
+  "KXNFL2QSPREAD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "Pro Football 2nd Quarter Spread"
+  },
+  "KXNFL2QTOTAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "Pro Football 2nd Quarter Total"
+  },
+  "KXNFL2QWINNER": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "Pro Football 2nd Quarter Winner"
+  },
+  "KXNFL2TD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic_with_maker_fees",
+   "product": "player_prop",
+   "title": "Pro Football Multiple Touchdowns"
+  },
+  "KXNFL3Q": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "Pro Football 3rd Quarter Winner"
+  },
+  "KXNFL3QBTTS": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "Pro Football Both Teams to Score in 3rd Quarter"
+  },
+  "KXNFL3QSPREAD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "Pro Football 3rd Quarter Spread"
+  },
+  "KXNFL3QTOTAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "Pro Football 3rd Quarter Total"
+  },
+  "KXNFL3QWINNER": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "Pro Football 3rd Quarter Winner"
+  },
+  "KXNFL4DCONV": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Football 4th Down Conversions"
+  },
+  "KXNFL4Q": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "Pro Football 4th Quarter Winner"
+  },
+  "KXNFL4QBTTS": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "Pro Football Both Teams to Score in 4th Quarter"
+  },
+  "KXNFL4QSPREAD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "Pro Football 4th Quarter Spread"
+  },
+  "KXNFL4QTOTAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "Pro Football 4th Quarter Total"
+  },
+  "KXNFL4QWINNER": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "Pro Football 4th Quarter Winner"
+  },
+  "KXNFLANYTD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic_with_maker_fees",
+   "product": "player_prop",
+   "title": "Pro Football Anytime Touchdown"
+  },
+  "KXNFLBOTH": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Football Both Teams to Score Points"
+  },
+  "KXNFLCOMEBACK": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Football Comeback"
+  },
+  "KXNFLDSTTD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Football D/ST Touchdown"
+  },
+  "KXNFLEQBTTS": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Football Both Teams to Score in Every Quarter"
+  },
+  "KXNFLESCALATORREC": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "Receptions Escalator"
+  },
+  "KXNFLESCALATORRECYDS": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "Receiving Yards Escalator"
+  },
+  "KXNFLESCALATORRSHYDS": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "Rushing Yards Escalator"
+  },
+  "KXNFLFANTASYMOST": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "Pro Football Most Fantasy Points"
+  },
+  "KXNFLFFPTS": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "Pro Football Player Fantasy Points"
+  },
+  "KXNFLFFPTSLADDER": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "Fantasy Ladder"
+  },
+  "KXNFLFG": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Football Field Goals"
+  },
+  "KXNFLFIRSTTD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic_with_maker_fees",
+   "product": "player_prop",
+   "title": "Pro Football First Touchdown"
+  },
+  "KXNFLFIRSTTDTEAM": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Football First Team to Score a Touchdown"
+  },
+  "KXNFLFIRSTTDTIME": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Football First Touchdown Time"
+  },
+  "KXNFLGAME": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic_with_maker_fees",
+   "product": "moneyline",
+   "title": "Professional Football Game"
+  },
+  "KXNFLGAMESACK": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Football Sacks"
+  },
+  "KXNFLGAMETD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Football Touchdowns"
+  },
+  "KXNFLHIGHSCOREQ": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Football Highest Scoring Quarter"
+  },
+  "KXNFLLADDERREC": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "Receptions Ladder"
+  },
+  "KXNFLLADDERRECYDS": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "Receiving Yards Ladder"
+  },
+  "KXNFLLADDERRSHYDS": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "Rushing Yards Ladder"
+  },
+  "KXNFLLARGELEAD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Football Largest Lead"
+  },
+  "KXNFLLEADCHANGE": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Football Lead Changes"
+  },
+  "KXNFLLONGESTTD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Football Longest Touchdown"
+  },
+  "KXNFLLONGREC": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "Longest Reception"
+  },
+  "KXNFLLONGRSH": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "Longest Rush"
+  },
+  "KXNFLMOSTRECYDS": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "Pro Football Most Receiving Yards"
+  },
+  "KXNFLMOSTRSHYDS": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "Pro Football Most Rushing Yards"
+  },
+  "KXNFLNONQBPASS": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Football Non-QB Passes"
+  },
+  "KXNFLNOSCOREQ": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Football Scoreless Quarter"
+  },
+  "KXNFLOT": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Football Overtime"
+  },
+  "KXNFLPASSATT": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "Pro Football Passing Attempts"
+  },
+  "KXNFLPASSCOMP": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "Pro Football Passing Completions"
+  },
+  "KXNFLPASSINT": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "Pro Football Passing Interceptions"
+  },
+  "KXNFLPASSTDS": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "Pro Football player Passing Touchdowns"
+  },
+  "KXNFLPASSYDS": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "Pro Football Passing Yards"
+  },
+  "KXNFLREC": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "Pro Football Player Receptions"
+  },
+  "KXNFLRECYDS": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "Pro Football Receiving Yards"
+  },
+  "KXNFLROLE": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Football Role at Event"
+  },
+  "KXNFLRRYDS": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "Pro Football Rush and Receiving Yards"
+  },
+  "KXNFLRSHATT": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "Pro Football Rushing Attempts"
+  },
+  "KXNFLRSHYDS": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "Pro Football Rushing Yards"
+  },
+  "KXNFLSFTY": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Football Safety"
+  },
+  "KXNFLSHORTESTTD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Football Shortest Touchdown"
+  },
+  "KXNFLSPREAD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic_with_maker_fees",
+   "product": "spread",
+   "title": "Pro Football Spread"
+  },
+  "KXNFLTD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "Pro Football Touchdowns"
+  },
+  "KXNFLTEAMSACK": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Football Team Sacks"
+  },
+  "KXNFLTEAMTD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Football Team Touchdowns"
+  },
+  "KXNFLTEAMTOTAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Football Team Total Points"
+  },
+  "KXNFLTEAMYDS": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Football Team Yards"
+  },
+  "KXNFLTOTAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic_with_maker_fees",
+   "product": "total",
+   "title": "Pro Football Total Points"
+  },
+  "KXNFLTOTALTD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Football Total Touchdowns"
+  },
+  "KXNFLWINMARGIN": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Football Win Margin"
+  }
+ }
+}

@@ -1,0 +1,24 @@
+[
+ {
+  "kickoff_utc": "2025-08-21T23:00Z",
+  "season": 2025,
+  "season_type": "pre",
+  "week": 4,
+  "away": "PIT",
+  "home": "CAR",
+  "away_score": 19,
+  "home_score": 10,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-08-22T00:00Z",
+  "season": 2025,
+  "season_type": "pre",
+  "week": 4,
+  "away": "NE",
+  "home": "NYG",
+  "away_score": 10,
+  "home_score": 42,
+  "final": true
+ }
+]

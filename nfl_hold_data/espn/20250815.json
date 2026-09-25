@@ -1,0 +1,24 @@
+[
+ {
+  "kickoff_utc": "2025-08-15T23:00Z",
+  "season": 2025,
+  "season_type": "pre",
+  "week": 3,
+  "away": "TEN",
+  "home": "ATL",
+  "away_score": 23,
+  "home_score": 20,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-08-16T02:00Z",
+  "season": 2025,
+  "season_type": "pre",
+  "week": 3,
+  "away": "KC",
+  "home": "SEA",
+  "away_score": 16,
+  "home_score": 33,
+  "final": true
+ }
+]

@@ -1,0 +1,24 @@
+[
+ {
+  "kickoff_utc": "2025-08-10T17:00Z",
+  "season": 2025,
+  "season_type": "pre",
+  "week": 2,
+  "away": "MIA",
+  "home": "CHI",
+  "away_score": 24,
+  "home_score": 24,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-08-10T20:00Z",
+  "season": 2025,
+  "season_type": "pre",
+  "week": 2,
+  "away": "NO",
+  "home": "LAC",
+  "away_score": 13,
+  "home_score": 27,
+  "final": true
+ }
+]

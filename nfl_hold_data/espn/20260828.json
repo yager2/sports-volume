@@ -1,0 +1,112 @@
+[
+ {
+  "kickoff_utc": "2026-08-28T22:00Z",
+  "season": 2026,
+  "season_type": "pre",
+  "week": 4,
+  "away": "WSH",
+  "home": "BAL",
+  "away_score": 3,
+  "home_score": 41,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2026-08-28T23:00Z",
+  "season": 2026,
+  "season_type": "pre",
+  "week": 4,
+  "away": "ATL",
+  "home": "MIA",
+  "away_score": 17,
+  "home_score": 12,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2026-08-28T23:00Z",
+  "season": 2026,
+  "season_type": "pre",
+  "week": 4,
+  "away": "HOU",
+  "home": "CAR",
+  "away_score": 13,
+  "home_score": 16,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2026-08-28T23:30Z",
+  "season": 2026,
+  "season_type": "pre",
+  "week": 4,
+  "away": "NYG",
+  "home": "NYJ",
+  "away_score": 23,
+  "home_score": 6,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2026-08-28T23:30Z",
+  "season": 2026,
+  "season_type": "pre",
+  "week": 4,
+  "away": "TB",
+  "home": "JAX",
+  "away_score": 0,
+  "home_score": 19,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2026-08-29T00:00Z",
+  "season": 2026,
+  "season_type": "pre",
+  "week": 4,
+  "away": "NO",
+  "home": "DAL",
+  "away_score": 27,
+  "home_score": 24,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2026-08-29T00:00Z",
+  "season": 2026,
+  "season_type": "pre",
+  "week": 4,
+  "away": "ARI",
+  "home": "GB",
+  "away_score": 38,
+  "home_score": 42,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2026-08-29T00:00Z",
+  "season": 2026,
+  "season_type": "pre",
+  "week": 4,
+  "away": "SEA",
+  "home": "KC",
+  "away_score": 9,
+  "home_score": 9,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2026-08-29T00:00Z",
+  "season": 2026,
+  "season_type": "pre",
+  "week": 4,
+  "away": "CIN",
+  "home": "PHI",
+  "away_score": 30,
+  "home_score": 13,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2026-08-29T01:00Z",
+  "season": 2026,
+  "season_type": "pre",
+  "week": 4,
+  "away": "MIN",
+  "home": "DEN",
+  "away_score": 6,
+  "home_score": 34,
+  "final": true
+ }
+]

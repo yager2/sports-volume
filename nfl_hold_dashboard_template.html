@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kalshi NFL Hold</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --bg: #e9edf2; --surface: #ffffff; --surface-2: #f3f6f9; --border: #d9e0e9; --border-strong: #c3ccd8;
+  --ink: #16202c; --ink-dim: #566a7e; --ink-mute: #8494a5;
+  --accent: #96631a; --accent-ink: #ffffff; --accent-soft: #f0e6d3;
+  --pos: #0a8a12; --neg: #c33f3c; --neutral: #93a0ad;
+  --v1: #2a78d6; --v2: #eb6834; --v3: #1baf7a; --v4: #c07d00; --v5: #d95f8c; --v6: #7d5bd0;
+  --grid: #e6eaf0;
+  --shadow: 0 1px 2px rgba(20,32,44,.04), 0 8px 24px -12px rgba(20,32,44,.12);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0e151f; --surface: #161f2b; --surface-2: #1b2735; --border: #29394c; --border-strong: #3a4d63;
+    --ink: #e7eef6; --ink-dim: #93a6bb; --ink-mute: #6a7f95;
+    --accent: #d8a24a; --accent-ink: #1a1206; --accent-soft: #33291a;
+    --pos: #40ba5d; --neg: #e06b68; --neutral: #6f8195;
+    --v1: #3987e5; --v2: #d95926; --v3: #199e70; --v4: #c98500; --v5: #d55181; --v6: #8a6ae0;
+    --grid: #223142;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px -14px rgba(0,0,0,.55);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0e151f; --surface: #161f2b; --surface-2: #1b2735; --border: #29394c; --border-strong: #3a4d63;
+  --ink: #e7eef6; --ink-dim: #93a6bb; --ink-mute: #6a7f95;
+  --accent: #d8a24a; --accent-ink: #1a1206; --accent-soft: #33291a;
+  --pos: #40ba5d; --neg: #e06b68; --neutral: #6f8195;
+  --v1: #3987e5; --v2: #d95926; --v3: #199e70; --v4: #c98500; --v5: #d55181; --v6: #8a6ae0;
+  --grid: #223142;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px -14px rgba(0,0,0,.55);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
+.mono { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 16px 72px; }
+header { position: sticky; top: 0; z-index: 30; background: color-mix(in srgb, var(--bg) 90%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); }
+.headrow { max-width: 1120px; margin: 0 auto; padding: 12px 16px; display: flex; align-items: center; gap: 10px 16px; flex-wrap: wrap; }
+.brand { display: flex; align-items: baseline; gap: 10px; margin-right: auto; }
+.brand h1 { font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+.tick { font: 500 11px "IBM Plex Mono", monospace; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+.asof { font: 11.5px "IBM Plex Mono", monospace; color: var(--ink-mute); }
+.filters { max-width: 1120px; margin: 0 auto; padding: 0 16px 12px; display: flex; gap: 8px 14px; flex-wrap: wrap; align-items: center; }
+.filters label { font-size: 12px; color: var(--ink-dim); display: inline-flex; align-items: center; gap: 6px; }
+select { font: inherit; font-size: 12.5px; color: var(--ink); background: var(--surface); border: 1px solid var(--border-strong); border-radius: 7px; padding: 4px 8px; }
+.toggle { display: inline-flex; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 2px; gap: 2px; }
+.toggle button { font: inherit; font-size: 12px; font-weight: 500; cursor: pointer; border: 0; background: transparent; color: var(--ink-dim); padding: 4px 10px; border-radius: 6px; }
+.toggle button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+button:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+section { margin-top: 30px; }
+.sec-label { font: 500 11px "IBM Plex Mono", monospace; letter-spacing: .16em; text-transform: uppercase; color: var(--ink-mute); margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
+.sec-label::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+.intro { color: var(--ink-dim); font-size: 14px; max-width: 78ch; margin-top: 18px; }
+.intro b { color: var(--ink); font-weight: 600; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.tile { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; box-shadow: var(--shadow); }
+.tile .k { font-size: 12px; color: var(--ink-dim); }
+.tile .v { font-size: 28px; font-weight: 600; letter-spacing: -0.02em; margin-top: 2px; }
+.tile .s { font-size: 12px; color: var(--ink-mute); margin-top: 2px; }
+.tile .v.house { color: var(--pos); } .tile .v.public { color: var(--neg); }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 480px), 1fr)); gap: 14px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 16px 10px; box-shadow: var(--shadow); min-width: 0; }
+.card h3 { font-size: 14.5px; font-weight: 600; }
+.card .how { font-size: 12.5px; color: var(--ink-dim); margin: 3px 0 8px; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--ink-dim); margin-bottom: 4px; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+.legend i.line { height: 2px; border-radius: 1px; vertical-align: 3px; width: 14px; }
+.chart { width: 100%; }
+.chart svg { display: block; width: 100%; overflow: visible; }
+.chart text { font: 11px "IBM Plex Mono", monospace; fill: var(--ink-mute); }
+.chart text.lbl { fill: var(--ink-dim); }
+.empty { font-size: 13px; color: var(--ink-mute); padding: 30px 0; text-align: center; }
+#tip { position: fixed; pointer-events: none; z-index: 50; background: var(--surface); color: var(--ink); border: 1px solid var(--border-strong); border-radius: 8px; padding: 8px 10px; font-size: 12px; box-shadow: var(--shadow); opacity: 0; transition: opacity .08s; max-width: 280px; }
+#tip b { font-weight: 600; } #tip .r { display: flex; justify-content: space-between; gap: 14px; }
+#tip .r span:last-child { font-family: "IBM Plex Mono", monospace; }
+.tablewrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); }
+table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+th, td { padding: 7px 10px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--border); }
+th { font-weight: 500; color: var(--ink-dim); background: var(--surface-2); position: sticky; top: 0; }
+td:nth-child(-n+3), th:nth-child(-n+3) { text-align: left; }
+td { font-variant-numeric: tabular-nums; }
+.pos { color: var(--pos); } .neg { color: var(--neg); }
+.notes { font-size: 13px; color: var(--ink-dim); max-width: 80ch; }
+.notes li { margin: 6px 0 0 18px; }
+@media (max-width: 560px) { .tile .v { font-size: 24px; } }
+@media (max-width: 700px) { header { position: static; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="headrow">
+    <div class="brand"><span class="tick">Kalshi · NFL</span><h1>Taker hold tracker</h1></div>
+    <span class="asof">updated <b id="asof"></b></span>
+  </div>
+  <div class="filters">
+    <label>Season <select id="fSeason"></select></label>
+    <label>Bets
+      <span class="toggle" id="fPhase">
+        <button data-v="all" aria-pressed="true">All</button><button data-v="pre" aria-pressed="false">Pre-game</button><button data-v="live" aria-pressed="false">In-game</button>
+      </span>
+    </label>
+    <label>Product <select id="fProduct"></select></label>
+    <label><input type="checkbox" id="fPre"> include preseason</label>
+  </div>
+</header>
+
+<div class="wrap">
+  <p class="intro">Sportsbooks only reveal their <b>hold</b> (the share of bets they keep) when states publish monthly reports.
+  This page estimates it early from Kalshi: the traders who cross the spread (<b>takers</b>) behave like sportsbook customers,
+  so their loss rate is a stand-in for book hold. <b>Positive = takers lost (good for the house), shown green.</b>
+  Negative = takers won, shown red. It is directional, not exact.</p>
+
+  <section><div class="sec-label" id="latestLabel">Latest week</div><div class="tiles" id="tiles"></div></section>
+
+  <section>
+    <div class="sec-label">Week by week</div>
+    <div class="grid2">
+      <div class="card"><h3>Taker hold by week (incl. Kalshi fees)</h3>
+        <p class="how">The headline number. Each bar is how much takers lost per $100 bet that week. Green bar = house won; red bar = customers won.</p>
+        <div class="chart" id="cHold"></div></div>
+      <div class="card"><h3>Actual vs. expected hold, pre-game bets</h3>
+        <p class="how">Expected = what takers “should” have lost at closing prices. The shaded gap between the lines is luck from game results.</p>
+        <div class="legend"><span><i class="line" style="background:var(--v1)"></i>Actual</span><span><i class="line" style="background:var(--neutral)"></i>Expected</span></div>
+        <div class="chart" id="cActExp"></div></div>
+      <div class="card"><h3>Results luck by week (basis points)</h3>
+        <p class="how">Actual minus expected pre-game hold. Green = outcomes broke for the house; red = outcomes broke for the public. 100 bps = 1% of handle.</p>
+        <div class="chart" id="cLuck"></div></div>
+      <div class="card"><h3>Did the public’s side beat its price?</h3>
+        <p class="how">For every pre-game market, the side takers piled into, and whether it won more often than its closing price said. Positive (red) = a public-friendly week, which is when sportsbook parlays get hurt most.</p>
+        <div class="chart" id="cPub"></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-label">Where the money was</div>
+    <div class="grid2">
+      <div class="card"><h3>Hold by product, season to date</h3>
+        <p class="how">Same hold measure, split by what was bet. Props and spreads are where sportsbooks usually hold the most.</p>
+        <div class="chart" id="cProd"></div></div>
+      <div class="card"><h3>Hold by ticket size</h3>
+        <p class="how">Taker dollars per trade. Small tickets are the closest thing to retail sportsbook customers. Is their hold higher?</p>
+        <div class="chart" id="cBucket"></div></div>
+      <div class="card"><h3>Taker dollars by week</h3>
+        <p class="how">Volume context: how much takers bet each week, stacked by product.</p>
+        <div class="legend" id="lgVol"></div>
+        <div class="chart" id="cVol"></div></div>
+      <div class="card"><h3>Cumulative taker profit/loss ($)</h3>
+        <p class="how">Running total of what takers won (up) or lost (down) before fees, game by game.</p>
+        <div class="chart" id="cCum"></div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-label">Game results vs. prices</div>
+    <div class="grid2">
+      <div class="card"><h3>Favorites: priced vs. actual win rate</h3>
+        <p class="how">Games grouped by the favorite’s closing win probability. Dots above the diagonal = favorites won more than priced, the main driver of bad sportsbook weeks.</p>
+        <div class="chart" id="cCal"></div></div>
+      <div class="card"><h3>Favorites, spreads and totals by week</h3>
+        <p class="how">Share of games where the favorite won, the favorite covered the closing spread, and the game went over the closing total. 50% = neutral.</p>
+        <div class="legend"><span><i class="line" style="background:var(--v1)"></i>Favorite won</span><span><i class="line" style="background:var(--v2)"></i>Favorite covered</span><span><i class="line" style="background:var(--v3)"></i>Over hit</span></div>
+        <div class="chart" id="cFactors"></div></div>
+    </div>
+  </section>
+
+  <section><div class="sec-label">Games</div><div class="tablewrap"><table id="tGames"></table></div></section>
+
+  <section><div class="sec-label">How to read this</div>
+    <ul class="notes">
+      <li><b>Taker</b> = the side of a Kalshi trade that crossed the spread (hit an existing order). Treated as the “customer”.</li>
+      <li><b>Hold incl. fees</b> = −(taker profit − taker fees) ÷ taker dollars. It’s the closest match to a sportsbook’s hold, since the book keeps both the customer’s losses and its vig.</li>
+      <li><b>Expected hold</b> uses closing prices (the final 30 minutes before kickoff) instead of results, so it only exists for pre-game bets.</li>
+      <li>Voided markets (inactive player, postponed game) and negotiated block trades are left out.</li>
+      <li>Kalshi’s NFL mix (lots of in-game trading, few parlays here) differs from a sportsbook’s, so read direction and size of swings, not exact levels. Parlays are tracked separately later.</li>
+    </ul>
+  </section>
+</div>
+<div id="tip" role="tooltip"></div>
+
+<script>
+const DATA = /*__DATA__*/null;
+const PRODUCTS = ["moneyline", "spread", "total", "player_prop", "period", "game_prop"];
+const PNAME = {moneyline: "Moneyline", spread: "Spread", total: "Total", player_prop: "Player props", period: "Halves/quarters", game_prop: "Other game props"};
+const PCOLOR = {moneyline: "--v1", spread: "--v2", total: "--v3", player_prop: "--v4", period: "--v5", game_prop: "--v6"};
+const BUCKETS = [["a:<$25", "< $25"], ["b:$25-100", "$25–100"], ["c:$100-1k", "$100–1k"], ["d:>$1k", "> $1k"]];
+const C = {}; // column index into g.p values
+DATA.prod_cols.forEach((k, i) => C[k] = i);
+
+const state = {season: null, phase: "all", product: "all", preseason: false};
+const $ = id => document.getElementById(id);
+const cssv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const pct = (x, d = 1) => x == null || !isFinite(x) ? "–" : (x * 100).toFixed(d) + "%";
+const pctT = (v, step) => pct(v, Math.max(0, Math.ceil(-Math.log10(step * 100 * 1.0001))));
+const bps = x => x == null || !isFinite(x) ? "–" : (x > 0 ? "+" : "") + Math.round(x);
+const usd = x => { if (x == null) return "–"; const a = Math.abs(x), s = x < 0 ? "−$" : "$";
+  return a >= 1e9 ? s + (a / 1e9).toFixed(2) + "B" : a >= 1e6 ? s + (a / 1e6).toFixed(1) + "M" : a >= 1e3 ? s + (a / 1e3).toFixed(0) + "K" : s + a.toFixed(0); };
+
+// ---------- aggregation ----------
+function sumGames(games, phase = state.phase, product = state.product) {
+  const t = {notional: 0, pnl: 0, taker_fee: 0, maker_fee: 0, exp_notional: 0, exp_pnl: 0, pub_w: 0, pub_hit: 0, pub_q: 0, trades: 0};
+  for (const g of games) for (const [k, v] of Object.entries(g.p)) {
+    const [p, ph] = k.split("|");
+    if (product !== "all" && p !== product) continue;
+    if (phase !== "all" && ph !== phase) continue;
+    for (const c in t) t[c] += v[C[c]];
+  }
+  t.hold = t.notional ? -t.pnl / t.notional : null;
+  t.holdF = t.notional ? -(t.pnl - t.taker_fee) / t.notional : null;
+  t.exp = t.exp_notional ? -t.exp_pnl / t.exp_notional : null;
+  t.pub = t.pub_w ? (t.pub_hit - t.pub_q) / t.pub_w : null;
+  return t;
+}
+function filtered() {
+  return DATA.games.filter(g => (state.season === "all" || String(g.season) === state.season) && (state.preseason || g.season_type !== "pre"));
+}
+function byWeek(games) {
+  const m = new Map();
+  for (const g of games) { if (!m.has(g.week_label)) m.set(g.week_label, []); m.get(g.week_label).push(g); }
+  return [...m.entries()].map(([label, gs]) => ({label, short: label.replace(/^\d{4} /, ""), games: gs}));
+}
+const mean = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
+
+// ---------- tooltip ----------
+const tip = $("tip");
+function showTip(html, ev) {
+  tip.innerHTML = html; tip.style.opacity = 1;
+  const r = tip.getBoundingClientRect(); let x = ev.clientX + 14, y = ev.clientY + 14;
+  if (x + r.width > innerWidth - 8) x = ev.clientX - r.width - 14;
+  if (y + r.height > innerHeight - 8) y = ev.clientY - r.height - 14;
+  tip.style.left = x + "px"; tip.style.top = y + "px";
+}
+const hideTip = () => tip.style.opacity = 0;
+const row = (k, v) => `<div class="r"><span>${k}</span><span>${v}</span></div>`;
+
+// ---------- SVG chart ----------
+const NS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, parent) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+function niceTicks(lo, hi, n = 4) {
+  if (lo === hi) { lo -= 1; hi += 1; }
+  const step0 = (hi - lo) / n, mag = Math.pow(10, Math.floor(Math.log10(step0))), f = step0 / mag;
+  const step = (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10) * mag;
+  const ticks = []; for (let v = Math.floor(lo / step) * step; v <= hi + step * 1e-9; v += step) ticks.push(+v.toFixed(12));
+  return ticks;
+}
+/* spec: {labels, series:[{name,color,values,kind:'bar'|'line'}], stacked, signColor, band:[i,j], yFmt, tipFmt(i), height, yDomain} */
+function chart(host, spec) {
+  host.innerHTML = "";
+  const n = spec.labels.length;
+  if (!n) { host.innerHTML = '<div class="empty">No games in this selection yet.</div>'; return; }
+  const W = Math.max(host.clientWidth, 280), H = spec.height || 220, m = {t: 10, r: 8, b: 26, l: 54};
+  const svg = el("svg", {viewBox: `0 0 ${W} ${H}`, height: H, role: "img", "aria-label": spec.aria || ""}, host);
+  let vals = [];
+  if (spec.stacked) for (let i = 0; i < n; i++) vals.push(spec.series.reduce((s, se) => s + (se.values[i] || 0), 0));
+  else spec.series.forEach(s => s.values.forEach(v => v != null && vals.push(v)));
+  let lo = Math.min(0, ...vals), hi = Math.max(0, ...vals);
+  if (spec.yDomain) [lo, hi] = spec.yDomain;
+  const ticks = niceTicks(lo, hi); lo = Math.min(lo, ticks[0]); hi = Math.max(hi, ticks[ticks.length - 1]);
+  const pw = W - m.l - m.r, ph = H - m.t - m.b, band = pw / n;
+  const y = v => m.t + ph - (v - lo) / (hi - lo || 1) * ph, xc = i => m.l + band * (i + .5);
+  for (const t of ticks) {
+    el("line", {x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), stroke: cssv(t === 0 ? "--border-strong" : "--grid"), "stroke-width": 1}, svg);
+    el("text", {x: m.l - 6, y: y(t) + 3.5, "text-anchor": "end"}, svg).textContent = spec.yFmt(t, ticks[1] - ticks[0]);
+  }
+  const every = Math.ceil(n / Math.max(1, Math.floor(pw / 64)));
+  spec.labels.forEach((l, i) => { if (i % every === 0 || i === n - 1 && n < 30) el("text", {x: xc(i), y: H - 8, "text-anchor": "middle", class: "lbl"}, svg).textContent = l; });
+  const bars = spec.series.filter(s => s.kind !== "line"), lines = spec.series.filter(s => s.kind === "line");
+  const bw = Math.max(3, Math.min(34, band * (spec.stacked ? .62 : .62 / Math.max(1, bars.length))));
+  if (spec.band && lines.length >= 2) {
+    const a = lines[spec.band[0]].values, b = lines[spec.band[1]].values;
+    for (let i = 0; i < n - 1; i++) {
+      if ([a[i], b[i], a[i + 1], b[i + 1]].some(v => v == null)) continue;
+      el("path", {d: `M${xc(i)},${y(a[i])}L${xc(i + 1)},${y(a[i + 1])}L${xc(i + 1)},${y(b[i + 1])}L${xc(i)},${y(b[i])}Z`,
+        fill: cssv(((a[i] - b[i]) + (a[i + 1] - b[i + 1])) >= 0 ? "--pos" : "--neg"), opacity: .14}, svg);
+    }
+  }
+  if (spec.stacked) {
+    for (let i = 0; i < n; i++) { let acc = 0;
+      bars.forEach(s => { const v = s.values[i] || 0; if (!v) return; const y0 = y(acc), y1 = y(acc + v);
+        el("rect", {x: xc(i) - bw / 2, y: y1, width: bw, height: Math.max(0, y0 - y1 - 2), fill: cssv(s.color), rx: 2}, svg); acc += v; }); }
+  } else bars.forEach((s, si) => s.values.forEach((v, i) => {
+    if (v == null) return; const x = xc(i) - bw * bars.length / 2 + si * bw;
+    const top = Math.min(y(v), y(0)), h = Math.max(1, Math.abs(y(v) - y(0)));
+    const col = spec.signColor ? cssv(v >= 0 ? spec.signColor[0] : spec.signColor[1]) : cssv(s.color);
+    el("rect", {x: x + 1, y: top, width: Math.max(1, bw - 2), height: h, fill: col, rx: Math.min(4, bw / 3)}, svg);
+  }));
+  lines.forEach(s => {
+    let d = "", pen = false;
+    s.values.forEach((v, i) => { if (v == null) { pen = false; return; } d += (pen ? "L" : "M") + xc(i) + "," + y(v); pen = true; });
+    el("path", {d, fill: "none", stroke: cssv(s.color), "stroke-width": 2, "stroke-linejoin": "round"}, svg);
+    if (n <= 40) s.values.forEach((v, i) => v != null && el("circle", {cx: xc(i), cy: y(v), r: 3.5, fill: cssv(s.color), stroke: cssv("--surface"), "stroke-width": 2}, svg));
+  });
+  const hover = el("line", {y1: m.t, y2: m.t + ph, stroke: cssv("--border-strong"), "stroke-width": 1, opacity: 0}, svg);
+  for (let i = 0; i < n; i++) {
+    const r = el("rect", {x: m.l + band * i, y: m.t, width: band, height: ph, fill: "transparent", tabindex: 0}, svg);
+    const on = ev => { hover.setAttribute("x1", xc(i)); hover.setAttribute("x2", xc(i)); hover.setAttribute("opacity", lines.length ? 1 : 0);
+      const e = ev.clientX ? ev : {clientX: r.getBoundingClientRect().x + band / 2, clientY: r.getBoundingClientRect().y};
+      showTip(spec.tipFmt(i), e); };
+    r.addEventListener("mousemove", on); r.addEventListener("focus", on);
+    r.addEventListener("mouseleave", () => { hideTip(); hover.setAttribute("opacity", 0); }); r.addEventListener("blur", hideTip);
+  }
+}
+function scatterCal(host, pts) {
+  host.innerHTML = "";
+  if (!pts.length) { host.innerHTML = '<div class="empty">No games in this selection yet.</div>'; return; }
+  const W = Math.max(host.clientWidth, 280), H = 240, m = {t: 10, r: 10, b: 30, l: 46};
+  const svg = el("svg", {viewBox: `0 0 ${W} ${H}`, height: H, role: "img", "aria-label": "Favorite calibration"}, host);
+  const pw = W - m.l - m.r, ph = H - m.t - m.b, x = v => m.l + (v - .5) / .5 * pw, y = v => m.t + ph - v * ph;
+  for (const t of [0, .25, .5, .75, 1]) { el("line", {x1: m.l, x2: W - m.r, y1: y(t), y2: y(t), stroke: cssv("--grid")}, svg);
+    el("text", {x: m.l - 6, y: y(t) + 3.5, "text-anchor": "end"}, svg).textContent = pct(t, 0); }
+  for (const t of [.5, .6, .7, .8, .9, 1]) el("text", {x: x(t), y: H - 10, "text-anchor": "middle", class: "lbl"}, svg).textContent = pct(t, 0);
+  el("line", {x1: x(.5), y1: y(.5), x2: x(1), y2: y(1), stroke: cssv("--neutral"), "stroke-width": 1.5}, svg);
+  const maxN = Math.max(...pts.map(p => p.n));
+  for (const p of pts) {
+    const c = el("circle", {cx: x(p.implied), cy: y(p.actual), r: 5 + 7 * Math.sqrt(p.n / maxN), fill: cssv(p.actual >= p.implied ? "--neg" : "--pos"), stroke: cssv("--surface"), "stroke-width": 2, tabindex: 0}, svg);
+    const h = ev => showTip(`<b>Favorites priced ${p.label}</b>${row("Games", p.n)}${row("Priced to win", pct(p.implied))}${row("Actually won", pct(p.actual))}`, ev.clientX ? ev : {clientX: c.getBoundingClientRect().x, clientY: c.getBoundingClientRect().y});
+    c.addEventListener("mousemove", h); c.addEventListener("focus", h); c.addEventListener("mouseleave", hideTip); c.addEventListener("blur", hideTip);
+  }
+}
+
+// ---------- render ----------
+function render() {
+  const games = filtered(), weeks = byWeek(games), phaseName = {all: "all bets", pre: "pre-game bets", live: "in-game bets"}[state.phase];
+  const prodName = state.product === "all" ? "all products" : PNAME[state.product];
+  // tiles
+  const last = weeks[weeks.length - 1], tiles = $("tiles");
+  if (!last) { tiles.innerHTML = '<div class="empty">No games in this selection yet.</div>'; }
+  else {
+    const w = sumGames(last.games), pre = sumGames(last.games, "pre"), std = sumGames(games);
+    const fav = last.games.filter(g => g.fav_won != null), ov = last.games.filter(g => g.over_hit != null);
+    const favW = fav.reduce((s, g) => s + g.fav_won, 0), favImp = mean(fav.map(g => g.fav_prob));
+    const luck = pre.hold != null && pre.exp != null ? (pre.hold - pre.exp) * 1e4 : null;
+    $("latestLabel").textContent = `Latest week · ${last.label} · ${last.games.length} games · ${prodName}`;
+    const t = (k, v, s, cls = "") => `<div class="tile"><div class="k">${k}</div><div class="v ${cls}">${v}</div><div class="s">${s}</div></div>`;
+    const cls = x => x == null ? "" : x >= 0 ? "house" : "public";
+    tiles.innerHTML =
+      t(`Taker hold, ${phaseName}`, pct(w.holdF), `incl. fees on ${usd(w.notional)} · season ${pct(std.holdF)}`, cls(w.holdF)) +
+      t("Results luck, pre-game", bps(luck) + " bps", `actual ${pct(pre.hold)} vs expected ${pct(pre.exp, 2)}`, cls(luck)) +
+      t("Public side vs. its price", pre.pub == null ? "–" : (pre.pub > 0 ? "+" : "") + (pre.pub * 100).toFixed(1) + " pts", pre.pub == null ? "" : pre.pub > 0 ? "public-friendly week" : "house-friendly week", cls(pre.pub == null ? null : -pre.pub)) +
+      t("Favorites", fav.length ? `${favW}–${fav.length - favW}` : "–", fav.length ? `won ${pct(favW / fav.length, 0)} vs ${pct(favImp, 0)} priced` : "") +
+      t("Overs", ov.length ? `${ov.filter(g => g.over_hit).length} of ${ov.length}` : "–", ov.length ? `avg ${(mean(last.games.filter(g => g.total_pts != null && g.total_line != null).map(g => g.total_pts - g.total_line)) || 0).toFixed(1)} pts vs closing total` : "");
+  }
+  const labels = weeks.map(w => w.short);
+  const W = weeks.map(w => ({w, s: sumGames(w.games), pre: sumGames(w.games, "pre")}));
+  const holdTip = i => { const {w, s} = W[i]; return `<b>${w.label}</b>${row("Games", w.games.length)}${row("Taker $", usd(s.notional))}${row("Taker P&L", usd(s.pnl))}${row("Hold", pct(s.hold, 2))}${row("Hold incl. fees", pct(s.holdF, 2))}`; };
+  chart($("cHold"), {labels, series: [{name: "Hold", values: W.map(x => x.s.holdF)}], signColor: ["--pos", "--neg"], yFmt: pctT, tipFmt: holdTip, aria: "Weekly taker hold"});
+  chart($("cActExp"), {labels, series: [{name: "Actual", color: "--v1", kind: "line", values: W.map(x => x.pre.hold)}, {name: "Expected", color: "--neutral", kind: "line", values: W.map(x => x.pre.exp)}],
+    band: [0, 1], yFmt: pctT, aria: "Actual vs expected pre-game hold",
+    tipFmt: i => `<b>${W[i].w.label}</b>${row("Actual", pct(W[i].pre.hold, 2))}${row("Expected", pct(W[i].pre.exp, 2))}${row("Pre-game taker $", usd(W[i].pre.notional))}`});
+  const luck = W.map(x => x.pre.hold != null && x.pre.exp != null ? (x.pre.hold - x.pre.exp) * 1e4 : null);
+  chart($("cLuck"), {labels, series: [{name: "Luck", values: luck}], signColor: ["--pos", "--neg"], yFmt: v => Math.round(v), aria: "Results luck",
+    tipFmt: i => `<b>${W[i].w.label}</b>${row("Luck", bps(luck[i]) + " bps")}${row("", luck[i] >= 0 ? "results favored the house" : "results favored the public")}`});
+  const pub = W.map(x => x.pre.pub);
+  chart($("cPub"), {labels, series: [{name: "Public edge", values: pub}], signColor: ["--neg", "--pos"], yFmt: (v, s) => (v * 100).toFixed(Math.max(0, Math.ceil(-Math.log10(s * 100)))), aria: "Public side vs price",
+    tipFmt: i => `<b>${W[i].w.label}</b>${row("Public side won vs priced", pub[i] == null ? "–" : ((pub[i] > 0 ? "+" : "") + (pub[i] * 100).toFixed(1) + " pts"))}`});
+  // products
+  const prods = PRODUCTS.map(p => ({p, s: sumGames(games, state.phase, p)})).filter(x => x.s.notional > 0);
+  chart($("cProd"), {labels: prods.map(x => PNAME[x.p].replace("Other game props", "Other").replace("Halves/quarters", "Halves/Qs")), series: [{values: prods.map(x => x.s.holdF)}],
+    signColor: ["--pos", "--neg"], yFmt: pctT, aria: "Hold by product",
+    tipFmt: i => `<b>${PNAME[prods[i].p]}</b>${row("Taker $", usd(prods[i].s.notional))}${row("Hold incl. fees", pct(prods[i].s.holdF, 2))}${row("Share of $", pct(prods[i].s.notional / (sumGames(games, state.phase, "all").notional || 1)))}`});
+  // buckets (all products)
+  const bk = BUCKETS.map(([k, name]) => { let d = 0, pnl = 0, f = 0;
+    for (const g of games) for (const [kk, v] of Object.entries(g.b)) { const [ph, b] = kk.split("|"); if (b !== k || (state.phase !== "all" && ph !== state.phase)) continue; d += v[0]; pnl += v[1]; f += v[2]; }
+    return {name, d, h: d ? -(pnl - f) / d : null}; });
+  chart($("cBucket"), {labels: bk.map(b => b.name), series: [{values: bk.map(b => b.h)}], signColor: ["--pos", "--neg"], yFmt: pctT, aria: "Hold by ticket size",
+    tipFmt: i => `<b>Tickets ${bk[i].name}</b>${row("Taker $", usd(bk[i].d))}${row("Hold incl. fees", pct(bk[i].h, 2))}${state.product !== "all" ? row("", "all products") : ""}`});
+  // volume
+  const vs = PRODUCTS.filter(p => state.product === "all" || p === state.product);
+  $("lgVol").innerHTML = vs.map(p => `<span><i style="background:var(${PCOLOR[p]})"></i>${PNAME[p]}</span>`).join("");
+  const vol = vs.map(p => ({name: PNAME[p], color: PCOLOR[p], values: weeks.map(w => sumGames(w.games, state.phase, p).notional)}));
+  chart($("cVol"), {labels, series: vol, stacked: true, yFmt: usd, aria: "Taker dollars by week",
+    tipFmt: i => `<b>${weeks[i].label}</b>` + vol.map(s => row(s.name, usd(s.values[i]))).join("") + row("Total", usd(vol.reduce((a, s) => a + s.values[i], 0)))});
+  // cumulative by game day
+  const days = new Map(); for (const g of games) { if (!days.has(g.date)) days.set(g.date, []); days.get(g.date).push(g); }
+  const dl = [...days.keys()].sort(); let run = 0;
+  const cum = dl.map(d => (run += sumGames(days.get(d)).pnl));
+  chart($("cCum"), {labels: dl.map(d => d.slice(5)), series: [{name: "Cumulative", color: "--v1", kind: "line", values: cum}], yFmt: usd, aria: "Cumulative taker P&L",
+    tipFmt: i => `<b>${dl[i]}</b>${row("Games", days.get(dl[i]).length)}${row("That day", usd(sumGames(days.get(dl[i])).pnl))}${row("Running total", usd(cum[i]))}`});
+  // calibration
+  const cal = [];
+  for (let lo = .5; lo < 1; lo += .1) { const gs = games.filter(g => g.fav_prob != null && g.fav_won != null && g.fav_prob >= lo && g.fav_prob < lo + .1 + 1e-9);
+    if (gs.length) cal.push({label: `${Math.round(lo * 100)}–${Math.round(lo * 100 + 10)}%`, n: gs.length, implied: mean(gs.map(g => g.fav_prob)), actual: mean(gs.map(g => g.fav_won))}); }
+  scatterCal($("cCal"), cal);
+  const fr = (gs, k) => { const v = gs.filter(g => g[k] != null).map(g => g[k]); return v.length ? mean(v) : null; };
+  const F = weeks.map(w => [fr(w.games, "fav_won"), fr(w.games, "fav_covered"), fr(w.games, "over_hit")]);
+  chart($("cFactors"), {labels, yDomain: [0, 1], yFmt: pctT, aria: "Favorites, covers, overs by week",
+    series: [["Favorite won", "--v1"], ["Favorite covered", "--v2"], ["Over hit", "--v3"]].map(([name, color], j) => ({name, color, kind: "line", values: F.map(f => f[j])})),
+    tipFmt: i => `<b>${weeks[i].label}</b>${row("Favorites won", pct(F[i][0], 0))}${row("Favorites covered", pct(F[i][1], 0))}${row("Overs", pct(F[i][2], 0))}`});
+  // table
+  const sorted = [...games].sort((a, b) => b.date.localeCompare(a.date));
+  const cl = x => x == null ? "" : x >= 0 ? "pos" : "neg";
+  $("tGames").innerHTML = `<thead><tr><th>Date</th><th>Game</th><th>Week</th><th>Score</th><th>Taker $</th><th>Hold incl. fees</th><th>Pre-game luck</th><th>Public side</th><th>Fav (close)</th><th>Fav won / covered</th><th>Total vs line</th></tr></thead><tbody>` +
+    sorted.map(g => { const s = sumGames([g]), p = sumGames([g], "pre"), lk = p.hold != null && p.exp != null ? (p.hold - p.exp) * 1e4 : null;
+      return `<tr><td>${g.date}</td><td>${g.away} @ ${g.home}</td><td>${g.week_label.replace(/^\d{4} /, "")}</td><td>${g.away_score ?? "–"}–${g.home_score ?? "–"}</td><td>${usd(s.notional)}</td>
+      <td class="${cl(s.holdF)}">${pct(s.holdF)}</td><td class="${cl(lk)}">${bps(lk)}</td><td class="${cl(p.pub == null ? null : -p.pub)}">${p.pub == null ? "–" : (p.pub > 0 ? "+" : "") + (p.pub * 100).toFixed(1)}</td>
+      <td>${g.fav ?? "–"} ${pct(g.fav_prob, 0)}</td><td>${g.fav_won == null ? "–" : g.fav_won ? "W" : "L"} / ${g.fav_covered == null ? "–" : g.fav_covered ? "✓" : "✗"}</td>
+      <td>${g.total_pts ?? "–"} vs ${g.total_line ?? "–"}</td></tr>`; }).join("") + "</tbody>";
+}
+
+// ---------- filters ----------
+function init() {
+  $("asof").textContent = DATA.generated_utc;
+  const seasons = [...new Set(DATA.games.map(g => String(g.season)))].sort().reverse();
+  $("fSeason").innerHTML = seasons.map(s => `<option value="${s}">${s}</option>`).join("") + `<option value="all">All seasons</option>`;
+  state.season = seasons[0] || "all";
+  $("fProduct").innerHTML = `<option value="all">All products</option>` + PRODUCTS.map(p => `<option value="${p}">${PNAME[p]}</option>`).join("");
+  $("fSeason").onchange = e => { state.season = e.target.value; render(); };
+  $("fProduct").onchange = e => { state.product = e.target.value; render(); };
+  $("fPre").onchange = e => { state.preseason = e.target.checked; render(); };
+  $("fPhase").querySelectorAll("button").forEach(b => b.onclick = () => {
+    $("fPhase").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); state.phase = b.dataset.v; render(); });
+  render();
+  let t; addEventListener("resize", () => { clearTimeout(t); t = setTimeout(render, 150); });
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", render);
+}
+init();
+</script>
+</body>
+</html>

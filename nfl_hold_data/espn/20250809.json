@@ -1,0 +1,90 @@
+[
+ {
+  "kickoff_utc": "2025-08-09T17:00Z",
+  "season": 2025,
+  "season_type": "pre",
+  "week": 2,
+  "away": "NYG",
+  "home": "BUF",
+  "away_score": 34,
+  "home_score": 25,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-08-09T20:00Z",
+  "season": 2025,
+  "season_type": "pre",
+  "week": 2,
+  "away": "HOU",
+  "home": "MIN",
+  "away_score": 10,
+  "home_score": 20,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-08-09T23:00Z",
+  "season": 2025,
+  "season_type": "pre",
+  "week": 2,
+  "away": "DAL",
+  "home": "LAR",
+  "away_score": 21,
+  "home_score": 31,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-08-09T23:00Z",
+  "season": 2025,
+  "season_type": "pre",
+  "week": 2,
+  "away": "PIT",
+  "home": "JAX",
+  "away_score": 31,
+  "home_score": 25,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-08-09T23:30Z",
+  "season": 2025,
+  "season_type": "pre",
+  "week": 2,
+  "away": "TEN",
+  "home": "TB",
+  "away_score": 7,
+  "home_score": 29,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-08-10T00:00Z",
+  "season": 2025,
+  "season_type": "pre",
+  "week": 2,
+  "away": "NYJ",
+  "home": "GB",
+  "away_score": 30,
+  "home_score": 10,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-08-10T00:00Z",
+  "season": 2025,
+  "season_type": "pre",
+  "week": 2,
+  "away": "KC",
+  "home": "ARI",
+  "away_score": 17,
+  "home_score": 20,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-08-10T00:30Z",
+  "season": 2025,
+  "season_type": "pre",
+  "week": 2,
+  "away": "DEN",
+  "home": "SF",
+  "away_score": 30,
+  "home_score": 9,
+  "final": true
+ }
+]

@@ -1,0 +1,24 @@
+[
+ {
+  "kickoff_utc": "2026-01-17T21:30Z",
+  "season": 2025,
+  "season_type": "post",
+  "week": 2,
+  "away": "BUF",
+  "home": "DEN",
+  "away_score": 30,
+  "home_score": 33,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2026-01-18T01:00Z",
+  "season": 2025,
+  "season_type": "post",
+  "week": 2,
+  "away": "SF",
+  "home": "SEA",
+  "away_score": 6,
+  "home_score": 41,
+  "final": true
+ }
+]

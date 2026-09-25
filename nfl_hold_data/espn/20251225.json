@@ -1,0 +1,35 @@
+[
+ {
+  "kickoff_utc": "2025-12-25T18:00Z",
+  "season": 2025,
+  "season_type": "reg",
+  "week": 17,
+  "away": "DAL",
+  "home": "WSH",
+  "away_score": 30,
+  "home_score": 23,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-12-25T21:30Z",
+  "season": 2025,
+  "season_type": "reg",
+  "week": 17,
+  "away": "DET",
+  "home": "MIN",
+  "away_score": 10,
+  "home_score": 23,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-12-26T01:15Z",
+  "season": 2025,
+  "season_type": "reg",
+  "week": 17,
+  "away": "DEN",
+  "home": "KC",
+  "away_score": 20,
+  "home_score": 13,
+  "final": true
+ }
+]

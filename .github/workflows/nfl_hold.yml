@@ -1,0 +1,69 @@
+name: nfl-hold
+
+on:
+  schedule:
+    # 11:17 UTC = 6:17am CDT (summer) / 5:17am CST after the Nov DST change.
+    # Daily covers every NFL slot: Sunday games land Monday morning, MNF on
+    # Tuesday, TNF on Friday. :17 avoids GitHub's top-of-hour queue delays
+    # (see daily.yml).
+    - cron: "17 11 * * *"
+  workflow_dispatch: {}        # "Run workflow" button for manual runs
+
+permissions:
+  contents: write             # commit refreshed nfl_hold files back to the repo
+
+concurrency:
+  group: nfl-hold
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      RCLONE_CONF: ${{ secrets.RCLONE_CONF }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Python deps
+        run: pip install --quiet openpyxl requests
+
+      - name: Pull newly finished games
+        # A stuck connection has been seen locally (one pull sat idle 40+ min).
+        # Cap the pull so the report + commit still run; finished games are
+        # already saved and anything left is picked up tomorrow.
+        run: timeout 80m python nfl_hold.py
+        continue-on-error: true   # a Kalshi/ESPN hiccup shouldn't block rebuilding from what we have
+
+      - name: Rebuild report
+        run: python nfl_hold_report.py
+
+      - name: Commit refreshed data
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add nfl_hold_data nfl_hold.xlsx nfl_hold_*.csv nfl_hold_dashboard.html
+          git commit -m "nfl hold refresh $(date -u +'%Y-%m-%d %H:%M UTC')" || { echo "nothing to commit"; exit 0; }
+          git fetch origin main
+          if ! git rebase origin/main; then
+            echo "::warning::rebase conflict - skipping commit this run, data refreshes next run"
+            git rebase --abort
+            exit 0
+          fi
+          git push
+
+      - name: Push to Google Drive
+        if: ${{ env.RCLONE_CONF != '' }}
+        run: |
+          curl -fsSL https://rclone.org/install.sh | sudo bash
+          mkdir -p ~/.config/rclone
+          printf '%s' "$RCLONE_CONF" > ~/.config/rclone/rclone.conf
+          for f in nfl_hold.xlsx nfl_hold_dashboard.html nfl_hold_by_game.csv NFL_HOLD_METHODOLOGY.md; do
+            [ -f "$f" ] && rclone copy "$f" gdrive:SportsVolume --no-traverse
+          done

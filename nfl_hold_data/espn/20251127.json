@@ -1,0 +1,35 @@
+[
+ {
+  "kickoff_utc": "2025-11-27T18:00Z",
+  "season": 2025,
+  "season_type": "reg",
+  "week": 13,
+  "away": "GB",
+  "home": "DET",
+  "away_score": 31,
+  "home_score": 24,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-11-27T21:30Z",
+  "season": 2025,
+  "season_type": "reg",
+  "week": 13,
+  "away": "KC",
+  "home": "DAL",
+  "away_score": 28,
+  "home_score": 31,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-11-28T01:20Z",
+  "season": 2025,
+  "season_type": "reg",
+  "week": 13,
+  "away": "CIN",
+  "home": "BAL",
+  "away_score": 32,
+  "home_score": 14,
+  "final": true
+ }
+]

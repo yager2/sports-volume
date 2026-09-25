@@ -1,0 +1,35 @@
+[
+ {
+  "kickoff_utc": "2026-08-14T23:00Z",
+  "season": 2026,
+  "season_type": "pre",
+  "week": 2,
+  "away": "DEN",
+  "home": "ATL",
+  "away_score": 27,
+  "home_score": 7,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2026-08-14T23:00Z",
+  "season": 2026,
+  "season_type": "pre",
+  "week": 2,
+  "away": "TB",
+  "home": "NYJ",
+  "away_score": 24,
+  "home_score": 16,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2026-08-14T23:00Z",
+  "season": 2026,
+  "season_type": "pre",
+  "week": 2,
+  "away": "MIA",
+  "home": "WSH",
+  "away_score": 7,
+  "home_score": 20,
+  "final": true
+ }
+]

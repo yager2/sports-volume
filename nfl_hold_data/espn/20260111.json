@@ -1,0 +1,35 @@
+[
+ {
+  "kickoff_utc": "2026-01-11T18:00Z",
+  "season": 2025,
+  "season_type": "post",
+  "week": 1,
+  "away": "BUF",
+  "home": "JAX",
+  "away_score": 27,
+  "home_score": 24,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2026-01-11T21:30Z",
+  "season": 2025,
+  "season_type": "post",
+  "week": 1,
+  "away": "SF",
+  "home": "PHI",
+  "away_score": 23,
+  "home_score": 19,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2026-01-12T01:15Z",
+  "season": 2025,
+  "season_type": "post",
+  "week": 1,
+  "away": "LAC",
+  "home": "NE",
+  "away_score": 3,
+  "home_score": 16,
+  "final": true
+ }
+]

@@ -1,0 +1,24 @@
+[
+ {
+  "kickoff_utc": "2026-01-10T21:30Z",
+  "season": 2025,
+  "season_type": "post",
+  "week": 1,
+  "away": "LAR",
+  "home": "CAR",
+  "away_score": 34,
+  "home_score": 31,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2026-01-11T01:00Z",
+  "season": 2025,
+  "season_type": "post",
+  "week": 1,
+  "away": "GB",
+  "home": "CHI",
+  "away_score": 27,
+  "home_score": 31,
+  "final": true
+ }
+]

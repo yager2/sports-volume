@@ -1,0 +1,123 @@
+[
+ {
+  "kickoff_utc": "2025-10-26T17:00Z",
+  "season": 2025,
+  "season_type": "reg",
+  "week": 8,
+  "away": "MIA",
+  "home": "ATL",
+  "away_score": 34,
+  "home_score": 10,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-10-26T17:00Z",
+  "season": 2025,
+  "season_type": "reg",
+  "week": 8,
+  "away": "NYJ",
+  "home": "CIN",
+  "away_score": 39,
+  "home_score": 38,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-10-26T17:00Z",
+  "season": 2025,
+  "season_type": "reg",
+  "week": 8,
+  "away": "CLE",
+  "home": "NE",
+  "away_score": 13,
+  "home_score": 32,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-10-26T17:00Z",
+  "season": 2025,
+  "season_type": "reg",
+  "week": 8,
+  "away": "NYG",
+  "home": "PHI",
+  "away_score": 20,
+  "home_score": 38,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-10-26T17:00Z",
+  "season": 2025,
+  "season_type": "reg",
+  "week": 8,
+  "away": "BUF",
+  "home": "CAR",
+  "away_score": 40,
+  "home_score": 9,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-10-26T17:00Z",
+  "season": 2025,
+  "season_type": "reg",
+  "week": 8,
+  "away": "CHI",
+  "home": "BAL",
+  "away_score": 16,
+  "home_score": 30,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-10-26T17:00Z",
+  "season": 2025,
+  "season_type": "reg",
+  "week": 8,
+  "away": "SF",
+  "home": "HOU",
+  "away_score": 15,
+  "home_score": 26,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-10-26T20:05Z",
+  "season": 2025,
+  "season_type": "reg",
+  "week": 8,
+  "away": "TB",
+  "home": "NO",
+  "away_score": 23,
+  "home_score": 3,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-10-26T20:25Z",
+  "season": 2025,
+  "season_type": "reg",
+  "week": 8,
+  "away": "DAL",
+  "home": "DEN",
+  "away_score": 24,
+  "home_score": 44,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-10-26T20:25Z",
+  "season": 2025,
+  "season_type": "reg",
+  "week": 8,
+  "away": "TEN",
+  "home": "IND",
+  "away_score": 14,
+  "home_score": 38,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-10-27T00:20Z",
+  "season": 2025,
+  "season_type": "reg",
+  "week": 8,
+  "away": "GB",
+  "home": "PIT",
+  "away_score": 35,
+  "home_score": 25,
+  "final": true
+ }
+]

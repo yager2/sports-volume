@@ -1,0 +1,24 @@
+[
+ {
+  "kickoff_utc": "2026-08-21T00:00Z",
+  "season": 2026,
+  "season_type": "pre",
+  "week": 3,
+  "away": "LV",
+  "home": "HOU",
+  "away_score": 22,
+  "home_score": 20,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2026-08-21T02:00Z",
+  "season": 2026,
+  "season_type": "pre",
+  "week": 3,
+  "away": "SF",
+  "home": "LAC",
+  "away_score": 41,
+  "home_score": 17,
+  "final": true
+ }
+]

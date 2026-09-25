@@ -1,0 +1,134 @@
+[
+ {
+  "kickoff_utc": "2025-11-02T18:00Z",
+  "season": 2025,
+  "season_type": "reg",
+  "week": 9,
+  "away": "CHI",
+  "home": "CIN",
+  "away_score": 47,
+  "home_score": 42,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-11-02T18:00Z",
+  "season": 2025,
+  "season_type": "reg",
+  "week": 9,
+  "away": "MIN",
+  "home": "DET",
+  "away_score": 27,
+  "home_score": 24,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-11-02T18:00Z",
+  "season": 2025,
+  "season_type": "reg",
+  "week": 9,
+  "away": "CAR",
+  "home": "GB",
+  "away_score": 16,
+  "home_score": 13,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-11-02T18:00Z",
+  "season": 2025,
+  "season_type": "reg",
+  "week": 9,
+  "away": "LAC",
+  "home": "TEN",
+  "away_score": 27,
+  "home_score": 20,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-11-02T18:00Z",
+  "season": 2025,
+  "season_type": "reg",
+  "week": 9,
+  "away": "ATL",
+  "home": "NE",
+  "away_score": 23,
+  "home_score": 24,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-11-02T18:00Z",
+  "season": 2025,
+  "season_type": "reg",
+  "week": 9,
+  "away": "SF",
+  "home": "NYG",
+  "away_score": 34,
+  "home_score": 24,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-11-02T18:00Z",
+  "season": 2025,
+  "season_type": "reg",
+  "week": 9,
+  "away": "IND",
+  "home": "PIT",
+  "away_score": 20,
+  "home_score": 27,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-11-02T18:00Z",
+  "season": 2025,
+  "season_type": "reg",
+  "week": 9,
+  "away": "DEN",
+  "home": "HOU",
+  "away_score": 18,
+  "home_score": 15,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-11-02T21:05Z",
+  "season": 2025,
+  "season_type": "reg",
+  "week": 9,
+  "away": "JAX",
+  "home": "LV",
+  "away_score": 30,
+  "home_score": 29,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-11-02T21:05Z",
+  "season": 2025,
+  "season_type": "reg",
+  "week": 9,
+  "away": "NO",
+  "home": "LAR",
+  "away_score": 10,
+  "home_score": 34,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-11-02T21:25Z",
+  "season": 2025,
+  "season_type": "reg",
+  "week": 9,
+  "away": "KC",
+  "home": "BUF",
+  "away_score": 21,
+  "home_score": 28,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-11-03T01:20Z",
+  "season": 2025,
+  "season_type": "reg",
+  "week": 9,
+  "away": "SEA",
+  "home": "WSH",
+  "away_score": 38,
+  "home_score": 14,
+  "final": true
+ }
+]

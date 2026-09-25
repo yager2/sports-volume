@@ -1,0 +1,35 @@
+[
+ {
+  "kickoff_utc": "2025-08-08T23:00Z",
+  "season": 2025,
+  "season_type": "pre",
+  "week": 2,
+  "away": "DET",
+  "home": "ATL",
+  "away_score": 17,
+  "home_score": 10,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-08-08T23:00Z",
+  "season": 2025,
+  "season_type": "pre",
+  "week": 2,
+  "away": "CLE",
+  "home": "CAR",
+  "away_score": 30,
+  "home_score": 10,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-08-08T23:30Z",
+  "season": 2025,
+  "season_type": "pre",
+  "week": 2,
+  "away": "WSH",
+  "home": "NE",
+  "away_score": 18,
+  "home_score": 48,
+  "final": true
+ }
+]

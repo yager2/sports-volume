@@ -1,0 +1,24 @@
+[
+ {
+  "kickoff_utc": "2025-10-13T23:15Z",
+  "season": 2025,
+  "season_type": "reg",
+  "week": 6,
+  "away": "BUF",
+  "home": "ATL",
+  "away_score": 14,
+  "home_score": 24,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-10-14T00:15Z",
+  "season": 2025,
+  "season_type": "reg",
+  "week": 6,
+  "away": "CHI",
+  "home": "WSH",
+  "away_score": 25,
+  "home_score": 24,
+  "final": true
+ }
+]

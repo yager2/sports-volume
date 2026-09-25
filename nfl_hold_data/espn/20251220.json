@@ -1,0 +1,24 @@
+[
+ {
+  "kickoff_utc": "2025-12-20T22:00Z",
+  "season": 2025,
+  "season_type": "reg",
+  "week": 16,
+  "away": "PHI",
+  "home": "WSH",
+  "away_score": 29,
+  "home_score": 18,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-12-21T01:20Z",
+  "season": 2025,
+  "season_type": "reg",
+  "week": 16,
+  "away": "GB",
+  "home": "CHI",
+  "away_score": 16,
+  "home_score": 22,
+  "final": true
+ }
+]

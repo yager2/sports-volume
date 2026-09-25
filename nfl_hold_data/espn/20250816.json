@@ -1,0 +1,123 @@
+[
+ {
+  "kickoff_utc": "2025-08-16T17:00Z",
+  "season": 2025,
+  "season_type": "pre",
+  "week": 3,
+  "away": "MIA",
+  "home": "DET",
+  "away_score": 24,
+  "home_score": 17,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-08-16T17:00Z",
+  "season": 2025,
+  "season_type": "pre",
+  "week": 3,
+  "away": "GB",
+  "home": "IND",
+  "away_score": 23,
+  "home_score": 19,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-08-16T17:00Z",
+  "season": 2025,
+  "season_type": "pre",
+  "week": 3,
+  "away": "NE",
+  "home": "MIN",
+  "away_score": 20,
+  "home_score": 12,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-08-16T17:00Z",
+  "season": 2025,
+  "season_type": "pre",
+  "week": 3,
+  "away": "CLE",
+  "home": "PHI",
+  "away_score": 22,
+  "home_score": 13,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-08-16T17:00Z",
+  "season": 2025,
+  "season_type": "pre",
+  "week": 3,
+  "away": "CAR",
+  "home": "HOU",
+  "away_score": 3,
+  "home_score": 20,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-08-16T20:05Z",
+  "season": 2025,
+  "season_type": "pre",
+  "week": 3,
+  "away": "SF",
+  "home": "LV",
+  "away_score": 22,
+  "home_score": 19,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-08-16T23:00Z",
+  "season": 2025,
+  "season_type": "pre",
+  "week": 3,
+  "away": "BAL",
+  "home": "DAL",
+  "away_score": 31,
+  "home_score": 13,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-08-16T23:00Z",
+  "season": 2025,
+  "season_type": "pre",
+  "week": 3,
+  "away": "LAC",
+  "home": "LAR",
+  "away_score": 22,
+  "home_score": 23,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-08-16T23:00Z",
+  "season": 2025,
+  "season_type": "pre",
+  "week": 3,
+  "away": "NYJ",
+  "home": "NYG",
+  "away_score": 12,
+  "home_score": 31,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-08-16T23:00Z",
+  "season": 2025,
+  "season_type": "pre",
+  "week": 3,
+  "away": "TB",
+  "home": "PIT",
+  "away_score": 17,
+  "home_score": 14,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-08-17T01:30Z",
+  "season": 2025,
+  "season_type": "pre",
+  "week": 3,
+  "away": "ARI",
+  "home": "DEN",
+  "away_score": 7,
+  "home_score": 27,
+  "final": true
+ }
+]

@@ -1,0 +1,24 @@
+[
+ {
+  "kickoff_utc": "2025-09-29T23:15Z",
+  "season": 2025,
+  "season_type": "reg",
+  "week": 4,
+  "away": "NYJ",
+  "home": "MIA",
+  "away_score": 21,
+  "home_score": 27,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-09-30T00:15Z",
+  "season": 2025,
+  "season_type": "reg",
+  "week": 4,
+  "away": "CIN",
+  "home": "DEN",
+  "away_score": 3,
+  "home_score": 28,
+  "final": true
+ }
+]

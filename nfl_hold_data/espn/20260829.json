@@ -1,0 +1,24 @@
+[
+ {
+  "kickoff_utc": "2026-08-29T17:00Z",
+  "season": 2026,
+  "season_type": "pre",
+  "week": 4,
+  "away": "DET",
+  "home": "IND",
+  "away_score": 25,
+  "home_score": 16,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2026-08-29T22:00Z",
+  "season": 2026,
+  "season_type": "pre",
+  "week": 4,
+  "away": "CHI",
+  "home": "TEN",
+  "away_score": 24,
+  "home_score": 15,
+  "final": true
+ }
+]

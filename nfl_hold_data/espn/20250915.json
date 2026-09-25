@@ -1,0 +1,24 @@
+[
+ {
+  "kickoff_utc": "2025-09-15T23:00Z",
+  "season": 2025,
+  "season_type": "reg",
+  "week": 2,
+  "away": "TB",
+  "home": "HOU",
+  "away_score": 20,
+  "home_score": 19,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2025-09-16T02:00Z",
+  "season": 2025,
+  "season_type": "reg",
+  "week": 2,
+  "away": "LAC",
+  "home": "LV",
+  "away_score": 20,
+  "home_score": 9,
+  "final": true
+ }
+]

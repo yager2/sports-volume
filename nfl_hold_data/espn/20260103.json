@@ -1,0 +1,24 @@
+[
+ {
+  "kickoff_utc": "2026-01-03T21:30Z",
+  "season": 2025,
+  "season_type": "reg",
+  "week": 18,
+  "away": "CAR",
+  "home": "TB",
+  "away_score": 14,
+  "home_score": 16,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2026-01-04T01:00Z",
+  "season": 2025,
+  "season_type": "reg",
+  "week": 18,
+  "away": "SEA",
+  "home": "SF",
+  "away_score": 13,
+  "home_score": 3,
+  "final": true
+ }
+]
