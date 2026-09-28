@@ -1,0 +1,156 @@
+[
+ {
+  "kickoff_utc": "2026-09-27T17:00Z",
+  "season": 2026,
+  "season_type": "reg",
+  "week": 3,
+  "away": "LAC",
+  "home": "BUF",
+  "away_score": 16,
+  "home_score": 24,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2026-09-27T17:00Z",
+  "season": 2026,
+  "season_type": "reg",
+  "week": 3,
+  "away": "CAR",
+  "home": "CLE",
+  "away_score": 18,
+  "home_score": 21,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2026-09-27T17:00Z",
+  "season": 2026,
+  "season_type": "reg",
+  "week": 3,
+  "away": "NYJ",
+  "home": "DET",
+  "away_score": 24,
+  "home_score": 31,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2026-09-27T17:00Z",
+  "season": 2026,
+  "season_type": "reg",
+  "week": 3,
+  "away": "HOU",
+  "home": "IND",
+  "away_score": 17,
+  "home_score": 19,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2026-09-27T17:00Z",
+  "season": 2026,
+  "season_type": "reg",
+  "week": 3,
+  "away": "KC",
+  "home": "MIA",
+  "away_score": 24,
+  "home_score": 10,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2026-09-27T17:00Z",
+  "season": 2026,
+  "season_type": "reg",
+  "week": 3,
+  "away": "TEN",
+  "home": "NYG",
+  "away_score": 7,
+  "home_score": 12,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2026-09-27T17:00Z",
+  "season": 2026,
+  "season_type": "reg",
+  "week": 3,
+  "away": "CIN",
+  "home": "PIT",
+  "away_score": 27,
+  "home_score": 30,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2026-09-27T17:00Z",
+  "season": 2026,
+  "season_type": "reg",
+  "week": 3,
+  "away": "SEA",
+  "home": "WSH",
+  "away_score": 31,
+  "home_score": 33,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2026-09-27T17:00Z",
+  "season": 2026,
+  "season_type": "reg",
+  "week": 3,
+  "away": "NE",
+  "home": "JAX",
+  "away_score": 6,
+  "home_score": 35,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2026-09-27T20:05Z",
+  "season": 2026,
+  "season_type": "reg",
+  "week": 3,
+  "away": "ARI",
+  "home": "SF",
+  "away_score": 30,
+  "home_score": 36,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2026-09-27T20:05Z",
+  "season": 2026,
+  "season_type": "reg",
+  "week": 3,
+  "away": "MIN",
+  "home": "TB",
+  "away_score": 23,
+  "home_score": 16,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2026-09-27T20:25Z",
+  "season": 2026,
+  "season_type": "reg",
+  "week": 3,
+  "away": "BAL",
+  "home": "DAL",
+  "away_score": 34,
+  "home_score": 31,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2026-09-27T20:25Z",
+  "season": 2026,
+  "season_type": "reg",
+  "week": 3,
+  "away": "LV",
+  "home": "NO",
+  "away_score": 35,
+  "home_score": 27,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2026-09-28T00:20Z",
+  "season": 2026,
+  "season_type": "reg",
+  "week": 3,
+  "away": "LAR",
+  "home": "DEN",
+  "away_score": 26,
+  "home_score": 30,
+  "final": true
+ }
+]
