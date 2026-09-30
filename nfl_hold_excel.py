@@ -7,6 +7,7 @@ Tabs:
   - "By game"            one row per game
   - "By game x product"  one row per game and product
   - "By ticket size"     hold by taker $-per-trade bucket, per season and phase
+  - "Parlays"            weekly NFL parlay hold (all-NFL and NFL+other), by legs
   - "Sportsbook compare" Kalshi hold by calendar month next to blank columns
                          for state-reported sportsbook football hold (paste in)
   - "Charts"             native Excel charts: weekly actual vs expected, luck
@@ -104,9 +105,11 @@ WEEK_SPEC = [
     ("Fav win rate", "fav_win_rate", PCT, 9), ("Fav implied", "fav_implied", PCT, 9),
     ("Fav cover rate", "fav_cover_rate", PCT, 9), ("Over rate", "over_rate", PCT, 9),
     ("Pts vs closing total", "pts_vs_total_line", "0.0", 10),
+    ("Parlay $ (est.)", "parlay_taker_dollars_est", USD, 14), ("Parlay hold incl. fees", "parlay_hold_incl_fees", PCT2, 11),
+    ("Parlay hit rate", "parlay_hit_rate", PCT2, 9),
     ("Void $ (excluded)", "void_dollars", USD, 12), ("Block $ (excluded)", "block_dollars", USD, 12),
 ]
-GREEN_RED = {"Hold incl. fees (all)", "Hold (all)", "Pre-game hold", "In-game hold", "Luck (bps)", "Hold incl. fees", "Hold"}
+GREEN_RED = {"Parlay hold incl. fees", "Hold incl. fees (all)", "Hold (all)", "Pre-game hold", "In-game hold", "Luck (bps)", "Hold incl. fees", "Hold"}
 
 
 def sheet_dashboard(wb, summary, weekly_rows):
@@ -187,6 +190,22 @@ def sheet_buckets(wb, summary):
         ("Season", "season", None, 8), ("Bets", "phase", None, 10), ("Taker $ per trade", "bucket", None, 12),
         ("Taker $", "n", USD, 16), ("Taker P&L", "pnl", USD, 14), ("Hold incl. fees", "hf", PCT2, 11), ("Hold", "h", PCT2, 10),
     ], green_red=GREEN_RED)
+
+
+def sheet_parlays(wb, summary):
+    ws = wb.create_sheet("Parlays")
+    ws["A1"] = ("Kalshi parlays with NFL legs. $ are ESTIMATES: 10 of every 60 minutes of the trade feed are "
+                "sampled and scaled x6; hold % is computed directly from the sampled trades. "
+                "'nfl' = every leg NFL; 'nfl_mixed' = some legs from other sports. Only fully-settled days count.")
+    ws["A1"].font = Font(italic=True, size=9, color="666666")
+    rows = sorted(summary.get("parlays") or [], key=lambda r: (r["category"], r["legs"] != "all"))
+    _table(ws, rows, [
+        ("Week", "week_label", None, 14), ("Type", "category", None, 10), ("Legs", "legs", None, 7),
+        ("Parlay stakes (est.)", "taker_dollars_est", USD, 15), ("Cash-out $ (est.)", "cashout_dollars_est", USD, 13), ("Hold incl. fees", "hold_incl_fees", PCT2, 11),
+        ("Hold", "hold", PCT2, 10), ("Fair hold if legs independent", "exp_hold_indep_legs", PCT2, 13),
+        ("Hit rate", "hit_rate", PCT2, 9), ("Parlays sampled", "parlays_sampled", INT, 10),
+        ("Trades sampled", "sampled_trades", INT, 10), ("Pre-game share", "pre_share", PCT, 9),
+    ], start_row=3, green_red=GREEN_RED | {"Hold incl. fees"})
 
 
 def sheet_compare(wb, summary, pasted: dict):
@@ -312,6 +331,7 @@ def build(game_rows, gp_rows, weekly_rows, summary):
     sheet_games(wb, game_rows)
     sheet_game_product(wb, gp_rows)
     sheet_buckets(wb, summary)
+    sheet_parlays(wb, summary)
     sheet_compare(wb, summary, pasted)
     sheet_charts(wb, weekly_rows)
     sheet_notes(wb, summary, game_rows)

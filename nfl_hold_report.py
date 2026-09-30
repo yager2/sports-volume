@@ -49,6 +49,8 @@ GAMES_GLOB = os.path.join(HERE, "nfl_hold_data", "games", "*", "*.json.gz")
 BY_GAME_CSV = os.path.join(HERE, "nfl_hold_by_game.csv")
 BY_GAME_PRODUCT_CSV = os.path.join(HERE, "nfl_hold_by_game_product.csv")
 WEEKLY_CSV = os.path.join(HERE, "nfl_hold_weekly.csv")
+PARLAYS_CSV = os.path.join(HERE, "nfl_hold_parlays_weekly.csv")
+PARLAY_GLOB = os.path.join(HERE, "nfl_hold_data", "parlays", "????-??-??.json.gz")
 SUMMARY_JSON = os.path.join(HERE, "nfl_hold_data", "summary.json")
 TEMPLATE_HTML = os.path.join(HERE, "nfl_hold_dashboard_template.html")
 DASHBOARD_HTML = os.path.join(HERE, "nfl_hold_dashboard.html")
@@ -335,6 +337,78 @@ def build_summary(per_game, pick, row_for, weekly_rows, game_rows):
     }
 
 
+# ---------- parlays (from nfl_parlays.py) ----------
+
+def load_parlays(game_rows):
+    """Weekly parlay rollup from the sampled trade-day files.
+
+    Only COMPLETE trade days count: a losing parlay settles the moment one leg
+    misses, a winner waits for its last leg - so a half-settled day would look
+    better for the house than it really is.
+    """
+    days = []
+    for p in sorted(glob.glob(PARLAY_GLOB)):
+        try:
+            days.append(json.load(gzip.open(p, "rt", encoding="utf-8")))
+        except (OSError, ValueError):
+            continue
+    game_dates = sorted({(g["date"], g["week_label"], g["season_type"]) for g in game_rows})
+
+    def week_of(date):
+        if date == "?" or not game_dates:
+            return None, None
+        best = min(game_dates, key=lambda x: abs((datetime.fromisoformat(x[0]) - datetime.fromisoformat(date)).days))
+        return best[1], best[2]
+
+    acc = defaultdict(lambda: defaultdict(float))
+    skipped = 0
+    for d in days:
+        if not d.get("complete"):
+            skipped += 1
+            continue
+        f = d["sample_frac"]
+        for cat, legs, date, phase, side, b, n, c, dol, pnl, fee, ed, ep in d["rows"]:
+            wk, st = week_of(date)
+            if wk is None:
+                continue
+            for key in ((wk, st, cat, "all"), (wk, st, cat, legs)):
+                a = acc[key]
+                a["sampled_trades"] += n
+                # Sportsbook-style: handle = tickets bought (YES side); cash-outs
+                # (NO-side trades) are payouts that reduce the house's win.
+                a["stakes"] += dol / f if side == "yes" else 0
+                a["taker_dollars"] += dol / f
+                a["taker_pnl"] += pnl / f
+                a["taker_fee"] += fee / f
+                if side == "yes":
+                    a["exp_dollars"] += ed / f
+                    a["exp_pnl"] += ep / f
+                    a["pre_dollars"] += dol / f if phase == "pre" else 0
+        for cat, legs, date, n, won in d["tickets"]:
+            wk, st = week_of(date)
+            if wk is None:
+                continue
+            for key in ((wk, st, cat, "all"), (wk, st, cat, legs)):
+                acc[key]["parlays_sampled"] += n
+                acc[key]["parlays_won"] += won
+    order = {g[1]: i for i, g in enumerate(game_dates)}
+    rows = []
+    for (wk, st, cat, legs), a in sorted(acc.items(), key=lambda kv: (order.get(kv[0][0], 0), kv[0][2], kv[0][3])):
+        n = a["stakes"]
+        rows.append({
+            "week_label": wk, "season_type": st, "category": cat, "legs": legs,
+            "taker_dollars_est": round(n, 2), "cashout_dollars_est": round(a["taker_dollars"] - n, 2),
+            "sampled_trades": int(a["sampled_trades"]),
+            "hold": _r(-a["taker_pnl"] / n if n else None),
+            "hold_incl_fees": _r(-(a["taker_pnl"] - a["taker_fee"]) / n if n else None),
+            "exp_hold_indep_legs": _r(-a["exp_pnl"] / a["exp_dollars"] if a["exp_dollars"] else None),
+            "pre_share": _r(a["pre_dollars"] / n if n else None),
+            "parlays_sampled": int(a["parlays_sampled"]),
+            "hit_rate": _r(a["parlays_won"] / a["parlays_sampled"] if a["parlays_sampled"] else None),
+        })
+    return rows, skipped
+
+
 # ---------- writers ----------
 
 def write_csv(path, rows):
@@ -369,7 +443,18 @@ def main():
     game_rows, gp_rows, weekly_rows, summary = rollup(games)
     write_csv(BY_GAME_CSV, game_rows)
     write_csv(BY_GAME_PRODUCT_CSV, gp_rows)
+    parlay_rows, skipped = load_parlays(game_rows)
+    by_week = {r["week_label"]: r for r in parlay_rows if r["category"] == "nfl" and r["legs"] == "all"}
+    for w in weekly_rows:
+        pr = by_week.get(w["week_label"], {})
+        w["parlay_taker_dollars_est"] = pr.get("taker_dollars_est")
+        w["parlay_hold_incl_fees"] = pr.get("hold_incl_fees")
+        w["parlay_hit_rate"] = pr.get("hit_rate")
+    summary["parlays"] = parlay_rows
     write_csv(WEEKLY_CSV, weekly_rows)
+    write_csv(PARLAYS_CSV, parlay_rows)
+    if skipped:
+        print(f"  ({skipped} parlay trade day(s) not fully settled yet - left out)")
     os.makedirs(os.path.dirname(SUMMARY_JSON), exist_ok=True)
     json.dump(summary, open(SUMMARY_JSON, "w", encoding="utf-8"), separators=(",", ":"))
     write_dashboard(summary)
@@ -381,7 +466,9 @@ def main():
     for w in weekly_rows[-6:]:
         print(f"  {w['week_label']:14s} games {w['games']:2d}  taker ${w['all_taker_dollars']:>14,.0f}  "
               f"hold {_pct(w['all_hold_incl_fees'])} (incl fees)  pre: actual {_pct(w['pre_hold'])} "
-              f"exp {_pct(w['pre_exp_hold'])} luck {w['pre_luck_bps']} bps  public edge {_pct(w['pre_public_edge'])}")
+              f"exp {_pct(w['pre_exp_hold'])} luck {w['pre_luck_bps']} bps  public edge {_pct(w['pre_public_edge'])}"
+              + (f"  | parlays ${w['parlay_taker_dollars_est']:,.0f} est, hold {_pct(w['parlay_hold_incl_fees'])}"
+                 if w.get("parlay_taker_dollars_est") else ""))
 
 
 def _pct(x):

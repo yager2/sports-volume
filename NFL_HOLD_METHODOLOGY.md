@@ -41,9 +41,45 @@ Products, reported separately and never blended with parlays:
 | period | `KXNFL1H`, `KXNFL1HSPREAD`, `KXNFL1QTOTAL`, ... |
 | game_prop | `KXNFLOT`, `KXNFLWINMARGIN`, `KXNFLTEAMTOTAL`, `KXNFLFG`, ... |
 
-**Parlays aren't included yet.** That covers `KXNFLCOMBO`, `KXNFLPREPACK` and
-the cross-game `KXMVE*` parlay engine. They're the next phase, reported
-separately, and the place where sportsbook hold is really made.
+**Parlays are reported separately** (see "Parlays" below) and never blended
+into the straight-bet numbers.
+
+## Parlays (`nfl_parlays.py`)
+
+Kalshi parlays (`KXMVE*`, plus `KXNFLCOMBO` / `KXNFLPREPACK`) are one market
+per ticket, created when a customer asks for a price. Each market lists its
+legs (`mve_selected_legs`), and every leg is a market the straight tracker
+already follows.
+
+- **Source: the exchange-wide trade feed, sampled.** It's the only exact
+  record of what each customer paid, but it covers every product (~15M
+  trades/day). We read **10 minutes of every hour**, and the sampled minutes
+  shift each hour so kickoff rushes aren't always in or always out. Dollar
+  totals are scaled ×6. Hold % comes straight from the sampled trades, which
+  on an NFL Sunday is 200k+ NFL parlay trades.
+- **Why not a shortcut?** Reading each parlay market's size and last price
+  (no trades) was tested against exact trades on 300 parlays. It was badly
+  off, because 38% had a cash-out or several fills at different prices.
+- **Which parlays count:** `nfl` = every leg is an NFL market (the headline);
+  `nfl_mixed` = some legs are from other sports. A parlay is assigned to the
+  NFL week of its latest leg's game.
+- **Hold, sportsbook-style:** handle = what customers paid for tickets
+  (YES-side taker trades). Customers' result = P&L on all their trades,
+  including cash-outs (NO-side trades, about a third of parlay $), minus
+  fees. Hold = −result ÷ handle. Fees use the standard taker formula; the
+  separate "combo maker fee" isn't published, so maker fees on parlays aren't
+  estimated.
+- **Fair hold if legs were independent:** the product of each leg's closing
+  probability, compared with the price paid. Same-game legs are correlated,
+  so this is a reference point, not a true expected hold.
+- **Completeness:** a losing parlay settles the moment one leg misses, while
+  a winner waits for its last game. A trade day only counts once every parlay
+  on games already played has settled. Otherwise early numbers would look
+  better for the house than they really are. Parlays waiting on *future*
+  games (about 2% of a day's tickets) are left out.
+- **Coverage:** from 2026-09-01. The first test Sunday (2026-09-20) had
+  about $76M of all-NFL parlay trading and a hit rate of 25% for 2-leg
+  parlays, down to about 1% for 11+ legs.
 
 ## Per trade
 

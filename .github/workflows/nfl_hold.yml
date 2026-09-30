@@ -19,7 +19,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 170
     env:
       RCLONE_CONF: ${{ secrets.RCLONE_CONF }}
     steps:
@@ -40,6 +40,12 @@ jobs:
         # already saved and anything left is picked up tomorrow.
         run: timeout 80m python nfl_hold.py
         continue-on-error: true   # a Kalshi/ESPN hiccup shouldn't block rebuilding from what we have
+
+      - name: Pull NFL parlays (sampled trade feed)
+        # ~5-16 min per trade day; the last 4 trade days are re-checked until
+        # every parlay on played games has settled.
+        run: timeout 60m python nfl_parlays.py
+        continue-on-error: true
 
       - name: Rebuild report
         run: python nfl_hold_report.py
