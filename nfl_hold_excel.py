@@ -3,6 +3,7 @@ Build nfl_hold.xlsx - the formatted workbook for the Kalshi NFL taker-hold track
 
 Tabs:
   - "Dashboard"          season-to-date by product + the last 6 weeks, green/red
+  - "Week vs week"        Week N of each season side by side (the comp view)
   - "Weekly"             one row per NFL week (hold, expected, luck, outcome factors)
   - "By game"            one row per game
   - "By game x product"  one row per game and product
@@ -261,6 +262,59 @@ def _read_pasted() -> dict:
     return out
 
 
+def sheet_week_compare(wb, summary):
+    """Week N of each season side by side - the comp view."""
+    ws = wb.create_sheet("Week vs week", 1)
+    seasons = summary.get("compare_seasons") or []
+    ws["A1"] = ("Same NFL week, season by season. Hold = share of taker $ that takers lost (incl. fees); "
+                "green = house won. Luck = pre-game results luck in bps. Parlay $ are sampled estimates; "
+                "Kalshi parlays started in Week 4 of 2025.")
+    ws["A1"].font = Font(italic=True, size=9, color="666666")
+    metrics = [("Taker $", "taker_dollars", USD, 14), ("Hold incl. fees", "hold_incl_fees", PCT2, 10),
+               ("Luck (bps)", "luck_bps", INT, 8), ("Public side (pts)", "public_edge", "0.0", 9),
+               ("Parlay $ (est.)", "parlay_dollars", USD, 13), ("Parlay hold", "parlay_hold", PCT2, 10)]
+    # two header rows: season group, then metric
+    ws.cell(row=3, column=1, value="Week").fill = HEAD_FILL
+    ws.cell(row=3, column=1).font = HEAD_FONT
+    ws.cell(row=4, column=1).fill = HEAD_FILL
+    ws.column_dimensions["A"].width = 12
+    col = 2
+    for season in seasons:
+        ws.merge_cells(start_row=3, start_column=col, end_row=3, end_column=col + len(metrics) - 1)
+        c = ws.cell(row=3, column=col, value=f"{season} season")
+        c.fill, c.font, c.alignment = HEAD_FILL, HEAD_FONT, Alignment(horizontal="center")
+        for j, (name, _, _, width) in enumerate(metrics):
+            h = ws.cell(row=4, column=col + j, value=name)
+            h.fill, h.font = HEAD_FILL, HEAD_FONT
+            h.alignment = Alignment(wrap_text=True)
+            ws.column_dimensions[get_column_letter(col + j)].width = width
+        col += len(metrics)
+    ws.row_dimensions[4].height = 30
+    for i, r in enumerate(summary.get("week_compare") or [], 5):
+        ws.cell(row=i, column=1, value=r["week"]).font = Font(bold=True, size=10)
+        col = 2
+        for season in seasons:
+            w = r.get(str(season))
+            for j, (_, key, fmt, _) in enumerate(metrics):
+                v = None if w is None else w.get(key)
+                if key == "public_edge" and v is not None:
+                    v = round(v * 100, 1)
+                cell = ws.cell(row=i, column=col + j, value=v)
+                cell.number_format = fmt
+            col += len(metrics)
+    last = 4 + len(summary.get("week_compare") or [])
+    col = 2
+    for season in seasons:
+        for j, (_, key, _, _) in enumerate(metrics):
+            if key in ("hold_incl_fees", "luck_bps", "parlay_hold"):
+                L = get_column_letter(col + j)
+                rng = f"{L}5:{L}{last}"
+                ws.conditional_formatting.add(rng, CellIsRule(operator="greaterThan", formula=["0"], fill=GREEN))
+                ws.conditional_formatting.add(rng, CellIsRule(operator="lessThan", formula=["0"], fill=RED))
+        col += len(metrics)
+    ws.freeze_panes = "B5"
+
+
 def sheet_charts(wb, weekly_rows):
     ws = wb.create_sheet("Charts")
     rows = [w for w in weekly_rows if w["season_type"] != "pre"]
@@ -332,6 +386,7 @@ def build(game_rows, gp_rows, weekly_rows, summary):
     sheet_game_product(wb, gp_rows)
     sheet_buckets(wb, summary)
     sheet_parlays(wb, summary)
+    sheet_week_compare(wb, summary)
     sheet_compare(wb, summary, pasted)
     sheet_charts(wb, weekly_rows)
     sheet_notes(wb, summary, game_rows)

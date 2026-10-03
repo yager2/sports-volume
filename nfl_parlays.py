@@ -34,6 +34,7 @@ Usage
 -----
     python nfl_parlays.py                        # daily: last 4 trade days not yet complete
     python nfl_parlays.py --since 2026-09-01     # backfill
+    python nfl_parlays.py --since 2025-09-25 --until 2026-02-09   # 2025 season (Kalshi archive)
     python nfl_parlays.py --day 2026-09-20 --full  # exact (unsampled) day, for validation
 """
 
@@ -94,11 +95,25 @@ def windows(day: datetime, full: bool) -> list[tuple[int, int]]:
     return out
 
 
+_CUTOFF = None
+
+
+def archive_cutoff() -> float:
+    """Kalshi moves trades/markets older than this to /historical/*."""
+    global _CUTOFF
+    if _CUTOFF is None:
+        _CUTOFF = nh.ts(nh.kalshi("/historical/cutoff").get("trades_created_ts")) or 0
+    return _CUTOFF
+
+
 def sweep(day: datetime, full: bool) -> list[dict]:
     """Every parlay trade in the day's sampled windows."""
+    cutoff = archive_cutoff()
+
     def one(w):
         a, b = w
-        return [t for t in nh.paginate("/markets/trades", {"min_ts": a, "max_ts": b, "limit": 1000}, "trades")
+        path = "/historical/trades" if b <= cutoff else "/markets/trades"
+        return [t for t in nh.paginate(path, {"min_ts": a, "max_ts": b, "limit": 1000}, "trades")
                 if is_parlay(t["ticker"])]
     with ThreadPoolExecutor(WORKERS) as ex:
         return [t for ts_ in ex.map(one, windows(day, full)) for t in ts_]
@@ -109,11 +124,22 @@ def lookup(tickers: list[str]) -> dict[str, dict]:
 
     def one(ch):
         return nh.kalshi("/markets", {"tickers": ",".join(ch), "limit": 1000}).get("markets") or []
+    def one_hist(ch):
+        return nh.kalshi("/historical/markets", {"tickers": ",".join(ch), "limit": 1000}).get("markets") or []
+
     out = {}
     with ThreadPoolExecutor(WORKERS) as ex:
         for ms in ex.map(one, chunks):
             for m in ms:
                 out[m["ticker"]] = m
+    # Parlays settled before Kalshi's archive cutoff only exist in /historical/markets.
+    rest = [t for t in tickers if t not in out]
+    if rest:
+        chunks = [rest[i:i + 100] for i in range(0, len(rest), 100)]
+        with ThreadPoolExecutor(WORKERS) as ex:
+            for ms in ex.map(one_hist, chunks):
+                for m in ms:
+                    out[m["ticker"]] = m
     return out
 
 
@@ -330,6 +356,7 @@ def summarize(d: dict) -> str:
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--since", help="YYYY-MM-DD first trade day (UTC)")
+    ap.add_argument("--until", help="YYYY-MM-DD last trade day for --since (default: yesterday)")
     ap.add_argument("--day", help="single trade day YYYY-MM-DD")
     ap.add_argument("--full", action="store_true", help="read every minute (exact; ~6x slower)")
     ap.add_argument("--redo", action="store_true")
@@ -339,7 +366,9 @@ def main():
         days = [datetime.strptime(args.day, "%Y-%m-%d").replace(tzinfo=timezone.utc)]
     elif args.since:
         d0 = datetime.strptime(args.since, "%Y-%m-%d").replace(tzinfo=timezone.utc)
-        days = [d0 + timedelta(days=i) for i in range((today - d0).days)]
+        end = (datetime.strptime(args.until, "%Y-%m-%d").replace(tzinfo=timezone.utc) + timedelta(days=1)
+               if args.until else today)
+        days = [d0 + timedelta(days=i) for i in range((min(end, today) - d0).days)]
     else:
         days = [today - timedelta(days=i) for i in range(DAILY_DAYS, 0, -1)]
     # A day is swept once (the expensive part); its few unsettled parlays are

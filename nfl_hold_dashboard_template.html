@@ -189,6 +189,10 @@ td { font-variant-numeric: tabular-nums; }
     </div>
   </section>
 
+  <section><div class="sec-label">Week vs week</div>
+    <p class="how" style="margin:-4px 0 10px;max-width:80ch">The same NFL week in each season, side by side. Hold includes fees; green = house won. Parlays began on Kalshi in Week 4 of 2025. Ignores the filters above.</p>
+    <div class="tablewrap"><table id="tCompare"></table></div></section>
+
   <section><div class="sec-label">Games</div><div class="tablewrap"><table id="tGames"></table></div></section>
 
   <section><div class="sec-label">How to read this</div>
@@ -370,7 +374,7 @@ function scatterXY(host, pts, xFmt, yFmt, tipFmt) {
 function renderParlays(games, weeks) {
   const P = (DATA.parlays || []).filter(r => r.category === "nfl");
   const wkSet = new Set(weeks.map(w => w.label));
-  const allRows = P.filter(r => r.legs === "all" && wkSet.has(r.week_label));
+  const allRows = P.filter(r => r.legs === "all" && wkSet.has(r.week_label) && r.taker_dollars_est >= 250000);  // tiny launch weeks are noise
   const pw = weeks.map(w => allRows.find(r => r.week_label === w.label)).map((r, i) => ({w: weeks[i], r})).filter(x => x.r);
   chart($("cParlay"), {labels: pw.map(x => x.w.short), series: [{values: pw.map(x => x.r.hold_incl_fees)}], signColor: ["--pos", "--neg"], yFmt: pctT, aria: "Parlay hold by week",
     tipFmt: i => { const r = pw[i].r; return `<b>${r.week_label}</b>${row("Parlay stakes (est.)", usd(r.taker_dollars_est))}${row("Hold incl. fees", pct(r.hold_incl_fees))}${row("Parlays that hit", pct(r.hit_rate, 1))}${row("Fair hold if legs independent", pct(r.exp_hold_indep_legs))}`; }});
@@ -382,6 +386,19 @@ function renderParlays(games, weeks) {
     const lost = rs.reduce((a, r) => a + (r.hold_incl_fees || 0) * r.taker_dollars_est, 0); return {L, d, h: d ? lost / d : null}; }).filter(x => x.d > 0);
   chart($("cLegs"), {labels: lg.map(x => x.L), series: [{values: lg.map(x => x.h)}], signColor: ["--pos", "--neg"], yFmt: pctT, aria: "Parlay hold by legs",
     tipFmt: i => `<b>${lg[i].L} legs</b>${row("Parlay stakes (est.)", usd(lg[i].d))}${row("Hold incl. fees", pct(lg[i].h))}`});
+}
+
+
+function renderCompare() {
+  const S = DATA.compare_seasons || [], R = DATA.week_compare || [];
+  const cl = x => x == null ? "" : x >= 0 ? "pos" : "neg";
+  const head = `<thead><tr><th rowspan="2">Week</th>${S.map(s => `<th colspan="4" style="text-align:center">${s} season</th>`).join("")}</tr>
+    <tr>${S.map(() => "<th>Taker $</th><th>Hold</th><th>Luck</th><th>Parlay hold</th>").join("")}</tr></thead>`;
+  const body = R.map(r => `<tr><td>${r.week}</td>` + S.map(s => { const w = r[String(s)];
+    if (!w) return '<td>–</td><td>–</td><td>–</td><td>–</td>';
+    return `<td>${usd(w.taker_dollars)}</td><td class="${cl(w.hold_incl_fees)}">${pct(w.hold_incl_fees)}</td>
+      <td class="${cl(w.luck_bps)}">${bps(w.luck_bps)}</td><td class="${cl(w.parlay_hold)}">${w.parlay_hold == null ? "–" : pct(w.parlay_hold)}</td>`; }).join("") + "</tr>").join("");
+  $("tCompare").innerHTML = head + "<tbody>" + body + "</tbody>";
 }
 
 // ---------- render ----------
@@ -453,6 +470,7 @@ function render() {
     series: [["Favorite won", "--v1"], ["Favorite covered", "--v2"], ["Over hit", "--v3"]].map(([name, color], j) => ({name, color, kind: "line", values: F.map(f => f[j])})),
     tipFmt: i => `<b>${weeks[i].label}</b>${row("Favorites won", pct(F[i][0], 0))}${row("Favorites covered", pct(F[i][1], 0))}${row("Overs", pct(F[i][2], 0))}`});
   renderParlays(games, weeks);
+  renderCompare();
   // table
   const sorted = [...games].sort((a, b) => b.date.localeCompare(a.date));
   const cl = x => x == null ? "" : x >= 0 ? "pos" : "neg";

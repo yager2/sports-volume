@@ -409,6 +409,46 @@ def load_parlays(game_rows):
     return rows, skipped
 
 
+# ---------- week vs week ----------
+
+MIN_PARLAY_STAKES = 250_000
+POST_NAMES = {1: "Wild Card", 2: "Divisional", 3: "Conference", 4: "Pro Bowl", 5: "Super Bowl"}
+
+
+def week_compare(weekly_rows):
+    """One row per NFL week (Week 1..18, then playoff rounds), seasons side by side."""
+    by = {}
+    seasons = set()
+    for w in weekly_rows:
+        if w["season_type"] == "pre":
+            continue
+        m = re.search(r"W(\d+)$", w["week_label"])
+        if not m:
+            continue
+        n = int(m.group(1))
+        key = (0, n) if w["season_type"] == "reg" else (1, n)
+        seasons.add(w["season"])
+        by[(key, w["season"])] = w
+    rows = []
+    for key in sorted({k for k, _ in by}):
+        label = f"Week {key[1]}" if key[0] == 0 else POST_NAMES.get(key[1], f"Playoff {key[1]}")
+        row = {"week": label}
+        for season in sorted(seasons):
+            w = by.get((key, season))
+            row[f"{season}"] = None if w is None else {
+                "games": w["games"], "first_date": w["first_date"],
+                "taker_dollars": w["all_taker_dollars"], "hold_incl_fees": w["all_hold_incl_fees"],
+                "luck_bps": w["pre_luck_bps"], "public_edge": w["pre_public_edge"],
+                "parlay_dollars": w.get("parlay_taker_dollars_est"),
+                # Parlays launched with tiny volume (Week 4 2025: ~$20K); a hold on
+                # that little money is noise, so hide it below MIN_PARLAY_STAKES.
+                "parlay_hold": (w.get("parlay_hold_incl_fees")
+                                if (w.get("parlay_taker_dollars_est") or 0) >= MIN_PARLAY_STAKES else None),
+            }
+        rows.append(row)
+    return rows, sorted(seasons)
+
+
 # ---------- writers ----------
 
 def write_csv(path, rows):
@@ -451,6 +491,7 @@ def main():
         w["parlay_hold_incl_fees"] = pr.get("hold_incl_fees")
         w["parlay_hit_rate"] = pr.get("hit_rate")
     summary["parlays"] = parlay_rows
+    summary["week_compare"], summary["compare_seasons"] = week_compare(weekly_rows)
     write_csv(WEEKLY_CSV, weekly_rows)
     write_csv(PARLAYS_CSV, parlay_rows)
     if skipped:
