@@ -1,5 +1,5 @@
 {
- "as_of": "2026-09-25T16:55:47.964601+00:00",
+ "as_of": "2026-10-03T15:10:10.980915+00:00",
  "series": {
   "KXNFL1H": {
    "fee_multiplier": 1.0,
@@ -223,6 +223,12 @@
    "product": "game_prop",
    "title": "Pro Football Comeback"
   },
+  "KXNFLDELAY": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "NFL Weather Delay"
+  },
   "KXNFLDSTTD": {
    "fee_multiplier": 1.0,
    "fee_type": "quadratic",
@@ -299,7 +305,7 @@
    "fee_multiplier": 1.0,
    "fee_type": "quadratic_with_maker_fees",
    "product": "moneyline",
-   "title": "Professional Football Game"
+   "title": "NFL Game"
   },
   "KXNFLGAMESACK": {
    "fee_multiplier": 1.0,
@@ -510,6 +516,12 @@
    "fee_type": "quadratic",
    "product": "game_prop",
    "title": "Pro Football Team Yards"
+  },
+  "KXNFLTIE": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "NFL Game to Tie"
   },
   "KXNFLTOTAL": {
    "fee_multiplier": 1.0,
