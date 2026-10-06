@@ -1,43 +1,43 @@
 {
- "as_of": "2026-09-29",
- "sampled_trades": 5092753,
- "avg_price": 0.2133,
+ "as_of": "2026-10-06",
+ "sampled_trades": 5324947,
+ "avg_price": 0.1826,
  "groups": [
   {
    "name": "Combos & exotics",
-   "contracts_pct": 60.46,
-   "notional_pct": 16.46
+   "contracts_pct": 66.55,
+   "notional_pct": 19.65
   },
   {
    "name": "Sports",
-   "contracts_pct": 24.37,
-   "notional_pct": 51.3
+   "contracts_pct": 21.26,
+   "notional_pct": 50.29
   },
   {
    "name": "Crypto",
-   "contracts_pct": 13.25,
-   "notional_pct": 28.77
+   "contracts_pct": 10.61,
+   "notional_pct": 26.23
   },
   {
    "name": "Politics & elections",
-   "contracts_pct": 0.12,
-   "notional_pct": 0.14
+   "contracts_pct": 0.32,
+   "notional_pct": 0.6
   },
   {
    "name": "Economics & financials",
-   "contracts_pct": 1.51,
-   "notional_pct": 2.88
+   "contracts_pct": 1.05,
+   "notional_pct": 2.86
   },
   {
    "name": "Other",
-   "contracts_pct": 0.29,
-   "notional_pct": 0.45
+   "contracts_pct": 0.21,
+   "notional_pct": 0.37
   }
  ],
  "parlay": {
-  "contracts_pct": 60.46,
-  "notional_pct": 16.456,
-  "pct_of_sports_contracts": 71.27,
-  "pct_of_sports_notional": 24.29
+  "contracts_pct": 66.55,
+  "notional_pct": 19.652,
+  "pct_of_sports_contracts": 75.79,
+  "pct_of_sports_notional": 28.1
  }
 }
