@@ -70,7 +70,7 @@ jobs:
           curl -fsSL https://rclone.org/install.sh | sudo bash
           mkdir -p ~/.config/rclone
           printf '%s' "$RCLONE_CONF" > ~/.config/rclone/rclone.conf
-          for f in nfl_hold.xlsx nfl_hold_dashboard.html nfl_hold_by_game.csv nfl_hold_by_ny_week.csv NFL_HOLD_METHODOLOGY.md; do
+          for f in nfl_hold.xlsx nfl_hold_dashboard.html nfl_hold_by_game.csv NFL_HOLD_METHODOLOGY.md; do
             [ -f "$f" ] && rclone copy "$f" gdrive:SportsVolume --no-traverse
           done
           # Same workbook as a native Google Sheet ("NFL Hold Tracker"); rclone
