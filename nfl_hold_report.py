@@ -245,6 +245,9 @@ def rollup(games):
             row[f"{tag}_hold"] = _r(d["hold"])
             row[f"{tag}_hold_incl_fees"] = _r(d["hold_incl_fees"])
             row[f"{tag}_kalshi_fees"] = round(d["kalshi_fees"], 2)
+            row[f"{tag}_taker_fee"] = round(a["taker_fee"], 2)
+            row[f"{tag}_exp_pnl"] = round(a["exp_pnl"], 2)
+            row[f"{tag}_exp_dollars"] = round(a["exp_notional"], 2)
             if ph == "pre":
                 row["pre_exp_hold"] = _r(d["exp_hold"])
                 row["pre_luck_bps"] = _r((d["hold"] - d["exp_hold"]) * 1e4, 0) if d["exp_hold"] is not None and d["hold"] is not None else None
@@ -339,6 +342,9 @@ def build_summary(per_game, pick, row_for, weekly_rows, game_rows):
 
 # ---------- parlays (from nfl_parlays.py) ----------
 
+PARLAYS_BY_DATE = defaultdict(lambda: defaultdict(float))   # last-leg date -> stakes, pnl, fee (nfl only)
+
+
 def load_parlays(game_rows):
     """Weekly parlay rollup from the sampled trade-day files.
 
@@ -368,6 +374,11 @@ def load_parlays(game_rows):
             continue
         f = d["sample_frac"]
         for cat, legs, date, phase, side, b, n, c, dol, pnl, fee, ed, ep in d["rows"]:
+            if cat == "nfl" and date != "?":
+                bd = PARLAYS_BY_DATE[date]
+                bd["stakes"] += dol / f if side == "yes" else 0
+                bd["pnl"] += pnl / f
+                bd["fee"] += fee / f
             wk, st = week_of(date)
             if wk is None:
                 continue
@@ -449,6 +460,83 @@ def week_compare(weekly_rows):
     return rows, sorted(seasons)
 
 
+# ---------- New York report weeks ----------
+
+NY_WEEK_CSV = os.path.join(HERE, "nfl_hold_by_ny_week.csv")
+
+
+def ny_week_ending(date_iso: str) -> str:
+    """NY's weekly sportsbook report runs Monday-Sunday, labelled by the Sunday it ends on."""
+    d = datetime.fromisoformat(date_iso).date()
+    return (d + timedelta(days=6 - d.weekday())).isoformat()
+
+
+def by_ny_week(game_rows):
+    """Kalshi NFL regrouped into New York's Monday-Sunday report weeks.
+
+    NY GGR is cash-basis (handle when a bet is placed, payout when it's
+    redeemed). Nearly all NFL money is bet in the days before kickoff and paid
+    right after the game, so each game goes to the NY week of its kickoff date
+    (ET). That puts Monday Night Football in the FOLLOWING NY week, as NY does.
+    Parlays go to the NY week of their last leg's game.
+    """
+    wk = defaultdict(lambda: defaultdict(float))
+    labels = defaultdict(list)
+    for g in game_rows:
+        we = ny_week_ending(g["date"])
+        a = wk[we]
+        a["games"] += 1
+        a["preseason"] += g["season_type"] == "pre"
+        a["s_dollars"] += g["all_taker_dollars"]
+        a["s_pnl"] += g["all_taker_pnl"]
+        a["s_fee"] += g.get("all_taker_fee") or 0
+        a["pre_dollars"] += g["pre_taker_dollars"]
+        a["pre_pnl"] += g["pre_taker_pnl"]
+        a["exp_dollars"] += g.get("pre_exp_dollars") or 0
+        a["exp_pnl"] += g.get("pre_exp_pnl") or 0
+        if g.get("pre_public_edge") is not None:
+            a["pub_w"] += g["pre_taker_dollars"]
+            a["pub"] += g["pre_public_edge"] * g["pre_taker_dollars"]
+        day = datetime.fromisoformat(g["date"]).strftime("%a")
+        labels[we].append((g["week_label"], day))
+    for date, b in PARLAYS_BY_DATE.items():
+        a = wk[ny_week_ending(date)]
+        a["p_stakes"] += b["stakes"]
+        a["p_pnl"] += b["pnl"]
+        a["p_fee"] += b["fee"]
+    rows = []
+    for we in sorted(wk):
+        a = wk[we]
+        if not a["games"]:
+            continue                       # only parlays on future games - not an NFL week
+        # Which NFL weeks feed this NY week, e.g. "2026 W03 (Thu-Sun) + 2026 W02 (Mon)"
+        parts = defaultdict(list)
+        for lab, day in labels[we]:
+            parts[lab].append(day)
+        nfl = " + ".join(f"{lab} ({'/'.join(sorted(set(d), key=lambda x: 'MonTueWedThuFriSatSun'.index(x)))})"
+                         for lab, d in sorted(parts.items(), key=lambda kv: -len(kv[1])))
+        s_hold = -(a["s_pnl"] - a["s_fee"]) / a["s_dollars"] if a["s_dollars"] else None
+        p_ok = a["p_stakes"] >= MIN_PARLAY_STAKES
+        p_hold = -(a["p_pnl"] - a["p_fee"]) / a["p_stakes"] if p_ok else None
+        both_d = a["s_dollars"] + (a["p_stakes"] if p_ok else 0)
+        both_win = -(a["s_pnl"] - a["s_fee"]) + (-(a["p_pnl"] - a["p_fee"]) if p_ok else 0)
+        pre_hold = -a["pre_pnl"] / a["pre_dollars"] if a["pre_dollars"] else None
+        exp_hold = -a["exp_pnl"] / a["exp_dollars"] if a["exp_dollars"] else None
+        start = (datetime.fromisoformat(we) - timedelta(days=6)).date().isoformat()
+        rows.append({
+            "ny_week_ending": we, "week_start_mon": start, "nfl_weeks": nfl,
+            "nfl_games": int(a["games"]), "preseason_games": int(a["preseason"]),
+            "straight_taker_dollars": round(a["s_dollars"], 2), "straight_hold_incl_fees": _r(s_hold),
+            "pregame_hold": _r(pre_hold), "pregame_expected_hold": _r(exp_hold),
+            "luck_bps": _r((pre_hold - exp_hold) * 1e4, 0) if pre_hold is not None and exp_hold is not None else None,
+            "public_side_vs_price": _r(a["pub"] / a["pub_w"] if a["pub_w"] else None),
+            "parlay_stakes_est": round(a["p_stakes"], 2) if a["p_stakes"] else None,
+            "parlay_hold_incl_fees": _r(p_hold),
+            "combined_dollars": round(both_d, 2), "combined_hold_incl_fees": _r(both_win / both_d if both_d else None),
+        })
+    return rows
+
+
 # ---------- writers ----------
 
 def write_csv(path, rows):
@@ -492,6 +580,9 @@ def main():
         w["parlay_hit_rate"] = pr.get("hit_rate")
     summary["parlays"] = parlay_rows
     summary["week_compare"], summary["compare_seasons"] = week_compare(weekly_rows)
+    ny_rows = by_ny_week(game_rows)
+    summary["ny_weeks"] = ny_rows
+    write_csv(NY_WEEK_CSV, ny_rows)
     write_csv(WEEKLY_CSV, weekly_rows)
     write_csv(PARLAYS_CSV, parlay_rows)
     if skipped:

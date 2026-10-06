@@ -3,6 +3,7 @@ Build nfl_hold.xlsx - the formatted workbook for the Kalshi NFL taker-hold track
 
 Tabs:
   - "Dashboard"          season-to-date by product + the last 6 weeks, green/red
+  - "By NY week"         Kalshi NFL in NY's Mon-Sun sportsbook-report weeks (join to NY data)
   - "Week vs week"        Week N of each season side by side (the comp view)
   - "Weekly"             one row per NFL week (hold, expected, luck, outcome factors)
   - "By game"            one row per game
@@ -262,6 +263,29 @@ def _read_pasted() -> dict:
     return out
 
 
+def sheet_ny_weeks(wb, summary):
+    """Kalshi NFL in New York's report weeks (Mon-Sun, labelled by the Sunday)."""
+    ws = wb.create_sheet("By NY week", 1)
+    ws["A1"] = ("Kalshi NFL grouped into New York's weekly sportsbook-report weeks: Monday-Sunday, labelled by the "
+                "Sunday the week ends on. Games go to the week of their kickoff date, so Monday Night Football lands "
+                "in the FOLLOWING week, as in NY's cash-basis report. Parlays go to the week of their last leg. "
+                "Join on 'NY week ending' with the NY report.")
+    ws["A1"].font = Font(italic=True, size=9, color="666666")
+    ws["A1"].alignment = Alignment(wrap_text=True, vertical="top")
+    ws.row_dimensions[1].height = 42
+    _table(ws, summary.get("ny_weeks") or [], [
+        ("NY week ending (Sun)", "ny_week_ending", None, 12), ("Week start (Mon)", "week_start_mon", None, 11),
+        ("NFL weeks in it", "nfl_weeks", None, 36), ("NFL games", "nfl_games", INT, 7),
+        ("Straight taker $", "straight_taker_dollars", USD, 15), ("Straight hold incl. fees", "straight_hold_incl_fees", PCT2, 11),
+        ("Parlay stakes (est.)", "parlay_stakes_est", USD, 14), ("Parlay hold incl. fees", "parlay_hold_incl_fees", PCT2, 11),
+        ("Combined $", "combined_dollars", USD, 15), ("Combined hold incl. fees", "combined_hold_incl_fees", PCT2, 11),
+        ("Pre-game hold", "pregame_hold", PCT2, 10), ("Pre-game expected", "pregame_expected_hold", PCT2, 10),
+        ("Luck (bps)", "luck_bps", INT, 9),
+        ("Public side vs price (pts)", lambda r: None if r.get("public_side_vs_price") is None else round(r["public_side_vs_price"] * 100, 1), "0.0", 11),
+        ("Preseason games", "preseason_games", INT, 9),
+    ], start_row=3, green_red=GREEN_RED | {"Straight hold incl. fees", "Parlay hold incl. fees", "Combined hold incl. fees"})
+
+
 def sheet_week_compare(wb, summary):
     """Week N of each season side by side - the comp view."""
     ws = wb.create_sheet("Week vs week", 1)
@@ -387,6 +411,7 @@ def build(game_rows, gp_rows, weekly_rows, summary):
     sheet_buckets(wb, summary)
     sheet_parlays(wb, summary)
     sheet_week_compare(wb, summary)
+    sheet_ny_weeks(wb, summary)
     sheet_compare(wb, summary, pasted)
     sheet_charts(wb, weekly_rows)
     sheet_notes(wb, summary, game_rows)

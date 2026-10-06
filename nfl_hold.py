@@ -268,7 +268,12 @@ def markets_by_game(series: dict, min_close: float | None, archive: bool) -> dic
                 if code:
                     by_game[code].append(m)
     # Only game codes that are real moneyline games (drops look-alike tickers).
-    return {g: ms for g, ms in by_game.items() if any(m["event_ticker"].startswith(MONEYLINE + "-") for m in ms)}
+    # Real games = codes with a moneyline OR a spread market. Kalshi listed a few
+    # big games (2025 AFC title game, Super Bowl LX) without a KXNFLGAME
+    # moneyline - spreads, totals and props still traded. Requiring a
+    # spread/moneyline still drops look-alike tickers from futures series.
+    return {g: ms for g, ms in by_game.items()
+            if any(m["event_ticker"].startswith((MONEYLINE + "-", "KXNFLSPREAD-")) for m in ms)}
 
 
 def markets_for_one_game(series: dict, code: str, archive: bool = True) -> list[dict]:
@@ -320,10 +325,17 @@ def match_espn(code: str, away: str, home: str) -> dict | None:
     return None
 
 
-def teams_from(code: str, ml_markets: list[dict]) -> tuple[str, str]:
-    """Away/home from the game code + the two moneyline tickers (…-IND, …-KC)."""
+def teams_from(code: str, ml_markets: list[dict], all_markets: list[dict] | None = None) -> tuple[str, str]:
+    """Away/home from the game code + the two moneyline tickers (…-IND, …-KC).
+
+    Without a moneyline (Kalshi listed the 2025 AFC title game and the Super
+    Bowl winner only as futures), use the spread tickers (…-SEA7, …-NE3).
+    """
     teams_part = code[7:]
     sides = [m["ticker"].rsplit("-", 1)[1] for m in ml_markets]
+    if not sides and all_markets:
+        sides = sorted({mm.group(1) for m in all_markets if m["event_ticker"].startswith("KXNFLSPREAD-")
+                        and (mm := re.match(r"([A-Z]+)\d+$", m["ticker"].rsplit("-", 1)[1]))})
     for a in sides:
         if teams_part.startswith(a) and teams_part[len(a):] in sides:
             return a, teams_part[len(a):]
@@ -399,7 +411,7 @@ def roll_up_market(m: dict, kickoff: float, cutoff: float, rates: tuple[float, f
 
 def process_game(code: str, markets: list[dict], series: dict, cutoff: float, verbose: bool = False) -> dict | None:
     ml = [m for m in markets if m["event_ticker"].startswith(MONEYLINE + "-")]
-    away, home = teams_from(code, ml)
+    away, home = teams_from(code, ml, markets)
     espn = match_espn(code, away, home)
     if espn:
         kickoff, k_src = ts(espn["kickoff_utc"]), "espn"

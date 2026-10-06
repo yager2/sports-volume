@@ -140,6 +140,33 @@ Kalshi's own `volume_fp` for every market (checked on the first test game:
   resting orders shows up as several smaller trades, so the buckets skew
   small.
 
+## New York report weeks (`nfl_hold_by_ny_week.csv`, "By NY week" tab)
+
+For comparison with New York's weekly mobile sportsbook report. That report
+runs **Monday–Sunday**, labeled by the Sunday the week ends on, and its GGR
+is **cash basis**: a bet counts as handle when it's placed, and its payout in
+the week it's cashed. Kalshi is regrouped the same way:
+
+- **Straight bets:** each game goes to the NY week of its kickoff date (ET).
+  NFL money is bet in the days before kickoff and paid right after the game,
+  so this matches cash basis closely. **Monday Night Football lands in the
+  following NY week**, as it does in NY's numbers. The `nfl_weeks` column
+  shows the mix, e.g. "2026 W02 (Thu/Sun) + 2026 W01 (Mon)".
+- **Parlays:** go to the NY week of their last leg's game.
+- **Combined hold** = straights + parlays, incl. fees, over straight taker $
+  + parlay stakes. It's the closest match to NY's all-bets hold.
+- NY's figures cover **all sports**. In NFL season, football drives most of
+  the swings, but other sports are in there too.
+- Partial weeks (games still to play) fill in on later daily runs.
+
+## Missing moneylines
+
+Kalshi listed a few big games without a regular game-winner market (the 2025
+AFC Championship and Super Bowl LX, where winner bets lived in its
+conference/Super Bowl futures). Games are recognized by their spread market
+as well, so their spreads, totals and props are included; only the moneyline
+is missing for those games.
+
 ## Exclusions
 
 - **Void-like settlements:** markets settled at anything other than $0 or $1.
