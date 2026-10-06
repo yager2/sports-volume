@@ -115,7 +115,7 @@ td { font-variant-numeric: tabular-nums; }
 </header>
 
 <div class="wrap">
-  <p class="intro">Sportsbooks only reveal their <b>hold</b> (the share of bets they keep) when states publish monthly reports.
+  <p class="intro">Weeks are New York sportsbook-report weeks (Monday–Sunday, labeled by the Sunday they end on), so Monday Night Football counts in the following week. Sportsbooks only reveal their <b>hold</b> (the share of bets they keep) when states publish monthly reports.
   This page estimates it early from Kalshi: the traders who cross the spread (<b>takers</b>) behave like sportsbook customers,
   so their loss rate is a stand-in for book hold. <b>Positive = takers lost (good for the house), shown green.</b>
   Negative = takers won, shown red. It is directional, not exact.</p>
@@ -246,7 +246,7 @@ function filtered() {
 function byWeek(games) {
   const m = new Map();
   for (const g of games) { if (!m.has(g.week_label)) m.set(g.week_label, []); m.get(g.week_label).push(g); }
-  return [...m.entries()].map(([label, gs]) => ({label, short: label.replace(/^\d{4} /, ""), games: gs}));
+  return [...m.entries()].map(([label, gs]) => ({label, short: label.replace(/^\d{4} /, ""), we: gs[0].ny_week_ending, games: gs}));
 }
 const mean = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
 
@@ -413,7 +413,7 @@ function render() {
     const fav = last.games.filter(g => g.fav_won != null), ov = last.games.filter(g => g.over_hit != null);
     const favW = fav.reduce((s, g) => s + g.fav_won, 0), favImp = mean(fav.map(g => g.fav_prob));
     const luck = pre.hold != null && pre.exp != null ? (pre.hold - pre.exp) * 1e4 : null;
-    $("latestLabel").textContent = `Latest week · ${last.label} · ${last.games.length} games · ${prodName}`;
+    $("latestLabel").textContent = `Latest week · ${last.label} (NY week ending ${last.we}) · ${last.games.length} games · ${prodName}`;
     const t = (k, v, s, cls = "") => `<div class="tile"><div class="k">${k}</div><div class="v ${cls}">${v}</div><div class="s">${s}</div></div>`;
     const cls = x => x == null ? "" : x >= 0 ? "house" : "public";
     tiles.innerHTML =
@@ -425,7 +425,7 @@ function render() {
   }
   const labels = weeks.map(w => w.short);
   const W = weeks.map(w => ({w, s: sumGames(w.games), pre: sumGames(w.games, "pre")}));
-  const holdTip = i => { const {w, s} = W[i]; return `<b>${w.label}</b>${row("Games", w.games.length)}${row("Taker $", usd(s.notional))}${row("Taker P&L", usd(s.pnl))}${row("Hold", pct(s.hold, 2))}${row("Hold incl. fees", pct(s.holdF, 2))}`; };
+  const holdTip = i => { const {w, s} = W[i]; return `<b>${w.label}</b>${row("NY week ending", w.we)}${row("Games", w.games.length)}${row("Taker $", usd(s.notional))}${row("Taker P&L", usd(s.pnl))}${row("Hold", pct(s.hold, 2))}${row("Hold incl. fees", pct(s.holdF, 2))}`; };
   chart($("cHold"), {labels, series: [{name: "Hold", values: W.map(x => x.s.holdF)}], signColor: ["--pos", "--neg"], yFmt: pctT, tipFmt: holdTip, aria: "Weekly taker hold"});
   chart($("cActExp"), {labels, series: [{name: "Actual", color: "--v1", kind: "line", values: W.map(x => x.pre.hold)}, {name: "Expected", color: "--neutral", kind: "line", values: W.map(x => x.pre.exp)}],
     band: [0, 1], yFmt: pctT, aria: "Actual vs expected pre-game hold",

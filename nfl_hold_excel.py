@@ -3,7 +3,6 @@ Build nfl_hold.xlsx - the formatted workbook for the Kalshi NFL taker-hold track
 
 Tabs:
   - "Dashboard"          season-to-date by product + the last 6 weeks, green/red
-  - "By NY week"         Kalshi NFL in NY's Mon-Sun sportsbook-report weeks (join to NY data)
   - "Week vs week"        Week N of each season side by side (the comp view)
   - "Weekly"             one row per NFL week (hold, expected, luck, outcome factors)
   - "By game"            one row per game
@@ -95,7 +94,8 @@ def _sum(games, phase=None, product=None, cols=None):
 
 # Headline: hold incl. fees; + = takers (customers) lost = house won -> green.
 WEEK_SPEC = [
-    ("Week", "week_label", None, 14), ("Games", "games", INT, 7),
+    ("Week-Ending", lambda r: datetime.fromisoformat(r["ny_week_ending"]), "mm/dd/yy", 11), ("Week", "week_label", None, 14),
+    ("NFL games in it", "nfl_games_in_week", None, 30), ("Games", "games", INT, 7),
     ("First date", "first_date", None, 11),
     ("Taker $ (all)", "all_taker_dollars", USD, 15), ("Hold incl. fees (all)", "all_hold_incl_fees", PCT2, 11),
     ("Hold (all)", "all_hold", PCT2, 10), ("Taker P&L (all)", "all_taker_pnl", USD, 14),
@@ -144,7 +144,7 @@ def sheet_dashboard(wb, summary, weekly_rows):
             ("Public side vs price (pts)", "pub", "0.00", 12), ("Kalshi fees", "fees", USD, 13),
         ], start_row=r + 1, green_red=GREEN_RED | {"Pre-game hold"}) + 2
     ws.cell(row=r, column=1, value="Last 6 weeks").font = Font(bold=True, size=11)
-    recent = [w for w in weekly_rows if w["season_type"] != "pre"][-6:]
+    recent = [w for w in weekly_rows if w["season_type"] not in ("pre", "off")][-6:]
     _table(ws, list(reversed(recent)), WEEK_SPEC[:12], start_row=r + 1, green_red=GREEN_RED)
     ws.freeze_panes = None
 
@@ -157,7 +157,7 @@ def sheet_games(wb, game_rows):
     spec = [("Date", "date", None, 11), ("Game", lambda r: f"{r['away']} @ {r['home']}", None, 12),
             ("Week", "week_label", None, 13),
             ("Score", lambda r: f"{r['away_score']}-{r['home_score']}" if r.get("away_score") is not None else None, None, 8)] + [
-        s for s in WEEK_SPEC if s[0] not in ("Week", "Games", "First date", "Fav win rate", "Fav implied",
+        s for s in WEEK_SPEC if s[0] not in ("Week-Ending", "Week", "NFL games in it", "Games", "First date", "Fav win rate", "Fav implied",
                                               "Fav cover rate", "Over rate", "Pts vs closing total")] + [
         ("Closing fav", "fav", None, 8), ("Fav prob", "fav_prob", PCT, 8), ("Fav won", "fav_won", "0.0", 7),
         ("Fav spread line", "spread_line", "0.0", 8), ("Fav margin", "fav_margin", INT, 7), ("Fav covered", "fav_covered", "0", 7),
@@ -169,7 +169,7 @@ def sheet_games(wb, game_rows):
 def sheet_game_product(wb, gp_rows):
     spec = [("Date", "date", None, 11), ("Game", lambda r: f"{r['away']} @ {r['home']}", None, 12),
             ("Product", lambda r: PNAME.get(r["product"], r["product"]), None, 15)] + [
-        s for s in WEEK_SPEC if s[0] not in ("Week", "Games", "First date", "Fav win rate", "Fav implied",
+        s for s in WEEK_SPEC if s[0] not in ("Week-Ending", "Week", "NFL games in it", "Games", "First date", "Fav win rate", "Fav implied",
                                               "Fav cover rate", "Over rate", "Pts vs closing total")]
     _table(wb.create_sheet("By game x product"), gp_rows, spec, green_red=GREEN_RED)
 
@@ -263,29 +263,6 @@ def _read_pasted() -> dict:
     return out
 
 
-def sheet_ny_weeks(wb, summary):
-    """Kalshi NFL in New York's report weeks (Mon-Sun, labelled by the Sunday)."""
-    ws = wb.create_sheet("By NY week", 1)
-    ws["A1"] = ("Kalshi NFL grouped into New York's weekly sportsbook-report weeks: Monday-Sunday, labelled by the "
-                "Sunday the week ends on. Games go to the week of their kickoff date, so Monday Night Football lands "
-                "in the FOLLOWING week, as in NY's cash-basis report. Parlays go to the week of their last leg. "
-                "Join on 'NY week ending' with the NY report.")
-    ws["A1"].font = Font(italic=True, size=9, color="666666")
-    ws["A1"].alignment = Alignment(wrap_text=True, vertical="top")
-    ws.row_dimensions[1].height = 42
-    _table(ws, summary.get("ny_weeks") or [], [
-        ("NY week ending (Sun)", "ny_week_ending", None, 12), ("Week start (Mon)", "week_start_mon", None, 11),
-        ("NFL weeks in it", "nfl_weeks", None, 36), ("NFL games", "nfl_games", INT, 7),
-        ("Straight taker $", "straight_taker_dollars", USD, 15), ("Straight hold incl. fees", "straight_hold_incl_fees", PCT2, 11),
-        ("Parlay stakes (est.)", "parlay_stakes_est", USD, 14), ("Parlay hold incl. fees", "parlay_hold_incl_fees", PCT2, 11),
-        ("Combined $", "combined_dollars", USD, 15), ("Combined hold incl. fees", "combined_hold_incl_fees", PCT2, 11),
-        ("Pre-game hold", "pregame_hold", PCT2, 10), ("Pre-game expected", "pregame_expected_hold", PCT2, 10),
-        ("Luck (bps)", "luck_bps", INT, 9),
-        ("Public side vs price (pts)", lambda r: None if r.get("public_side_vs_price") is None else round(r["public_side_vs_price"] * 100, 1), "0.0", 11),
-        ("Preseason games", "preseason_games", INT, 9),
-    ], start_row=3, green_red=GREEN_RED | {"Straight hold incl. fees", "Parlay hold incl. fees", "Combined hold incl. fees"})
-
-
 def sheet_week_compare(wb, summary):
     """Week N of each season side by side - the comp view."""
     ws = wb.create_sheet("Week vs week", 1)
@@ -341,7 +318,7 @@ def sheet_week_compare(wb, summary):
 
 def sheet_charts(wb, weekly_rows):
     ws = wb.create_sheet("Charts")
-    rows = [w for w in weekly_rows if w["season_type"] != "pre"]
+    rows = [w for w in weekly_rows if w["season_type"] not in ("pre", "off")]
     _header(ws, 1, ["Week", "Pre-game actual hold", "Pre-game expected hold", "Luck (bps)", "Hold incl. fees (all)"], [14, 12, 12, 10, 12])
     for i, w in enumerate(rows, 2):
         for c, v in enumerate([w["week_label"], w["pre_hold"], w["pre_exp_hold"], w["pre_luck_bps"], w["all_hold_incl_fees"]], 1):
@@ -379,6 +356,10 @@ def sheet_notes(wb, summary, game_rows):
     incomplete = [g["game"] for g in game_rows if not g.get("complete")]
     lines = [
         ("Data pulled", summary["generated_utc"]),
+        ("Weeks", "Every 'week' is a New York sportsbook-report week: Monday-Sunday, labelled by the Sunday it ends on. "
+                  "Games go to the week of their kickoff date, so Monday Night Football counts in the FOLLOWING week "
+                  "(as in NY's cash-basis report). 'W03' = the NY week holding NFL Week 3's Thursday-Sunday games plus "
+                  "Week 2's Monday game. Parlays go to the week of their last leg."),
         ("Source", "Kalshi public trade tape (every trade in every NFL game market) + ESPN scoreboard for kickoff, score, week."),
         ("Games", f"{len(game_rows)} ({', '.join(f'{k}: from {v}' for k, v in sorted(firsts.items()))})"),
         ("Earliest Kalshi NFL game market", min((g["date"] for g in game_rows), default="-")),
@@ -411,7 +392,6 @@ def build(game_rows, gp_rows, weekly_rows, summary):
     sheet_buckets(wb, summary)
     sheet_parlays(wb, summary)
     sheet_week_compare(wb, summary)
-    sheet_ny_weeks(wb, summary)
     sheet_compare(wb, summary, pasted)
     sheet_charts(wb, weekly_rows)
     sheet_notes(wb, summary, game_rows)
