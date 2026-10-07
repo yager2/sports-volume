@@ -564,6 +564,11 @@ def main():
         w["parlay_hold_incl_fees"] = pr.get("hold_incl_fees") if big_enough else None
         w["parlay_hit_rate"] = pr.get("hit_rate") if big_enough else None
     summary["parlays"] = parlay_rows
+    try:
+        import sports_hold_report
+        summary["all_sports"], summary["all_sports_coverage"] = sports_hold_report.build(summary["games"], PARLAYS_BY_DATE)
+    except Exception as e:  # noqa: BLE001 - never let the all-sports tab block the NFL report
+        print(f"  all-sports rollup skipped: {e}")
     summary["week_compare"], summary["compare_seasons"] = week_compare(weekly_rows)
     write_csv(WEEKLY_CSV, weekly_rows)
     write_csv(PARLAYS_CSV, parlay_rows)

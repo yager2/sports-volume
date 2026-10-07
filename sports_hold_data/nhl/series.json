@@ -1,0 +1,143 @@
+{
+ "as_of": "2026-10-07T03:18:16.750394+00:00",
+ "series": {
+  "KXNHL1P": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "NHL 1st Period Winner"
+  },
+  "KXNHL1PSPREAD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "1st Period Spread"
+  },
+  "KXNHL1PTOTAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "NHL 1st Period Total"
+  },
+  "KXNHL2OT": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "NHL Double Overtime"
+  },
+  "KXNHL2P": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "NHL 2nd Period Winner"
+  },
+  "KXNHL2PSPREAD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "2nd Period Spread"
+  },
+  "KXNHL2PTOTAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "2nd Period Total"
+  },
+  "KXNHL3P": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "NHL 3rd Period Winner"
+  },
+  "KXNHL3PSPREAD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "NHL 3rd Period Spread"
+  },
+  "KXNHL3PTOTAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "3rd Period Total"
+  },
+  "KXNHLAST": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "Pro Hockey Assists"
+  },
+  "KXNHLEXPANSION": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "NHL Expansion"
+  },
+  "KXNHLF10G": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "NHL Goal in First 10 Minutes"
+  },
+  "KXNHLFIRSTGOAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "Pro Hockey First Goal"
+  },
+  "KXNHLGAME": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic_with_maker_fees",
+   "product": "moneyline",
+   "title": "NHL Game"
+  },
+  "KXNHLGOAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "NHL Goalscorer"
+  },
+  "KXNHLOT": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "NHL Overtime"
+  },
+  "KXNHLOVERTIME": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "NHL Overtime"
+  },
+  "KXNHLPTS": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "Pro Hockey Points"
+  },
+  "KXNHLSAVE": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "Goaltender Saves"
+  },
+  "KXNHLSPREAD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "spread",
+   "title": "NHL Spread"
+  },
+  "KXNHLTEAMTOTAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "NHL Team Goals Scored During Game"
+  },
+  "KXNHLTOTAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "total",
+   "title": "NHL Total Goals"
+  }
+ }
+}

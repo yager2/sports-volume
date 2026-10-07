@@ -1,0 +1,281 @@
+{
+ "as_of": "2026-10-07T03:17:14.868901+00:00",
+ "series": {
+  "KXNBA1H": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "NBA 1st Half Winner"
+  },
+  "KXNBA1HSPREAD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "NBA 1st Half Spread"
+  },
+  "KXNBA1HTOTAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "NBA 1st Half Total"
+  },
+  "KXNBA1HWINNER": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "Pro Baskeball 1st Half Winner"
+  },
+  "KXNBA1QSPREAD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "NBA 1st Quarter Spread"
+  },
+  "KXNBA1QTOTAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "NBA 1st Quarter Total"
+  },
+  "KXNBA1QWINNER": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "NBA 1st Quarter Winner"
+  },
+  "KXNBA2D": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "NBA Player Double Double"
+  },
+  "KXNBA2HSPREAD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "NBA 2nd Half Spread"
+  },
+  "KXNBA2HTOTAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "NBA 2nd Half Total"
+  },
+  "KXNBA2HWINNER": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "Pro Basketball 2nd Half Winner"
+  },
+  "KXNBA2QSPREAD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "NBA 2nd Quarter Spread"
+  },
+  "KXNBA2QTOTAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "NBA 1st Quarter Total"
+  },
+  "KXNBA2QWINNER": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "NBA 2nd Quarter Winner"
+  },
+  "KXNBA3D": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "NBA Player Triple Double"
+  },
+  "KXNBA3PT": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "NBA Player Threes"
+  },
+  "KXNBA3QSPREAD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "NBA 3rd Quarter Spread"
+  },
+  "KXNBA3QTOTAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "NBA 3rd Quarter Total"
+  },
+  "KXNBA3QWINNER": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "NBA 3rd Quarter Winner"
+  },
+  "KXNBA4QSPREAD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "NBA 4th Quarter Spread"
+  },
+  "KXNBA4QTOTAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "NBA 4th Quarter Total"
+  },
+  "KXNBA4QWINNER": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "NBA 4th Quarter Winner"
+  },
+  "KXNBAAST": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "NBA Player Assists"
+  },
+  "KXNBABLK": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "NBA Player Blocks"
+  },
+  "KXNBAFTM": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "NBA Player Free Throws Made"
+  },
+  "KXNBAGAME": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic_with_maker_fees",
+   "product": "moneyline",
+   "title": "NBA Game"
+  },
+  "KXNBAH2HBENCHPTS": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "NBA Head-to-Head Bench Points"
+  },
+  "KXNBAH2HTEAM3PT": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "NBA H2H Team Three Pointers"
+  },
+  "KXNBANEXTGOVERNOR": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Basketball Next Governor"
+  },
+  "KXNBAOVERTIME": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "NBA Overtime"
+  },
+  "KXNBAPTS": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "NBA Player Points"
+  },
+  "KXNBAPTSLEADER": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "NBA Game Points Leader"
+  },
+  "KXNBAREB": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "NBA Player Rebounds"
+  },
+  "KXNBASPREAD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic_with_maker_fees",
+   "product": "spread",
+   "title": "NBA Spread"
+  },
+  "KXNBASTADIUM": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "NBA Stadium Completion"
+  },
+  "KXNBASTAKESALE": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "NBA Team Ownership Stake Sale Agreement"
+  },
+  "KXNBASTL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "NBA Player Steals"
+  },
+  "KXNBASUMMER1HSPREAD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Basketball Summer League 1st Half Spread"
+  },
+  "KXNBASUMMER1HTOTAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Basketball Summer League 1st Half Total"
+  },
+  "KXNBASUMMER1HWINNER": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Basketball Summer League 1st Half Winner"
+  },
+  "KXNBASUMMERGAME": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Basketball Summer League Game"
+  },
+  "KXNBASUMMERPTS": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Basketball Summer Player Points"
+  },
+  "KXNBASUMMERSPREAD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Basketball Summer League Spread"
+  },
+  "KXNBASUMMERTOTAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Basketball Summer League Total"
+  },
+  "KXNBATEAMTOTAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "NBA Team Total"
+  },
+  "KXNBATOTAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic_with_maker_fees",
+   "product": "total",
+   "title": "NBA Total"
+  }
+ }
+}

@@ -1,0 +1,185 @@
+{
+ "as_of": "2026-10-07T03:20:00.294631+00:00",
+ "series": {
+  "KXMLBASGAME": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic_with_maker_fees",
+   "product": "game_prop",
+   "title": "Professional Baseball All-Star Game"
+  },
+  "KXMLBASGHIT": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "All Star Game Hits"
+  },
+  "KXMLBASGHR": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "All Star Game Home Runs"
+  },
+  "KXMLBASGKS": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "All Star Game Strikesouts"
+  },
+  "KXMLBDELAY": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Baseball Weather Delay"
+  },
+  "KXMLBERA": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Baseball Earned Runs"
+  },
+  "KXMLBEXTRAS": {
+   "fee_multiplier": 0.5,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "MLB Extra Innings"
+  },
+  "KXMLBF3": {
+   "fee_multiplier": 0.5,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "First 3 Innings Winner"
+  },
+  "KXMLBF5": {
+   "fee_multiplier": 0.5,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "First 5 Innings Winner"
+  },
+  "KXMLBF5SPREAD": {
+   "fee_multiplier": 0.5,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "First 5 Innings Spread"
+  },
+  "KXMLBF5TOTAL": {
+   "fee_multiplier": 0.5,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "First 5 Innings Total"
+  },
+  "KXMLBF7": {
+   "fee_multiplier": 0.5,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "First 7 Innings Winner"
+  },
+  "KXMLBFTGAME": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Baseball Futures Game"
+  },
+  "KXMLBGAME": {
+   "fee_multiplier": 0.5,
+   "fee_type": "quadratic_with_maker_fees",
+   "product": "moneyline",
+   "title": "Professional Baseball Game"
+  },
+  "KXMLBHA": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Baseball Hits Allowed"
+  },
+  "KXMLBHIT": {
+   "fee_multiplier": 0.5,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "Pro Baseball Hits"
+  },
+  "KXMLBHR": {
+   "fee_multiplier": 0.5,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "Pro Baseball Home Runs"
+  },
+  "KXMLBHRR": {
+   "fee_multiplier": 0.5,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "Pro Baseball Hits Runs RBIs"
+  },
+  "KXMLBKS": {
+   "fee_multiplier": 0.5,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "Pro Baseball Strikeouts"
+  },
+  "KXMLBOUTS": {
+   "fee_multiplier": 0.5,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Baseball Outs Recorded"
+  },
+  "KXMLBRBI": {
+   "fee_multiplier": 0.5,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "Pro Baseball RBIs"
+  },
+  "KXMLBRFI": {
+   "fee_multiplier": 0.5,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Baseball Run in First Inning"
+  },
+  "KXMLBSB": {
+   "fee_multiplier": 0.5,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "Pro Baseball Stolen Bases"
+  },
+  "KXMLBSERIESEXACT": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Professional Baseball Series Exact Result"
+  },
+  "KXMLBSPREAD": {
+   "fee_multiplier": 0.5,
+   "fee_type": "quadratic",
+   "product": "spread",
+   "title": "Pro Baseball Spread"
+  },
+  "KXMLBSTGAME": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Baseball Spring Training game"
+  },
+  "KXMLBTB": {
+   "fee_multiplier": 0.5,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "Pro Baseball Total Bases"
+  },
+  "KXMLBTEAMTOTAL": {
+   "fee_multiplier": 0.5,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Baseball Team Total"
+  },
+  "KXMLBTOTAL": {
+   "fee_multiplier": 0.5,
+   "fee_type": "quadratic",
+   "product": "total",
+   "title": "Pro Baseball Total Points"
+  },
+  "KXMLBWA": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Baseball Walks"
+  }
+ }
+}

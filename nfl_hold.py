@@ -44,6 +44,7 @@ import ctypes
 import gzip
 import json
 import os
+import random
 import re
 import sys
 import threading
@@ -71,7 +72,7 @@ PARLAY_SERIES = {"KXNFLCOMBO", "KXNFLPREPACK", "KXNFLPREPACK1HFT"}
 SERIES_MAX_AGE_DAYS = 7
 DAILY_LOOKBACK_DAYS = 10
 WORKERS = 4                 # parallel market pulls
-REQS_PER_SEC = 12.0         # shared across workers; Kalshi's public tier allows ~20/s
+REQS_PER_SEC = float(os.environ.get("KALSHI_RPS", "4.2"))  # shared; Kalshi public API sustains ~4-5/s per IP (more from CI)
 CLOSE_WINDOW_MIN = 30       # closing price = VWAP of the final 30 pre-kickoff minutes...
 CLOSE_MIN_TRADES = 3        # ...if at least this many trades, else the last pre-kickoff trade
 TAKER_FEE_RATE = 0.07       # Kalshi quadratic fee: rate * mult * C * P * (1-P)
@@ -161,7 +162,7 @@ def _session() -> requests.Session:
 
 def http_get(url: str, params: dict | None = None, limit: bool = True) -> dict:
     backoff = 2.0
-    for attempt in range(8):
+    for attempt in range(40):
         if limit:
             _limiter.wait()
         try:
@@ -176,6 +177,13 @@ def http_get(url: str, params: dict | None = None, limit: bool = True) -> dict:
             return {}
         if r is not None and r.status_code not in (429, 500, 502, 503, 504):
             raise SystemExit(f"HTTP {r.status_code} on {r.url}: {r.text[:300]}")
+        if r is not None and r.status_code == 429:
+            # Kalshi's public API sustains only ~4-5 req/s per IP (measured
+            # 2026-10-06). Exponential waits up to 60s here caused the long
+            # "stalls" seen in earlier backfills; the limiter paces requests,
+            # so a 429 just needs a short pause before trying again.
+            time.sleep(1.0 + random.random())
+            continue
         time.sleep(backoff)
         backoff = min(backoff * 2, 60)
     raise SystemExit(f"retries exhausted on {url} {params}")
@@ -350,14 +358,25 @@ def fee_rates(meta: dict) -> tuple[float, float]:
     return TAKER_FEE_RATE * mult, maker * mult
 
 
-def roll_up_market(m: dict, kickoff: float, cutoff: float, rates: tuple[float, float]) -> dict:
-    """Page every trade in one market; return per-bucket sums + closing price."""
-    t_rate, m_rate = rates
+def trade_paths(m: dict, cutoff: float) -> list[str]:
+    """Trades older than Kalshi's archive cutoff only exist in /historical/trades."""
     paths = []
     if (ts(m.get("open_time")) or 0) < cutoff:
         paths.append("/historical/trades")
     if (ts(m.get("close_time")) or 1e12) >= cutoff:
         paths.append("/markets/trades")
+    return paths
+
+
+def roll_up_market(m: dict, kickoff: float, cutoff: float, rates: tuple[float, float],
+                   trades: list[dict] | None = None) -> dict:
+    """Page every trade in one market; return per-bucket sums + closing price.
+
+    `trades` lets a caller pass trades it already fetched (sports_hold.py pulls
+    big markets in parallel time slices); duplicates are dropped by trade_id.
+    """
+    t_rate, m_rate = rates
+    paths = trade_paths(m, cutoff)
     agg = defaultdict(lambda: [0, 0.0, 0.0, 0.0, 0.0])   # n, contracts, taker $, taker fee, maker fee
     seen = set()
     last_pre = (0.0, None)
@@ -365,8 +384,10 @@ def roll_up_market(m: dict, kickoff: float, cutoff: float, rates: tuple[float, f
     win_n = 0
     side_mismatch = 0
     win_start = kickoff - CLOSE_WINDOW_MIN * 60
-    for path in paths:
-        for t in paginate(path, {"ticker": m["ticker"], "limit": 1000}, "trades"):
+    sources = ([trades] if trades is not None else
+               [paginate(path, {"ticker": m["ticker"], "limit": 1000}, "trades") for path in paths])
+    for src in sources:
+        for t in src:
             if t["trade_id"] in seen:
                 continue
             seen.add(t["trade_id"])

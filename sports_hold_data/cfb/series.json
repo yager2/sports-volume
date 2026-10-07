@@ -1,0 +1,275 @@
+{
+ "as_of": "2026-10-07T03:26:50.458032+00:00",
+ "series": {
+  "KXNCAAF1H": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "College Football 1st Half Winner"
+  },
+  "KXNCAAF1HFT": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "College Football 1st Half Fulltime Result"
+  },
+  "KXNCAAF1HSPREAD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "College Football 1st Half Spread"
+  },
+  "KXNCAAF1HTEAMTOTAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "College Football 1st Half Team Total Points"
+  },
+  "KXNCAAF1HTOTAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "College Football 1st Half Total"
+  },
+  "KXNCAAF1HWINNER": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "College Football 1st Half Winner"
+  },
+  "KXNCAAF1Q": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "College Football 1st Quarter Winner"
+  },
+  "KXNCAAF1QSPREAD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "College Football 1st Quarter Spread"
+  },
+  "KXNCAAF1QTOTAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "College Football 1st Quarter Total"
+  },
+  "KXNCAAF2H": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "College Football 2nd Half Winner"
+  },
+  "KXNCAAF2HSPREAD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "College Football 2nd Half Spread"
+  },
+  "KXNCAAF2HTOTAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "College Football 2nd Half Total"
+  },
+  "KXNCAAF2PT": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "College Football 2-Point Conversion"
+  },
+  "KXNCAAF2Q": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "College Football 2nd Quarter Winner"
+  },
+  "KXNCAAF2QSPREAD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "College Football 2nd Quarter Spread"
+  },
+  "KXNCAAF2QTOTAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "College Football 2nd Quarter Total"
+  },
+  "KXNCAAF3Q": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "College Football 3rd Quarter Winner"
+  },
+  "KXNCAAF3QSPREAD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "College Football 3rd Quarter Spread"
+  },
+  "KXNCAAF3QTOTAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "College Football 3rd Quarter Total"
+  },
+  "KXNCAAF4Q": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "College Football 4th Quarter Winner"
+  },
+  "KXNCAAF4QSPREAD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "College Football 4th Quarter Spread"
+  },
+  "KXNCAAF4QTOTAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "College Football 4th Quarter Total"
+  },
+  "KXNCAAFCSGAME": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "College Football FCS Game"
+  },
+  "KXNCAAFD3GAME": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "DIII College Football Game"
+  },
+  "KXNCAAFDELAY": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "College Football Weather Delay"
+  },
+  "KXNCAAFDSTTD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "College Football Defense Special Teams Touchdown"
+  },
+  "KXNCAAFFIRSTTDTEAM": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "College Football First Team to Score a Touchdown"
+  },
+  "KXNCAAFGAME": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic_with_maker_fees",
+   "product": "moneyline",
+   "title": "College Football Game"
+  },
+  "KXNCAAFOT": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "College Football Overtime"
+  },
+  "KXNCAAFQHIGHSCORE": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "College Football Highest Scoring Quarter"
+  },
+  "KXNCAAFSPREAD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic_with_maker_fees",
+   "product": "spread",
+   "title": "College Football Spread"
+  },
+  "KXNCAAFSTADIUM": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "College Football Stadiums"
+  },
+  "KXNCAAFTEAMFG": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "College Football Team Total Field Goals"
+  },
+  "KXNCAAFTEAMINT": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "College Football Team Total Defensive Interceptions"
+  },
+  "KXNCAAFTEAMRECTD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "College Football Team Receiving Touchdowns"
+  },
+  "KXNCAAFTEAMRECYDS": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "College Football Team Receiving Yards"
+  },
+  "KXNCAAFTEAMRSHTD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "College Football Team Rushing Touchdowns"
+  },
+  "KXNCAAFTEAMSACK": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "College Football Team Total Sacks"
+  },
+  "KXNCAAFTEAMTD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "College Football Team Total Touchdowns"
+  },
+  "KXNCAAFTEAMTO": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "College Football Team Total Forced Turnovers"
+  },
+  "KXNCAAFTEAMTOTAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "College Football Team Total Points"
+  },
+  "KXNCAAFTEAMYDS": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "College Football Team Total Yards"
+  },
+  "KXNCAAFTOTAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic_with_maker_fees",
+   "product": "total",
+   "title": "College Football Total Points"
+  },
+  "KXNCAAFTOTALFG": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "College Football Total Field Goals"
+  },
+  "KXNCAAFTOTALTD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "College Football Total Touchdowns"
+  }
+ }
+}

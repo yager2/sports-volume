@@ -1,0 +1,65 @@
+{
+ "as_of": "2026-10-07T03:26:05.869742+00:00",
+ "series": {
+  "KXNCAAMB1HSPREAD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "Men's College Basketball First Half Spread"
+  },
+  "KXNCAAMB1HTOTAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "Men's College Basketball First Half Total"
+  },
+  "KXNCAAMB1HWINNER": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "College Basketball 1H Winner"
+  },
+  "KXNCAAMBD3GAME": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Men's College Basketball D3 Game"
+  },
+  "KXNCAAMBFIRST10": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "College Basketball Race to 10 Points"
+  },
+  "KXNCAAMBFIRST25": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "College Basketball Race to 25 Points"
+  },
+  "KXNCAAMBFIRST50": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "College Basketball Race to 50 Points"
+  },
+  "KXNCAAMBGAME": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic_with_maker_fees",
+   "product": "moneyline",
+   "title": "Men's College Basketball Men's Game"
+  },
+  "KXNCAAMBSPREAD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic_with_maker_fees",
+   "product": "spread",
+   "title": "Men's College Basketball Spread"
+  },
+  "KXNCAAMBTOTAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic_with_maker_fees",
+   "product": "total",
+   "title": "Men's College Basketball Total Points"
+  }
+ }
+}

@@ -1,8 +1,9 @@
 """
-Build nfl_hold.xlsx - the formatted workbook for the Kalshi NFL taker-hold tracker.
+Build nfl_hold.xlsx (and its Google Sheets copy "NFL Hold Tracker") - Kalshi taker hold.
 
 Tabs:
-  - "Dashboard"          season-to-date by product + the last 6 weeks, green/red
+  - "All sports weekly"  every NY report week, NFL/NBA/MLB/NHL/CFB/CBB side by side
+  - "NFL dashboard"      season-to-date by product + the last 6 weeks, green/red
   - "Week vs week"        Week N of each season side by side (the comp view)
   - "Weekly"             one row per NFL week (hold, expected, luck, outcome factors)
   - "By game"            one row per game
@@ -26,51 +27,93 @@ from datetime import datetime, timezone
 from openpyxl import Workbook, load_workbook
 from openpyxl.chart import BarChart, LineChart, Reference
 from openpyxl.formatting.rule import CellIsRule
-from openpyxl.styles import Alignment, Font, PatternFill
+from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 XLSX_OUT = os.path.join(HERE, "nfl_hold.xlsx")
 
-HEAD_FILL = PatternFill("solid", fgColor="1F2A37")
-HEAD_FONT = Font(color="FFFFFF", bold=True, size=10)
-GREEN = PatternFill("solid", fgColor="DCF2DF")
-RED = PatternFill("solid", fgColor="F8DEDD")
+# ---- house style (reads well in Excel and in the Google Sheets copy) ----
+FONT = "Arial"
+NAVY, SLATE, MUTED, RULE, BAND = "1E293B", "334155", "64748B", "E2E8F0", "F8FAFC"
+HEAD_FILL = PatternFill("solid", fgColor=NAVY)
+GROUP_FILL = PatternFill("solid", fgColor=SLATE)
+BAND_FILL = PatternFill("solid", fgColor=BAND)
+HEAD_FONT = Font(name=FONT, color="FFFFFF", bold=True, size=9)
+BODY_FONT = Font(name=FONT, size=10, color="0F172A")
+DIM_FONT = Font(name=FONT, size=10, color="94A3B8", italic=True)
+TITLE_FONT = Font(name=FONT, size=15, bold=True, color=NAVY)
+SUB_FONT = Font(name=FONT, size=9, color=MUTED)
+SECTION_FONT = Font(name=FONT, size=11, bold=True, color=NAVY)
+THIN = Side(style="thin", color=RULE)
+ROW_BORDER = Border(bottom=THIN)
+HEAD_BORDER = Border(bottom=Side(style="medium", color=NAVY))
+# + = takers lost = house won -> green ; - = takers won -> red
+GREEN = PatternFill("solid", fgColor="E7F6EC")
+RED = PatternFill("solid", fgColor="FDECEC")
+GREEN_FONT = Font(name=FONT, size=10, color="166534")
+RED_FONT = Font(name=FONT, size=10, color="991B1B")
 INPUT_FILL = PatternFill("solid", fgColor="FFF7D6")
-PCT, PCT2, USD, INT = "0.0%", "0.00%", '"$"#,##0', "#,##0"
+PCT, PCT2, INT = "0.0%", "0.00%", "#,##0"
+USD = '"$"#,##0;-"$"#,##0'
 PNAME = {"moneyline": "Moneyline", "spread": "Spread", "total": "Total", "player_prop": "Player props",
          "period": "Halves/quarters", "game_prop": "Other game props"}
 # States whose monthly reports break out football (or NFL) handle and hold.
 STATES = ["NJ", "PA", "NY", "IL", "MD", "CO"]
+TAB_COLORS = {"all": "1E293B", "nfl": "2563EB", "parlay": "EA580C", "ref": "94A3B8"}
+
+
+def _title(ws, title: str, subtitle: str = "", tab: str = "nfl"):
+    """Title + one-line description at the top of a sheet; gridlines off."""
+    ws["A1"] = title
+    ws["A1"].font = TITLE_FONT
+    ws.row_dimensions[1].height = 24
+    if subtitle:
+        ws["A2"] = subtitle
+        ws["A2"].font = SUB_FONT
+    ws.sheet_view.showGridLines = False
+    ws.sheet_properties.tabColor = TAB_COLORS.get(tab, NAVY)
 
 
 def _header(ws, row, cols, widths=None):
     for c, name in enumerate(cols, 1):
         cell = ws.cell(row=row, column=c, value=name)
-        cell.fill, cell.font = HEAD_FILL, HEAD_FONT
-        cell.alignment = Alignment(wrap_text=True, vertical="center")
+        cell.fill, cell.font, cell.border = HEAD_FILL, HEAD_FONT, HEAD_BORDER
+        cell.alignment = Alignment(wrap_text=True, vertical="center", horizontal="left" if c == 1 else "center")
         if widths:
             ws.column_dimensions[get_column_letter(c)].width = widths[c - 1] if c - 1 < len(widths) else 13
-    ws.row_dimensions[row].height = 30
+    ws.row_dimensions[row].height = 34
 
 
-def _table(ws, rows, spec, start_row=1, green_red=()):
+def _green_red(ws, rng):
+    ws.conditional_formatting.add(rng, CellIsRule(operator="greaterThan", formula=["0"], fill=GREEN, font=GREEN_FONT))
+    ws.conditional_formatting.add(rng, CellIsRule(operator="lessThan", formula=["0"], fill=RED, font=RED_FONT))
+
+
+def _body_cell(cell, fmt, band, dim=False):
+    cell.font = DIM_FONT if dim else BODY_FONT
+    cell.border = ROW_BORDER
+    if band:
+        cell.fill = BAND_FILL
+    if fmt:
+        cell.number_format = fmt
+        cell.alignment = Alignment(horizontal="right")
+
+
+def _table(ws, rows, spec, start_row=4, green_red=(), freeze_col=3, dim_if=None):
     """spec: [(header, key, fmt, width)]; green_red: headers where + is green (house won)."""
     _header(ws, start_row, [s[0] for s in spec], [s[3] for s in spec])
     for i, r in enumerate(rows, start_row + 1):
+        dim = bool(dim_if and dim_if(r))
         for c, (_, key, fmt, _) in enumerate(spec, 1):
             v = key(r) if callable(key) else r.get(key)
-            cell = ws.cell(row=i, column=c, value=v)
-            if fmt:
-                cell.number_format = fmt
+            _body_cell(ws.cell(row=i, column=c, value=v), fmt, (i - start_row) % 2 == 0, dim)
     last = start_row + len(rows)
     for c, (h, *_rest) in enumerate(spec, 1):
         if h in green_red and rows:
             col = get_column_letter(c)
-            rng = f"{col}{start_row + 1}:{col}{last}"
-            ws.conditional_formatting.add(rng, CellIsRule(operator="greaterThan", formula=["0"], fill=GREEN))
-            ws.conditional_formatting.add(rng, CellIsRule(operator="lessThan", formula=["0"], fill=RED))
-    ws.freeze_panes = ws.cell(row=start_row + 1, column=3)
+            _green_red(ws, f"{col}{start_row + 1}:{col}{last}")
+    ws.freeze_panes = ws.cell(row=start_row + 1, column=freeze_col)
     return last
 
 
@@ -116,12 +159,10 @@ GREEN_RED = {"Parlay hold incl. fees", "Hold incl. fees (all)", "Hold (all)", "P
 
 def sheet_dashboard(wb, summary, weekly_rows):
     ws = wb.active
-    ws.title = "Dashboard"
-    ws["A1"] = "Kalshi NFL taker hold - a same-week stand-in for sportsbook hold"
-    ws["A1"].font = Font(bold=True, size=13)
-    ws["A2"] = ("Hold = share of taker $ that takers lost (like a book's hold). Green = house won, red = takers won. "
-                f"Regular season + playoffs only. Updated {summary['generated_utc']}.")
-    ws["A2"].font = Font(italic=True, size=9, color="666666")
+    ws.title = "NFL dashboard"
+    _title(ws, "NFL taker hold - season to date",
+           "Hold = share of taker $ that takers lost (a sportsbook's hold). Green = house/makers won, red = takers won. "
+           f"Regular season + playoffs. Updated {summary['generated_utc']}.", "nfl")
     cols = summary["prod_cols"]
     games = [g for g in summary["games"] if g["season_type"] != "pre"]
     seasons = sorted({g["season"] for g in games}, reverse=True)
@@ -136,21 +177,25 @@ def sheet_dashboard(wb, summary, weekly_rows):
             rows.append({"product": PNAME.get(p, "ALL STRAIGHTS"), "n": a["notional"], "hf": a["hold_f"], "h": a["hold"],
                          "pre_h": pre["hold"], "exp": pre["exp"], "luck": pre["luck"], "live_h": live["hold"],
                          "pub": None if pre["pub"] is None else pre["pub"] * 100, "fees": a["taker_fee"] + a["maker_fee"]})
-        ws.cell(row=r, column=1, value=f"Season {season} to date ({len(gs)} games)").font = Font(bold=True, size=11)
+        ws.cell(row=r, column=1, value=f"Season {season} to date  ·  {len(gs)} games").font = SECTION_FONT
         r = _table(ws, rows, [
             ("Product", "product", None, 18), ("Taker $", "n", USD, 16), ("Hold incl. fees", "hf", PCT2, 11),
             ("Hold", "h", PCT2, 10), ("Pre-game hold", "pre_h", PCT2, 10), ("Pre-game expected", "exp", PCT2, 10),
             ("Luck (bps)", "luck", INT, 9), ("In-game hold", "live_h", PCT2, 10),
             ("Public side vs price (pts)", "pub", "0.00", 12), ("Kalshi fees", "fees", USD, 13),
         ], start_row=r + 1, green_red=GREEN_RED | {"Pre-game hold"}) + 2
-    ws.cell(row=r, column=1, value="Last 6 weeks").font = Font(bold=True, size=11)
+    ws.cell(row=r, column=1, value="Last 6 weeks").font = SECTION_FONT
     recent = [w for w in weekly_rows if w["season_type"] not in ("pre", "off")][-6:]
     _table(ws, list(reversed(recent)), WEEK_SPEC[:12], start_row=r + 1, green_red=GREEN_RED)
     ws.freeze_panes = None
 
 
 def sheet_weekly(wb, weekly_rows):
-    _table(wb.create_sheet("Weekly"), weekly_rows, WEEK_SPEC, green_red=GREEN_RED)
+    ws = wb.create_sheet("NFL weekly")
+    _title(ws, "NFL by week",
+           "Weeks are New York report weeks: Monday-Sunday, labelled by the Sunday (Week-Ending). Monday Night Football "
+           "counts in the following week. One row per Sunday so it lines up with NY's weekly table.", "nfl")
+    _table(ws, weekly_rows, WEEK_SPEC, green_red=GREEN_RED, dim_if=lambda r: not r.get("games"))
 
 
 def sheet_games(wb, game_rows):
@@ -163,7 +208,9 @@ def sheet_games(wb, game_rows):
         ("Fav spread line", "spread_line", "0.0", 8), ("Fav margin", "fav_margin", INT, 7), ("Fav covered", "fav_covered", "0", 7),
         ("Total line", "total_line", "0.0", 7), ("Total pts", "total_pts", INT, 7), ("Over", "over_hit", "0", 6),
         ("Complete", "complete", None, 8)]
-    _table(wb.create_sheet("By game"), game_rows, spec, green_red=GREEN_RED)
+    ws = wb.create_sheet("NFL by game")
+    _title(ws, "NFL by game", "Every NFL game Kalshi listed, with hold, luck and the closing-line outcome factors.", "nfl")
+    _table(ws, game_rows, spec, green_red=GREEN_RED)
 
 
 def sheet_game_product(wb, gp_rows):
@@ -171,7 +218,9 @@ def sheet_game_product(wb, gp_rows):
             ("Product", lambda r: PNAME.get(r["product"], r["product"]), None, 15)] + [
         s for s in WEEK_SPEC if s[0] not in ("Week-Ending", "Week", "NFL games in it", "Games", "First date", "Fav win rate", "Fav implied",
                                               "Fav cover rate", "Over rate", "Pts vs closing total")]
-    _table(wb.create_sheet("By game x product"), gp_rows, spec, green_red=GREEN_RED)
+    ws = wb.create_sheet("NFL by game x product")
+    _title(ws, "NFL by game and product", "Moneyline, spread, total, player props, halves/quarters and other game props, per game.", "nfl")
+    _table(ws, gp_rows, spec, green_red=GREEN_RED)
 
 
 def sheet_buckets(wb, summary):
@@ -188,18 +237,19 @@ def sheet_buckets(wb, summary):
     rows = [{"season": s, "phase": {"pre": "Pre-game", "live": "In-game", "all": "All"}[ph], "bucket": labels[b],
              "n": d, "pnl": pnl, "hf": -(pnl - f) / d if d else None, "h": -pnl / d if d else None}
             for (s, ph, b), (d, pnl, f) in sorted(acc.items(), key=lambda kv: (-kv[0][0], kv[0][1], kv[0][2]))]
-    _table(wb.create_sheet("By ticket size"), rows, [
+    ws = wb.create_sheet("NFL by ticket size")
+    _title(ws, "NFL hold by ticket size", "Taker $ per trade. Small tickets are the closest thing to retail sportsbook customers.", "nfl")
+    _table(ws, rows, [
         ("Season", "season", None, 8), ("Bets", "phase", None, 10), ("Taker $ per trade", "bucket", None, 12),
         ("Taker $", "n", USD, 16), ("Taker P&L", "pnl", USD, 14), ("Hold incl. fees", "hf", PCT2, 11), ("Hold", "h", PCT2, 10),
     ], green_red=GREEN_RED)
 
 
 def sheet_parlays(wb, summary):
-    ws = wb.create_sheet("Parlays")
-    ws["A1"] = ("Kalshi parlays with NFL legs. $ are ESTIMATES: 10 of every 60 minutes of the trade feed are "
-                "sampled and scaled x6; hold % is computed directly from the sampled trades. "
-                "'nfl' = every leg NFL; 'nfl_mixed' = some legs from other sports. Only fully-settled days count.")
-    ws["A1"].font = Font(italic=True, size=9, color="666666")
+    ws = wb.create_sheet("NFL parlays")
+    _title(ws, "NFL parlays",
+           "$ are estimates (10 of every 60 minutes of trading sampled, x6); hold % comes straight from the sampled trades. "
+           "'nfl' = every leg NFL; 'nfl_mixed' = some legs from other sports. Only fully-settled days count.", "parlay")
     rows = sorted(summary.get("parlays") or [], key=lambda r: (r["category"], r["legs"] != "all"))
     _table(ws, rows, [
         ("Week", "week_label", None, 14), ("Type", "category", None, 10), ("Legs", "legs", None, 7),
@@ -207,15 +257,14 @@ def sheet_parlays(wb, summary):
         ("Hold", "hold", PCT2, 10), ("Fair hold if legs independent", "exp_hold_indep_legs", PCT2, 13),
         ("Hit rate", "hit_rate", PCT2, 9), ("Parlays sampled", "parlays_sampled", INT, 10),
         ("Trades sampled", "sampled_trades", INT, 10), ("Pre-game share", "pre_share", PCT, 9),
-    ], start_row=3, green_red=GREEN_RED | {"Hold incl. fees"})
+    ], green_red=GREEN_RED | {"Hold incl. fees"})
 
 
 def sheet_compare(wb, summary, pasted: dict):
     """Monthly Kalshi hold next to user-pasted state sportsbook football hold."""
     ws = wb.create_sheet("Sportsbook compare")
-    ws["A1"] = ("Paste each state's monthly FOOTBALL (or NFL) sportsbook hold % into the yellow cells "
-                "(e.g. 7.5% as 7.5%). They are kept across refreshes. Kalshi columns update automatically.")
-    ws["A1"].font = Font(italic=True, size=9, color="666666")
+    _title(ws, "NFL vs state sportsbook hold (monthly)",
+           "Paste each state's monthly football sportsbook hold % into the yellow cells; they are kept across refreshes.", "ref")
     cols = summary["prod_cols"]
     months = defaultdict(list)
     for g in summary["games"]:
@@ -223,8 +272,8 @@ def sheet_compare(wb, summary, pasted: dict):
             months[g["month"]].append(g)
     heads = ["Month", "Games", "Kalshi taker $", "Kalshi hold incl. fees", "Kalshi pre-game hold",
              "Kalshi pre-game expected", "Luck (bps)"] + [f"{s} book hold" for s in STATES] + ["State avg", "Kalshi minus state avg"]
-    _header(ws, 3, heads, [10, 7, 16, 11, 11, 11, 9] + [10] * len(STATES) + [10, 12])
-    for i, m in enumerate(sorted(months), 4):
+    _header(ws, 4, heads, [10, 7, 16, 11, 11, 11, 9] + [10] * len(STATES) + [10, 12])
+    for i, m in enumerate(sorted(months), 5):
         a, pre = _sum(months[m], None, None, cols), _sum(months[m], "pre", None, cols)
         vals = [m, len(months[m]), a["notional"], a["hold_f"], pre["hold"], pre["exp"], pre["luck"]]
         fmts = [None, INT, USD, PCT2, PCT2, PCT2, INT]
@@ -242,7 +291,7 @@ def sheet_compare(wb, summary, pasted: dict):
         diff = ws.cell(row=i, column=first_state + len(STATES) + 1,
                        value=f'=IF({get_column_letter(first_state + len(STATES))}{i}="","",D{i}-{get_column_letter(first_state + len(STATES))}{i})')
         diff.number_format = PCT2
-    ws.freeze_panes = "B4"
+    ws.freeze_panes = "B5"
 
 
 def _read_pasted() -> dict:
@@ -253,9 +302,10 @@ def _read_pasted() -> dict:
         ws = load_workbook(XLSX_OUT, data_only=False)["Sportsbook compare"]
     except (KeyError, OSError, ValueError):
         return {}
-    heads = [c.value for c in ws[3]]
+    hrow = 4 if ws["A4"].value == "Month" else 3
+    heads = [c.value for c in ws[hrow]]
     out = {}
-    for row in ws.iter_rows(min_row=4, values_only=True):
+    for row in ws.iter_rows(min_row=hrow + 1, values_only=True):
         for s in STATES:
             h = f"{s} book hold"
             if h in heads and row[heads.index(h)] not in (None, ""):
@@ -265,12 +315,11 @@ def _read_pasted() -> dict:
 
 def sheet_week_compare(wb, summary):
     """Week N of each season side by side - the comp view."""
-    ws = wb.create_sheet("Week vs week", 1)
+    ws = wb.create_sheet("NFL week vs week", 2)
     seasons = summary.get("compare_seasons") or []
-    ws["A1"] = ("Same NFL week, season by season. Hold = share of taker $ that takers lost (incl. fees); "
-                "green = house won. Luck = pre-game results luck in bps. Parlay $ are sampled estimates; "
-                "Kalshi parlays started in Week 4 of 2025.")
-    ws["A1"].font = Font(italic=True, size=9, color="666666")
+    _title(ws, "NFL week vs week",
+           "Same week, season by season (New York report weeks). Hold incl. fees; green = house won. "
+           "Parlay $ are sampled estimates; Kalshi parlays started in Week 4 of 2025.", "nfl")
     metrics = [("Taker $", "taker_dollars", USD, 14), ("Hold incl. fees", "hold_incl_fees", PCT2, 10),
                ("Luck (bps)", "luck_bps", INT, 8), ("Public side (pts)", "public_edge", "0.0", 9),
                ("Parlay $ (est.)", "parlay_dollars", USD, 13), ("Parlay hold", "parlay_hold", PCT2, 10)]
@@ -283,16 +332,19 @@ def sheet_week_compare(wb, summary):
     for season in seasons:
         ws.merge_cells(start_row=3, start_column=col, end_row=3, end_column=col + len(metrics) - 1)
         c = ws.cell(row=3, column=col, value=f"{season} season")
-        c.fill, c.font, c.alignment = HEAD_FILL, HEAD_FONT, Alignment(horizontal="center")
+        c.fill, c.font, c.alignment = GROUP_FILL, HEAD_FONT, Alignment(horizontal="center")
         for j, (name, _, _, width) in enumerate(metrics):
             h = ws.cell(row=4, column=col + j, value=name)
-            h.fill, h.font = HEAD_FILL, HEAD_FONT
-            h.alignment = Alignment(wrap_text=True)
+            h.fill, h.font, h.border = HEAD_FILL, HEAD_FONT, HEAD_BORDER
+            h.alignment = Alignment(wrap_text=True, horizontal="center", vertical="center")
             ws.column_dimensions[get_column_letter(col + j)].width = width
         col += len(metrics)
     ws.row_dimensions[4].height = 30
     for i, r in enumerate(summary.get("week_compare") or [], 5):
-        ws.cell(row=i, column=1, value=r["week"]).font = Font(bold=True, size=10)
+        wc = ws.cell(row=i, column=1, value=r["week"])
+        wc.font, wc.border = Font(name=FONT, bold=True, size=10, color=NAVY), ROW_BORDER
+        if i % 2 == 0:
+            wc.fill = BAND_FILL
         col = 2
         for season in seasons:
             w = r.get(str(season))
@@ -300,8 +352,7 @@ def sheet_week_compare(wb, summary):
                 v = None if w is None else w.get(key)
                 if key == "public_edge" and v is not None:
                     v = round(v * 100, 1)
-                cell = ws.cell(row=i, column=col + j, value=v)
-                cell.number_format = fmt
+                _body_cell(ws.cell(row=i, column=col + j, value=v), fmt, i % 2 == 0)
             col += len(metrics)
     last = 4 + len(summary.get("week_compare") or [])
     col = 2
@@ -310,14 +361,72 @@ def sheet_week_compare(wb, summary):
             if key in ("hold_incl_fees", "luck_bps", "parlay_hold"):
                 L = get_column_letter(col + j)
                 rng = f"{L}5:{L}{last}"
-                ws.conditional_formatting.add(rng, CellIsRule(operator="greaterThan", formula=["0"], fill=GREEN))
-                ws.conditional_formatting.add(rng, CellIsRule(operator="lessThan", formula=["0"], fill=RED))
+                _green_red(ws, rng)
         col += len(metrics)
     ws.freeze_panes = "B5"
 
 
+ALL_LEAGUES = [("nfl", "NFL"), ("nba", "NBA"), ("mlb", "MLB"), ("nhl", "NHL"),
+               ("cfb", "College football"), ("cbb", "College basketball")]
+
+
+def sheet_all_sports(wb, summary):
+    """Every NY report week, all six leagues side by side - the tab to line up with NY's weekly table."""
+    rows = summary.get("all_sports") or []
+    if not rows:
+        return
+    ws = wb.create_sheet("All sports weekly", 0)
+    cov = summary.get("all_sports_coverage") or {}
+    pending = [name for lg, name in ALL_LEAGUES if not cov.get(lg)]
+    _title(ws, "Kalshi taker hold by New York report week",
+           "Exact: every trade in every game market (moneyline, spreads, totals, props, periods). Hold = share of taker $ "
+           "takers lost incl. fees; green = house/makers won, red = takers won. Weeks run Monday-Sunday (Week-Ending)."
+           + (f"  Still loading: {', '.join(pending)}." if pending else ""), "all")
+    groups = [("All six leagues", [("Games", "all_games", INT, 7), ("Taker $", "all_taker_dollars", USD, 15),
+                                   ("House won $ (before fees)", lambda r: None if r.get("all_taker_pnl") is None else -r["all_taker_pnl"], USD, 14),
+                                   ("Hold incl. fees", "all_hold", PCT2, 10), ("Pre-game luck (bps)", "all_pregame_luck_bps", INT, 9)])]
+    for lg, name in ALL_LEAGUES:
+        groups.append((name, [("Taker $", f"{lg}_taker_dollars", USD, 14), ("Hold", f"{lg}_hold", PCT2, 9)]))
+    groups.append(("NFL parlays (est.)", [("Stakes", "nfl_parlay_stakes_est", USD, 13), ("Hold", "nfl_parlay_hold", PCT2, 9)]))
+    # header rows 4 (groups) and 5 (metrics)
+    a = ws.cell(row=4, column=1, value="Week-Ending")
+    a.fill, a.font, a.alignment = HEAD_FILL, HEAD_FONT, Alignment(vertical="center")
+    ws.merge_cells(start_row=4, start_column=1, end_row=5, end_column=1)
+    ws.column_dimensions["A"].width = 12
+    col = 2
+    flat = []
+    for gname, metrics in groups:
+        ws.merge_cells(start_row=4, start_column=col, end_row=4, end_column=col + len(metrics) - 1)
+        g = ws.cell(row=4, column=col, value=gname)
+        g.fill, g.font, g.alignment = (HEAD_FILL if gname.startswith("All") else GROUP_FILL), HEAD_FONT, Alignment(horizontal="center")
+        for j, (mname, key, fmt, width) in enumerate(metrics):
+            h = ws.cell(row=5, column=col + j, value=mname)
+            h.fill, h.font, h.border = HEAD_FILL, HEAD_FONT, HEAD_BORDER
+            h.alignment = Alignment(wrap_text=True, horizontal="center", vertical="center")
+            ws.column_dimensions[get_column_letter(col + j)].width = width
+            flat.append((col + j, mname, key, fmt))
+        col += len(metrics)
+    ws.row_dimensions[5].height = 30
+    ws.cell(row=5, column=1).fill = HEAD_FILL
+    for i, r in enumerate(rows, 6):
+        band = i % 2 == 0
+        dim = not r.get("all_games")
+        wc = ws.cell(row=i, column=1, value=datetime.fromisoformat(r["week_ending"]))
+        _body_cell(wc, "mm/dd/yy", band, dim)
+        for c, mname, key, fmt in flat:
+            v = key(r) if callable(key) else r.get(key)
+            _body_cell(ws.cell(row=i, column=c, value=v), fmt, band, dim)
+    last = 5 + len(rows)
+    for c, mname, key, fmt in flat:
+        if mname in ("Hold", "Hold incl. fees", "Pre-game luck (bps)", "House won $ (before fees)"):
+            L = get_column_letter(c)
+            _green_red(ws, f"{L}6:{L}{last}")
+    ws.freeze_panes = "B6"
+
+
 def sheet_charts(wb, weekly_rows):
-    ws = wb.create_sheet("Charts")
+    ws = wb.create_sheet("NFL charts")
+    ws.sheet_properties.tabColor = TAB_COLORS["nfl"]
     rows = [w for w in weekly_rows if w["season_type"] not in ("pre", "off")]
     _header(ws, 1, ["Week", "Pre-game actual hold", "Pre-game expected hold", "Luck (bps)", "Hold incl. fees (all)"], [14, 12, 12, 10, 12])
     for i, w in enumerate(rows, 2):
@@ -347,6 +456,8 @@ def sheet_charts(wb, weekly_rows):
 
 def sheet_notes(wb, summary, game_rows):
     ws = wb.create_sheet("Notes")
+    ws.sheet_view.showGridLines = False
+    ws.sheet_properties.tabColor = TAB_COLORS["ref"]
     ws.column_dimensions["A"].width = 30
     ws.column_dimensions["B"].width = 100
     firsts = defaultdict(str)
@@ -377,15 +488,17 @@ def sheet_notes(wb, summary, game_rows):
         ("Caveat", "Kalshi's NFL mix is not a sportsbook's: most taker $ is in-game, parlays are tracked separately, and makers include professional market makers. Use for direction and size of swings, not exact level."),
     ]
     for i, (k, v) in enumerate(lines, 1):
-        ws.cell(row=i, column=1, value=k).font = Font(bold=True, size=10)
+        a = ws.cell(row=i, column=1, value=k)
+        a.font, a.alignment, a.border = Font(name=FONT, bold=True, size=10, color=NAVY), Alignment(vertical="top"), ROW_BORDER
         c = ws.cell(row=i, column=2, value=v)
-        c.alignment = Alignment(wrap_text=True, vertical="top")
+        c.font, c.alignment, c.border = BODY_FONT, Alignment(wrap_text=True, vertical="top"), ROW_BORDER
 
 
 def build(game_rows, gp_rows, weekly_rows, summary):
     pasted = _read_pasted()
     wb = Workbook()
     sheet_dashboard(wb, summary, weekly_rows)
+    sheet_all_sports(wb, summary)
     sheet_weekly(wb, weekly_rows)
     sheet_games(wb, game_rows)
     sheet_game_product(wb, gp_rows)
@@ -395,6 +508,7 @@ def build(game_rows, gp_rows, weekly_rows, summary):
     sheet_compare(wb, summary, pasted)
     sheet_charts(wb, weekly_rows)
     sheet_notes(wb, summary, game_rows)
+    wb.active = 0
     tmp = XLSX_OUT + ".tmp.xlsx"
     wb.save(tmp)
     try:
