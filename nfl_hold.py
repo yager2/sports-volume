@@ -72,7 +72,15 @@ PARLAY_SERIES = {"KXNFLCOMBO", "KXNFLPREPACK", "KXNFLPREPACK1HFT"}
 SERIES_MAX_AGE_DAYS = 7
 DAILY_LOOKBACK_DAYS = 10
 WORKERS = 4                 # parallel market pulls
-REQS_PER_SEC = float(os.environ.get("KALSHI_RPS", "4.2"))  # shared; Kalshi public API sustains ~4-5/s per IP (more from CI)
+# Requests/second, shared across threads. Anonymous: Kalshi sustains ~4-5/s per
+# IP. With an API key (see _load_key) the default is higher; KALSHI_RPS overrides.
+_KD = os.path.join(os.path.expanduser("~"), ".kalshi")
+_HAS_KEY = bool(os.environ.get("KALSHI_API_KEY_ID") and os.environ.get("KALSHI_PRIVATE_KEY")) or (
+    os.path.exists(os.path.join(_KD, "key_id.txt"))
+    and any(os.path.exists(os.path.join(_KD, n)) for n in ("private_key.pem", "private_key.key", "private_key.txt")))
+# Measured 2026-10-07: signed requests over kept-alive connections sustain ~23/s
+# with zero 429s; anonymous ~4.4/s with heavy 429s.
+REQS_PER_SEC = float(os.environ.get("KALSHI_RPS", "20" if _HAS_KEY else "4.2"))
 CLOSE_WINDOW_MIN = 30       # closing price = VWAP of the final 30 pre-kickoff minutes...
 CLOSE_MIN_TRADES = 3        # ...if at least this many trades, else the last pre-kickoff trade
 TAKER_FEE_RATE = 0.07       # Kalshi quadratic fee: rate * mult * C * P * (1-P)
@@ -131,6 +139,56 @@ def iso(t: float | None) -> str | None:
     return datetime.fromtimestamp(t, timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ") if t else None
 
 
+# ---------- optional Kalshi API key (higher rate limit) ----------
+# Market data is public, but anonymous requests are held to ~4-5/s per IP.
+# With a key, requests are signed and count against the key's own allowance.
+# Where the key lives (never in this repo - it's synced to OneDrive/GitHub):
+#   * env KALSHI_API_KEY_ID + KALSHI_PRIVATE_KEY (PEM text)   <- GitHub Actions secrets
+#   * or ~/.kalshi/key_id.txt + ~/.kalshi/private_key.pem      <- this laptop
+_KEY_DIR = os.path.join(os.path.expanduser("~"), ".kalshi")
+
+
+def _load_key():
+    key_id = os.environ.get("KALSHI_API_KEY_ID", "").strip()
+    pem = os.environ.get("KALSHI_PRIVATE_KEY", "").strip()
+    if not key_id and os.path.exists(os.path.join(_KEY_DIR, "key_id.txt")):
+        key_id = open(os.path.join(_KEY_DIR, "key_id.txt"), encoding="utf-8").read().strip()
+    if not pem:
+        for name in ("private_key.pem", "private_key.key", "private_key.txt"):
+            path = os.path.join(_KEY_DIR, name)
+            if os.path.exists(path):
+                pem = open(path, encoding="utf-8").read().strip()
+                break
+    if not (key_id and pem):
+        return None
+    from cryptography.hazmat.primitives import serialization
+    return key_id, serialization.load_pem_private_key(pem.encode(), password=None)
+
+
+_KEY = _load_key()
+
+
+def _auth_headers(url: str) -> dict:
+    """KALSHI-ACCESS-* headers: signature over timestamp + method + path (Ed25519 or RSA-PSS/SHA256)."""
+    if not _KEY:
+        return {}
+    import base64
+    from urllib.parse import urlparse
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.hazmat.primitives.asymmetric import padding
+    from cryptography.hazmat.primitives.asymmetric import ed25519
+    key_id, pk = _KEY
+    stamp = str(int(time.time() * 1000))
+    msg = (stamp + "GET" + urlparse(url).path).encode()
+    if isinstance(pk, ed25519.Ed25519PrivateKey):      # Kalshi's newer, compact keys
+        sig = pk.sign(msg)
+    else:                                              # RSA keys: RSA-PSS / SHA-256
+        sig = pk.sign(msg, padding.PSS(mgf=padding.MGF1(hashes.SHA256()), salt_length=padding.PSS.DIGEST_LENGTH),
+                      hashes.SHA256())
+    return {"KALSHI-ACCESS-KEY": key_id, "KALSHI-ACCESS-TIMESTAMP": stamp,
+            "KALSHI-ACCESS-SIGNATURE": base64.b64encode(sig).decode()}
+
+
 # ---------- HTTP ----------
 
 class _RateLimiter:
@@ -167,7 +225,7 @@ def http_get(url: str, params: dict | None = None, limit: bool = True) -> dict:
             _limiter.wait()
         try:
             # ESPN's CDN 403s our custom User-Agent; its default one is fine.
-            r = (_session().get(url, params=params, timeout=60) if limit
+            r = (_session().get(url, params=params, timeout=60, headers=_auth_headers(url)) if limit
                  else requests.get(url, params=params, timeout=60))
         except (requests.ConnectionError, requests.Timeout, OSError):
             r = None

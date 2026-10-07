@@ -22,7 +22,11 @@ jobs:
     timeout-minutes: 300
     env:
       RCLONE_CONF: ${{ secrets.RCLONE_CONF }}
-      KALSHI_RPS: "10"   # GitHub runner IPs have their own Kalshi allowance; 429s just pause ~1s
+      # Kalshi API key (repo secrets). Signed requests sustain ~20/s; without
+      # the secrets the scripts fall back to anonymous requests at 10/s.
+      KALSHI_API_KEY_ID: ${{ secrets.KALSHI_API_KEY_ID }}
+      KALSHI_PRIVATE_KEY: ${{ secrets.KALSHI_PRIVATE_KEY }}
+      KALSHI_RPS: ${{ secrets.KALSHI_API_KEY_ID != '' && '20' || '10' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -33,7 +37,7 @@ jobs:
           python-version: "3.12"
 
       - name: Python deps
-        run: pip install --quiet openpyxl requests
+        run: pip install --quiet openpyxl requests cryptography
 
       - name: Pull newly finished games
         # A stuck connection has been seen locally (one pull sat idle 40+ min).

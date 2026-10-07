@@ -36,6 +36,7 @@ import json
 import os
 import re
 import sys
+import threading
 import time
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -65,6 +66,7 @@ PLAYER_PROP = {
 }
 BUCKETS = ["a:<$25", "b:$25-100", "c:$100-1k", "d:>$1k"]
 DAILY_LOOKBACK_DAYS = 10
+GAMES_AT_ONCE = 4                # with an API key; anonymous runs one game at a time
 
 
 def code_re(prefix: str) -> re.Pattern:
@@ -427,7 +429,10 @@ def run_league(lg: str, args, cutoff: float) -> None:
     print(f"[{lg}] reading which games each series listed...", flush=True)
     sc = series_games(lg, series)
     t_start = time.time()
-    for i, code in enumerate(todo, 1):
+    done = [0]
+    lock = threading.Lock()
+
+    def one(code):
         t0 = time.time()
         # Kalshi's archive only holds markets that settled before its cutoff.
         game_day = datetime.strptime(code[:7], "%y%b%d").replace(tzinfo=timezone.utc).timestamp()
@@ -435,18 +440,29 @@ def run_league(lg: str, args, cutoff: float) -> None:
         try:
             ms = markets_for_game(code, sc, in_archive)
             g = process_game(lg, code, ms, series, cutoff)
+            msg = None
         except (Exception, SystemExit) as e:
-            print(f"  [{lg} {i}/{len(todo)}] {code}: FAILED ({e}) - will retry next run", flush=True)
-            continue
-        if g is None:
-            print(f"  [{lg} {i}/{len(todo)}] {code}: no start time, skipped", flush=True)
-            continue
-        save(g)
-        el = time.time() - t_start
-        print(f"  [{lg} {i}/{len(todo)}] {code}: {g['markets']} mkts, {g['trades']:,} trades, {time.time() - t0:.0f}s, "
-              f"{summarize(g)}, complete={g['complete']}  (elapsed {el / 60:.0f}m, ~{el / i * (len(todo) - i) / 60:.0f}m left)",
-              flush=True)
+            g, msg = None, f"FAILED ({e}) - will retry next run"
+        if g is None and msg is None:
+            msg = "no start time, skipped"
+        if g is not None:
+            save(g)
+        with lock:
+            done[0] += 1
+            i = done[0]
+            el = time.time() - t_start
+            if g is None:
+                print(f"  [{lg} {i}/{len(todo)}] {code}: {msg}", flush=True)
+            else:
+                print(f"  [{lg} {i}/{len(todo)}] {code}: {g['markets']} mkts, {g['trades']:,} trades, {time.time() - t0:.0f}s, "
+                      f"{summarize(g)}, complete={g['complete']}  (elapsed {el / 60:.0f}m, ~{el / i * (len(todo) - i) / 60:.0f}m left)",
+                      flush=True)
 
+    # Several games at once: one game is a short chain of dependent steps, so a
+    # single game can't use the whole request budget. The shared limiter still
+    # caps the total rate.
+    with ThreadPoolExecutor(GAMES_AT_ONCE if nh._KEY else 1) as ex:
+        list(ex.map(one, todo))
 
 def main():
     ap = argparse.ArgumentParser()
@@ -459,8 +475,8 @@ def main():
     args = ap.parse_args()
     if args.game and not args.league:
         raise SystemExit("--game needs --league")
-    # Kalshi's public API sustains ~4-5 requests/s per IP; stay just under it.
-    nh.WORKERS = 8
+    # Anonymous: ~4-5 requests/s per IP. With an API key (~/.kalshi): ~20/s.
+    nh.WORKERS = 12 if nh._KEY else 8
     nh._limiter = nh._RateLimiter(nh.REQS_PER_SEC)
     cutoff = nh.ts(nh.kalshi("/historical/cutoff").get("trades_created_ts")) or 0
     nh._keep_awake(True)
