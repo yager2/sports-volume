@@ -380,14 +380,17 @@ def sheet_all_sports(wb, summary):
     pending = [name for lg, name in ALL_LEAGUES if not cov.get(lg)]
     _title(ws, "Kalshi taker hold by New York report week",
            "Exact: every trade in every game market (moneyline, spreads, totals, props, periods). Hold = share of taker $ "
-           "takers lost incl. fees; green = house/makers won, red = takers won. Weeks run Monday-Sunday (Week-Ending)."
+           "takers lost incl. fees; green = house/makers won, red = takers won. Weeks run Monday-Sunday (Week-Ending). "
+           "Parlays: 'exact' = every trade; 'estimate' = sampled until the exact pass reaches that week."
            + (f"  Still loading: {', '.join(pending)}." if pending else ""), "all")
     groups = [("All six leagues", [("Games", "all_games", INT, 7), ("Taker $", "all_taker_dollars", USD, 15),
                                    ("House won $ (before fees)", lambda r: None if r.get("all_taker_pnl") is None else -r["all_taker_pnl"], USD, 14),
-                                   ("Hold incl. fees", "all_hold", PCT2, 10), ("Pre-game luck (bps)", "all_pregame_luck_bps", INT, 9)])]
+                                   ("Hold incl. fees", "all_hold", PCT2, 10), ("Pre-game luck (bps)", "all_pregame_luck_bps", INT, 9),
+                                   ("Hold incl. parlays", "all_with_parlays_hold", PCT2, 10)])]
     for lg, name in ALL_LEAGUES:
         groups.append((name, [("Taker $", f"{lg}_taker_dollars", USD, 14), ("Hold", f"{lg}_hold", PCT2, 9)]))
-    groups.append(("NFL parlays (est.)", [("Stakes", "nfl_parlay_stakes_est", USD, 13), ("Hold", "nfl_parlay_hold", PCT2, 9)]))
+    groups.append(("All parlays", [("Stakes", "parlay_stakes", USD, 13), ("Hold", "parlay_hold", PCT2, 9),
+                                   ("Source", "parlay_source", None, 9)]))
     # header rows 4 (groups) and 5 (metrics)
     a = ws.cell(row=4, column=1, value="Week-Ending")
     a.fill, a.font, a.alignment = HEAD_FILL, HEAD_FONT, Alignment(vertical="center")
@@ -418,7 +421,7 @@ def sheet_all_sports(wb, summary):
             _body_cell(ws.cell(row=i, column=c, value=v), fmt, band, dim)
     last = 5 + len(rows)
     for c, mname, key, fmt in flat:
-        if mname in ("Hold", "Hold incl. fees", "Pre-game luck (bps)", "House won $ (before fees)"):
+        if mname in ("Hold", "Hold incl. fees", "Hold incl. parlays", "Pre-game luck (bps)", "House won $ (before fees)"):
             L = get_column_letter(c)
             _green_red(ws, f"{L}6:{L}{last}")
     ws.freeze_panes = "B6"

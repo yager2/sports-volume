@@ -96,7 +96,7 @@ def _luck(a):
     return round((-a["pre_pnl"] / a["pre_dollars"] + a["exp_pnl"] / a["exp_dollars"]) * 1e4, 0)
 
 
-def build(nfl_summary_games, parlays_by_date=None):
+def build(nfl_summary_games, parlays_by_date=None, parlays_all_by_date=None):
     per = {"nfl": nfl_games_from_summary(nfl_summary_games)}
     for lg, _ in LEAGUES[1:]:
         per[lg] = load_league_games(lg)
@@ -118,6 +118,15 @@ def build(nfl_summary_games, parlays_by_date=None):
         p["stakes"] += b["stakes"]
         p["pnl"] += b["pnl"]
         p["fee"] += b["fee"]
+    # every sports parlay (all categories) - exact where the full pass has run
+    par_all = defaultdict(_blank)
+    for date, cats in (parlays_all_by_date or {}).items():
+        p = par_all[ny_week_ending(date)]
+        for cat, b in cats.items():
+            p["stakes"] += b["stakes"]
+            p["pnl"] += b["pnl"]
+            p["fee"] += b["fee"]
+            p["sampled"] += 0 if b.get("exact") else 1
     today = datetime.now().date()
     last_sunday = (today + timedelta(days=6 - today.weekday())).isoformat()
     rows = []
@@ -145,6 +154,16 @@ def build(nfl_summary_games, parlays_by_date=None):
         row["nfl_parlay_stakes_est"] = round(p["stakes"], 2) if p and p["stakes"] else None
         row["nfl_parlay_hold"] = (round(-(p["pnl"] - p["fee"]) / p["stakes"], 5)
                                   if p and p["stakes"] >= 250_000 else None)
+        pa = par_all.get(we)
+        row["parlay_stakes"] = round(pa["stakes"], 2) if pa and pa["stakes"] else None
+        row["parlay_hold"] = (round(-(pa["pnl"] - pa["fee"]) / pa["stakes"], 5)
+                              if pa and pa["stakes"] >= 250_000 else None)
+        row["parlay_source"] = (None if not pa or not pa["stakes"] else "estimate" if pa["sampled"] else "exact")
+        if row["parlay_hold"] is not None and row["all_taker_dollars"]:
+            win = -(tot["pnl"] - tot["fee"]) + -(pa["pnl"] - pa["fee"])
+            row["all_with_parlays_hold"] = round(win / (tot["dollars"] + pa["stakes"]), 5)
+        else:
+            row["all_with_parlays_hold"] = None
         rows.append(row)
         d += timedelta(days=7)
     with open(OUT_CSV, "w", newline="", encoding="utf-8") as f:

@@ -404,6 +404,7 @@ def build_summary(per_game, pick, row_for, weekly_rows, game_rows):
 # ---------- parlays (from nfl_parlays.py) ----------
 
 PARLAYS_BY_DATE = defaultdict(lambda: defaultdict(float))   # last-leg date -> stakes, pnl, fee (nfl only)
+PARLAYS_ALL_BY_DATE = defaultdict(lambda: defaultdict(lambda: defaultdict(float)))  # date -> category -> sums
 
 
 def load_parlays(game_rows):
@@ -415,8 +416,10 @@ def load_parlays(game_rows):
     """
     days = []
     for p in sorted(glob.glob(PARLAY_GLOB)):
+        full = p.replace(".json.gz", ".full.json.gz")
+        src = full if os.path.exists(full) else p      # the exact pass wins over the sample
         try:
-            days.append(json.load(gzip.open(p, "rt", encoding="utf-8")))
+            days.append(json.load(gzip.open(src, "rt", encoding="utf-8")))
         except (OSError, ValueError):
             continue
     game_dates = sorted({(g["date"], g["week_label"], g["season_type"]) for g in game_rows})
@@ -435,6 +438,12 @@ def load_parlays(game_rows):
             continue
         f = d["sample_frac"]
         for cat, legs, date, phase, side, b, n, c, dol, pnl, fee, ed, ep in d["rows"]:
+            if date != "?":
+                ad = PARLAYS_ALL_BY_DATE[date][cat]
+                ad["stakes"] += dol / f if side == "yes" else 0
+                ad["pnl"] += pnl / f
+                ad["fee"] += fee / f
+                ad["exact"] = max(ad.get("exact", 0), 1.0 if f == 1.0 else 0.0)
             if cat == "nfl" and date != "?":
                 bd = PARLAYS_BY_DATE[date]
                 bd["stakes"] += dol / f if side == "yes" else 0
@@ -566,7 +575,8 @@ def main():
     summary["parlays"] = parlay_rows
     try:
         import sports_hold_report
-        summary["all_sports"], summary["all_sports_coverage"] = sports_hold_report.build(summary["games"], PARLAYS_BY_DATE)
+        summary["all_sports"], summary["all_sports_coverage"] = sports_hold_report.build(
+            summary["games"], PARLAYS_BY_DATE, PARLAYS_ALL_BY_DATE)
     except Exception as e:  # noqa: BLE001 - never let the all-sports tab block the NFL report
         print(f"  all-sports rollup skipped: {e}")
     summary["week_compare"], summary["compare_seasons"] = week_compare(weekly_rows)

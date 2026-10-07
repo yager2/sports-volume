@@ -173,20 +173,51 @@ PENDING_COLS = ["ticker", "created_time", "side", "count", "yes_price", "no_pric
 RESOLVE_DAYS = 21                # keep re-checking a day's unsettled parlays this long
 
 
+LEAGUE_PREFIX = [("KXNFL", "nfl"), ("KXNBA", "nba"), ("KXMLB", "mlb"), ("KXNHL", "nhl"),
+                 ("KXNCAAF", "cfb"), ("KXNCAAMB", "cbb")]
+SINGLE_LEAGUE = {"nfl", "nba", "mlb", "nhl", "cfb", "cbb"}
+LEG_DATE_RE = re.compile(r"-(\d{2}[A-Z]{3}\d{2})")
+
+
+def _league(ticker: str) -> str:
+    for pre, lg in LEAGUE_PREFIX:
+        if ticker.startswith(pre):
+            return lg
+    return "other"
+
+
 def _nfl_info(m: dict):
-    """(category, leg bucket, last NFL leg date, NFL game codes), or None if no NFL legs."""
+    """(category, leg bucket, last leg date, NFL game codes) for any sports parlay.
+
+    category: "nfl" (every leg NFL), "nfl_mixed" (some NFL legs), or for
+    parlays with no NFL leg the single league of all legs ("nba", "mlb", "nhl",
+    "cfb", "cbb") or "other" (mixed / other sports). The NFL report reads only
+    nfl / nfl_mixed; the all-sports report reads every category.
+    """
     legs = m.get("mve_selected_legs") or []
-    nfl = [l for l in legs if l["market_ticker"].startswith("KXNFL")]
-    if not nfl:
+    if not legs:
         return None
+    leagues = {_league(l["market_ticker"]) for l in legs}
+    nfl = [l for l in legs if l["market_ticker"].startswith("KXNFL")]
+    if nfl:
+        cat = "nfl" if len(nfl) == len(legs) else "nfl_mixed"
+    else:
+        cat = next(iter(leagues)) if len(leagues) == 1 else "other"
     codes = []
     for l in nfl:
         mm = LEG_GAME_RE.match(l.get("event_ticker") or "")
         if mm:
             codes.append(mm.group(2))
-    last = max((datetime.strptime(c[:7], "%y%b%d").date() for c in codes), default=None)
-    return ("nfl" if len(nfl) == len(legs) else "nfl_mixed", leg_bucket(len(legs)),
-            last.isoformat() if last else "?", codes)
+    dates = []
+    for l in legs:
+        mm = LEG_DATE_RE.search(l.get("event_ticker") or "")
+        if mm:
+            try:
+                dates.append(datetime.strptime(mm.group(1), "%y%b%d").date())
+            except ValueError:
+                pass
+    last = max(dates, default=None)
+    return (cat, leg_bucket(len(legs)), last.isoformat() if last else "?", codes)
 
 
 def _settled(m: dict) -> bool:
@@ -235,14 +266,14 @@ def _accumulate(t: list, m: dict, gi: GameIndex, rows, tix, counted: set) -> Non
 def _finish(d: dict, rows, tix, pending: list, info: dict) -> dict:
     """Write rollups back into the day dict and set the completeness flag.
 
-    A day is complete once no ALL-NFL parlay on an already-played game is
+    A day is complete once no single-league parlay on an already-played game is
     unsettled. Parlays waiting on future games, or on another sport's leg,
     stay in `pending_trades` and are folded in later by resolve() - they
     don't hold the day open.
     """
     today_iso = datetime.now(timezone.utc).date().isoformat()
     blocking = sum(1 for t in pending
-                   if t[0] in info and info[t[0]][0] == "nfl" and info[t[0]][2] < today_iso)
+                   if t[0] in info and info[t[0]][0] in SINGLE_LEAGUE and info[t[0]][2] < today_iso)
     d["rows"] = [[*k, *[round(x, 4) for x in v[:7]]] for k, v in rows.items()]
     d["tickets"] = [[*k, v[0], v[1]] for k, v in tix.items()]
     d["pending_trades"] = pending
