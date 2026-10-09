@@ -377,20 +377,22 @@ def sheet_all_sports(wb, summary):
         return
     ws = wb.create_sheet("All sports weekly", 0)
     cov = summary.get("all_sports_coverage") or {}
-    pending = [name for lg, name in ALL_LEAGUES if not cov.get(lg)]
-    _title(ws, "Kalshi taker hold by New York report week",
+    pending = [name for lg, name in ALL_LEAGUES[:4] if not cov.get(lg) or cov[lg][2] < 50]
+    _title(ws, "Kalshi taker hold by New York report week - big leagues",
            "Exact: every trade in every game market (moneyline, spreads, totals, props, periods). Hold = share of taker $ "
            "takers lost incl. fees; green = house/makers won, red = takers won. Weeks run Monday-Sunday (Week-Ending). "
            "Parlays: 'exact' = every trade; 'estimate' = sampled until the exact pass reaches that week."
            + (f"  Still loading: {', '.join(pending)}." if pending else ""), "all")
-    groups = [("All six leagues", [("Games", "all_games", INT, 7), ("Taker $", "all_taker_dollars", USD, 15),
+    groups = [("Big 4: NFL, NBA, MLB, NHL", [("Games", "all_games", INT, 7), ("Taker $", "all_taker_dollars", USD, 15),
                                    ("House won $ (before fees)", lambda r: None if r.get("all_taker_pnl") is None else -r["all_taker_pnl"], USD, 14),
                                    ("Hold incl. fees", "all_hold", PCT2, 10), ("Pre-game luck (bps)", "all_pregame_luck_bps", INT, 9),
                                    ("Hold incl. parlays", "all_with_parlays_hold", PCT2, 10)])]
-    for lg, name in ALL_LEAGUES:
+    for lg, name in ALL_LEAGUES[:4]:
         groups.append((name, [("Taker $", f"{lg}_taker_dollars", USD, 14), ("Hold", f"{lg}_hold", PCT2, 9)]))
     groups.append(("All parlays", [("Stakes", "parlay_stakes", USD, 13), ("Hold", "parlay_hold", PCT2, 9),
                                    ("Source", "parlay_source", None, 9)]))
+    for lg, name in ALL_LEAGUES[4:]:          # college: shown, not in the Big 4 total
+        groups.append((f"{name} (not in total)", [("Taker $", f"{lg}_taker_dollars", USD, 14), ("Hold", f"{lg}_hold", PCT2, 9)]))
     # header rows 4 (groups) and 5 (metrics)
     a = ws.cell(row=4, column=1, value="Week-Ending")
     a.fill, a.font, a.alignment = HEAD_FILL, HEAD_FONT, Alignment(vertical="center")
@@ -401,7 +403,7 @@ def sheet_all_sports(wb, summary):
     for gname, metrics in groups:
         ws.merge_cells(start_row=4, start_column=col, end_row=4, end_column=col + len(metrics) - 1)
         g = ws.cell(row=4, column=col, value=gname)
-        g.fill, g.font, g.alignment = (HEAD_FILL if gname.startswith("All") else GROUP_FILL), HEAD_FONT, Alignment(horizontal="center")
+        g.fill, g.font, g.alignment = (HEAD_FILL if gname.startswith(("Big 4", "All")) else GROUP_FILL), HEAD_FONT, Alignment(horizontal="center")
         for j, (mname, key, fmt, width) in enumerate(metrics):
             h = ws.cell(row=5, column=col + j, value=mname)
             h.fill, h.font, h.border = HEAD_FILL, HEAD_FONT, HEAD_BORDER

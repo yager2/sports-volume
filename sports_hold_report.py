@@ -26,6 +26,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(HERE, "sports_hold_data")
 OUT_CSV = os.path.join(HERE, "all_sports_hold_weekly.csv")
 START = "2025-08-03"          # first NY week-ending Sunday covered
+BIG4 = {"nfl", "nba", "mlb", "nhl"}   # headline total; college leagues shown separately
 
 LEAGUES = [("nfl", "NFL"), ("nba", "NBA"), ("mlb", "MLB"), ("nhl", "NHL"),
            ("cfb", "College football"), ("cbb", "College basketball")]
@@ -137,7 +138,7 @@ def build(nfl_summary_games, parlays_by_date=None, parlays_all_by_date=None):
         tot = _blank()
         for lg, _ in LEAGUES:
             a = weeks.get(we, {}).get(lg)
-            if a:
+            if a and lg in BIG4:          # headline total = the big pro leagues
                 for k in ("games", "dollars", "pnl", "fee", "trades", "pre_dollars", "pre_pnl", "exp_dollars", "exp_pnl", "incomplete"):
                     tot[k] += a[k]
             row[f"{lg}_games"] = int(a["games"]) if a else None
