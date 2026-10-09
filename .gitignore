@@ -20,3 +20,6 @@ cdna_raw_cache/*.pdf
 
 # Claude Code local project state
 .claude/
+
+# in-flight writes from the backfill
+*.tmp
