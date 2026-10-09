@@ -2,6 +2,8 @@
 Build nfl_hold.xlsx (and its Google Sheets copy "NFL Hold Tracker") - Kalshi taker hold.
 
 Tabs:
+  - "Weekly"             MAIN VIEW: Big 4 straights / parlays / combined implied hold by NY week + charts
+  - "Monthly"            same by calendar month (for state monthly reports)
   - "All sports weekly"  every NY report week, NFL/NBA/MLB/NHL/CFB/CBB side by side
   - "NFL dashboard"      season-to-date by product + the last 6 weeks, green/red
   - "Week vs week"        Week N of each season side by side (the comp view)
@@ -389,7 +391,7 @@ def sheet_all_sports(wb, summary):
                                    ("Hold incl. parlays", "all_with_parlays_hold", PCT2, 10)])]
     for lg, name in ALL_LEAGUES[:4]:
         groups.append((name, [("Taker $", f"{lg}_taker_dollars", USD, 14), ("Hold", f"{lg}_hold", PCT2, 9)]))
-    groups.append(("All parlays", [("Stakes", "parlay_stakes", USD, 13), ("Hold", "parlay_hold", PCT2, 9),
+    groups.append(("Big 4 parlays", [("Stakes", "parlay_stakes", USD, 13), ("Hold", "parlay_hold", PCT2, 9),
                                    ("Source", "parlay_source", None, 9)]))
     for lg, name in ALL_LEAGUES[4:]:          # college: shown, not in the Big 4 total
         groups.append((f"{name} (not in total)", [("Taker $", f"{lg}_taker_dollars", USD, 14), ("Hold", f"{lg}_hold", PCT2, 9)]))
@@ -427,6 +429,98 @@ def sheet_all_sports(wb, summary):
             L = get_column_letter(c)
             _green_red(ws, f"{L}6:{L}{last}")
     ws.freeze_panes = "B6"
+
+
+def sheet_main(wb, summary, period: str):
+    """The main comparison view: Big 4 straights, parlays, combined - by NY week or month."""
+    rows = summary.get(f"main_{period}") or []
+    if not rows:
+        return
+    weekly = period == "week"
+    ws = wb.create_sheet("Weekly" if weekly else "Monthly", 0 if weekly else 1)
+    _title(ws, "Kalshi implied hold - Big 4 leagues, by " + ("New York report week" if weekly else "month"),
+           ("NFL, NBA, MLB, NHL. " + ("Weeks run Monday-Sunday, labelled by the Sunday (Week-Ending), matching NY's weekly report. "
+                                      if weekly else "Calendar months, for state monthly reports. ")
+            + "Implied hold = share of money takers lost incl. Kalshi fees (green = house/makers won). Straights: every trade "
+              "in every game market. Parlays: tickets whose every leg is a Big 4 game; 'estimate' = sampled until the exact pass "
+              "reaches that period. Parlay hold blank under $250K of stakes."), "all")
+    groups = [
+        ("Straight bets", [("Straight volume", "straight_taker_dollars", USD, 16), ("House won", "straight_house_win", USD, 14),
+                           ("Straights hold", "straight_hold", PCT2, 10)]),
+        ("Parlays", [("Parlay stakes", "parlay_stakes", USD, 15), ("House won", "parlay_house_win", USD, 14),
+                     ("Parlay hold", "parlay_hold", PCT2, 10), ("Source", "parlay_source", None, 9)]),
+        ("Combined", [("Total volume", "combined_dollars", USD, 16), ("House won", "combined_house_win", USD, 14),
+                      ("Combined hold", "combined_hold", PCT2, 11)]),
+        ("Context", [("Games", "games", INT, 8), ("Pre-game luck (bps)", "pregame_luck_bps", INT, 10)]),
+    ]
+    first = ws.cell(row=4, column=1, value="Week-Ending" if weekly else "Month")
+    first.fill, first.font, first.alignment = HEAD_FILL, HEAD_FONT, Alignment(vertical="center")
+    ws.merge_cells(start_row=4, start_column=1, end_row=5, end_column=1)
+    ws.cell(row=5, column=1).fill = HEAD_FILL
+    ws.column_dimensions["A"].width = 13
+    col, flat = 2, []
+    for gname, metrics in groups:
+        ws.merge_cells(start_row=4, start_column=col, end_row=4, end_column=col + len(metrics) - 1)
+        g = ws.cell(row=4, column=col, value=gname)
+        g.fill = HEAD_FILL if gname == "Combined" else GROUP_FILL
+        g.font, g.alignment = HEAD_FONT, Alignment(horizontal="center")
+        for j, (mname, key, fmt, width) in enumerate(metrics):
+            h = ws.cell(row=5, column=col + j, value=mname)
+            h.fill, h.font, h.border = HEAD_FILL, HEAD_FONT, HEAD_BORDER
+            h.alignment = Alignment(wrap_text=True, horizontal="center", vertical="center")
+            ws.column_dimensions[get_column_letter(col + j)].width = width
+            flat.append((col + j, mname, key, fmt, gname))
+        col += len(metrics)
+    ws.row_dimensions[5].height = 30
+    for i, r in enumerate(rows, 6):
+        band, dim = i % 2 == 0, not r.get("games") and not r.get("parlay_stakes")
+        if weekly:
+            v, fmt = datetime.fromisoformat(r["period"]), "mm/dd/yy"
+        else:
+            v, fmt = datetime.strptime(r["period"] + "-01", "%Y-%m-%d"), "mmm yyyy"
+        _body_cell(ws.cell(row=i, column=1, value=v), fmt, band, dim)
+        for c, mname, key, f, gname in flat:
+            cell = ws.cell(row=i, column=c, value=r.get(key))
+            _body_cell(cell, f, band, dim)
+            if mname == "Combined hold":
+                cell.font = Font(name=FONT, size=10, bold=True, color="0F172A")
+    last = 5 + len(rows)
+    for c, mname, key, f, gname in flat:
+        if mname in ("Straights hold", "Parlay hold", "Combined hold", "House won", "Pre-game luck (bps)"):
+            L = get_column_letter(c)
+            _green_red(ws, f"{L}6:{L}{last}")
+    ws.freeze_panes = "B6"
+
+    # charts to the right of the table
+    col_of = {key: c for c, _, key, _, _ in flat}
+    cats = Reference(ws, min_col=1, min_row=6, max_row=last)
+    anchor_col = get_column_letter(col + 1)
+    lc = LineChart()
+    lc.title = "Implied hold by " + ("week" if weekly else "month")
+    lc.height, lc.width = 9, 22
+    lc.y_axis.number_format, lc.y_axis.majorGridlines = "0%", None
+    for key, color in (("straight_hold", "2563EB"), ("parlay_hold", "EA580C"), ("combined_hold", "0F172A")):
+        lc.add_data(Reference(ws, min_col=col_of[key], min_row=5, max_row=last), titles_from_data=True)
+        ser = lc.series[-1]
+        ser.graphicalProperties.line.solidFill = color
+        ser.graphicalProperties.line.width = 28000 if key == "combined_hold" else 18000
+        ser.smooth = False
+    lc.set_categories(cats)
+    lc.x_axis.number_format = "mm/dd/yy" if weekly else "mmm yy"
+    ws.add_chart(lc, f"{anchor_col}4")
+    bc = BarChart()
+    bc.type, bc.grouping, bc.overlap = "col", "stacked", 100
+    bc.title = "Taker volume by " + ("week" if weekly else "month")
+    bc.height, bc.width = 9, 22
+    bc.y_axis.number_format, bc.y_axis.majorGridlines = '"$"#,##0,,"M"', None
+    for key, color in (("straight_taker_dollars", "2563EB"), ("parlay_stakes", "EA580C")):
+        bc.add_data(Reference(ws, min_col=col_of[key], min_row=5, max_row=last), titles_from_data=True)
+        ser = bc.series[-1]
+        ser.graphicalProperties.solidFill = color
+        ser.graphicalProperties.line.noFill = True
+    bc.set_categories(cats)
+    bc.x_axis.number_format = "mm/dd/yy" if weekly else "mmm yy"
+    ws.add_chart(bc, f"{anchor_col}24")
 
 
 def sheet_charts(wb, weekly_rows):
@@ -504,6 +598,8 @@ def build(game_rows, gp_rows, weekly_rows, summary):
     wb = Workbook()
     sheet_dashboard(wb, summary, weekly_rows)
     sheet_all_sports(wb, summary)
+    sheet_main(wb, summary, "week")
+    sheet_main(wb, summary, "month")
     sheet_weekly(wb, weekly_rows)
     sheet_games(wb, game_rows)
     sheet_game_product(wb, gp_rows)

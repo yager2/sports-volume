@@ -63,7 +63,7 @@ jobs:
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add nfl_hold_data sports_hold_data nfl_hold.xlsx nfl_hold_*.csv all_sports_hold_weekly.csv nfl_hold_dashboard.html
+          git add nfl_hold_data sports_hold_data nfl_hold.xlsx nfl_hold_*.csv all_sports_hold_weekly.csv kalshi_hold_*.csv nfl_hold_dashboard.html
           git commit -m "nfl hold refresh $(date -u +'%Y-%m-%d %H:%M UTC')" || { echo "nothing to commit"; exit 0; }
           git fetch origin main
           if ! git rebase origin/main; then

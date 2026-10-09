@@ -577,6 +577,8 @@ def main():
         import sports_hold_report
         summary["all_sports"], summary["all_sports_coverage"] = sports_hold_report.build(
             summary["games"], PARLAYS_BY_DATE, PARLAYS_ALL_BY_DATE)
+        summary["main_week"] = sports_hold_report.MAIN_ROWS.get("week")
+        summary["main_month"] = sports_hold_report.MAIN_ROWS.get("month")
     except Exception as e:  # noqa: BLE001 - never let the all-sports tab block the NFL report
         print(f"  all-sports rollup skipped: {e}")
     summary["week_compare"], summary["compare_seasons"] = week_compare(weekly_rows)

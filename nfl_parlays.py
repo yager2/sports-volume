@@ -176,6 +176,9 @@ RESOLVE_DAYS = 21                # keep re-checking a day's unsettled parlays th
 LEAGUE_PREFIX = [("KXNFL", "nfl"), ("KXNBA", "nba"), ("KXMLB", "mlb"), ("KXNHL", "nhl"),
                  ("KXNCAAF", "cfb"), ("KXNCAAMB", "cbb")]
 SINGLE_LEAGUE = {"nfl", "nba", "mlb", "nhl", "cfb", "cbb"}
+BIG4 = {"nfl", "nba", "mlb", "nhl"}
+# Parlays counted in the Big 4 numbers: every leg is an NFL/NBA/MLB/NHL game.
+BIG4_PARLAY_CATS = {"nfl", "nfl_mixed_big4", "nba", "mlb", "nhl", "big4_multi"}
 LEG_DATE_RE = re.compile(r"-(\d{2}[A-Z]{3}\d{2})")
 
 
@@ -189,20 +192,24 @@ def _league(ticker: str) -> str:
 def _nfl_info(m: dict):
     """(category, leg bucket, last leg date, NFL game codes) for any sports parlay.
 
-    category: "nfl" (every leg NFL), "nfl_mixed" (some NFL legs), or for
-    parlays with no NFL leg the single league of all legs ("nba", "mlb", "nhl",
-    "cfb", "cbb") or "other" (mixed / other sports). The NFL report reads only
-    nfl / nfl_mixed; the all-sports report reads every category.
+    category: "nfl" (every leg NFL), "nfl_mixed_big4" (NFL + other Big 4
+    legs only), "nfl_mixed" (NFL + college/other legs); with no NFL leg: the
+    single league of all legs ("nba", "mlb", "nhl", "cfb", "cbb"),
+    "big4_multi" (several Big 4 leagues), or "other". BIG4_PARLAY_CATS are
+    the parlays counted in the Big 4 totals.
     """
     legs = m.get("mve_selected_legs") or []
     if not legs:
         return None
     leagues = {_league(l["market_ticker"]) for l in legs}
     nfl = [l for l in legs if l["market_ticker"].startswith("KXNFL")]
+    big4 = leagues <= BIG4
     if nfl:
-        cat = "nfl" if len(nfl) == len(legs) else "nfl_mixed"
+        cat = "nfl" if len(nfl) == len(legs) else ("nfl_mixed_big4" if big4 else "nfl_mixed")
+    elif len(leagues) == 1:
+        cat = next(iter(leagues))
     else:
-        cat = next(iter(leagues)) if len(leagues) == 1 else "other"
+        cat = "big4_multi" if big4 else "other"
     codes = []
     for l in nfl:
         mm = LEG_GAME_RE.match(l.get("event_ticker") or "")

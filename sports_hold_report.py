@@ -25,8 +25,15 @@ from datetime import datetime, timedelta
 HERE = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(HERE, "sports_hold_data")
 OUT_CSV = os.path.join(HERE, "all_sports_hold_weekly.csv")
+MAIN_WEEKLY_CSV = os.path.join(HERE, "kalshi_hold_weekly.csv")     # Big 4: straights, parlays, combined
+MAIN_MONTHLY_CSV = os.path.join(HERE, "kalshi_hold_monthly.csv")
+MAIN_ROWS = {}
 START = "2025-08-03"          # first NY week-ending Sunday covered
 BIG4 = {"nfl", "nba", "mlb", "nhl"}   # headline total; college leagues shown separately
+# Parlays counted with the Big 4: every leg an NFL/NBA/MLB/NHL game (see nfl_parlays.py).
+# Older sampled files only have "nfl" / "nfl_mixed"; "nfl" is all-NFL so it counts.
+BIG4_PARLAY_CATS = {"nfl", "nfl_mixed_big4", "nba", "mlb", "nhl", "big4_multi"}
+MIN_PARLAY_STAKES = 250_000           # below this a period's parlay hold is noise
 
 LEAGUES = [("nfl", "NFL"), ("nba", "NBA"), ("mlb", "MLB"), ("nhl", "NHL"),
            ("cfb", "College football"), ("cbb", "College basketball")]
@@ -97,6 +104,74 @@ def _luck(a):
     return round((-a["pre_pnl"] / a["pre_dollars"] + a["exp_pnl"] / a["exp_dollars"]) * 1e4, 0)
 
 
+def period_rollup(per, parlays_all_by_date, period: str):
+    """Main view: Big 4 straights, Big 4 parlays and the two combined, by
+    New York report week (Mon-Sun, labelled by the Sunday) or calendar month.
+
+    Straights: games by their ET date. Parlays: by their last leg's date.
+    Hold = -(taker P&L - taker fees) / taker $ (parlays: / stakes = tickets bought).
+    """
+    key = ny_week_ending if period == "week" else (lambda d: d[:7])
+    st = defaultdict(_blank)
+    for lg, games in per.items():
+        if lg not in BIG4:
+            continue
+        for date, complete, a in games:
+            b = st[key(date)]
+            b["games"] += 1
+            b["incomplete"] += 0 if complete else 1
+            for k in ("dollars", "pnl", "fee", "pre_dollars", "pre_pnl", "exp_dollars", "exp_pnl"):
+                b[k] += a[k]
+    pa = defaultdict(_blank)
+    for date, cats in (parlays_all_by_date or {}).items():
+        b = pa[key(date)]
+        for cat, v in cats.items():
+            if cat in BIG4_PARLAY_CATS:
+                b["stakes"] += v["stakes"]
+                b["pnl"] += v["pnl"]
+                b["fee"] += v["fee"]
+                b["sampled"] += 0 if v.get("exact") else 1
+    # every period from Aug 2025 to now, empty or not
+    today = datetime.now().date()
+    keys = []
+    if period == "week":
+        d = datetime.fromisoformat(START).date()
+        end = today + timedelta(days=6 - today.weekday())
+        while d <= end:
+            keys.append(d.isoformat())
+            d += timedelta(days=7)
+    else:
+        y, m = 2025, 8
+        while (y, m) <= (today.year, today.month):
+            keys.append(f"{y}-{m:02d}")
+            y, m = (y + 1, 1) if m == 12 else (y, m + 1)
+    rows = []
+    for k in keys:
+        a, p = st.get(k), pa.get(k)
+        s_d = a["dollars"] if a else 0
+        s_win = -(a["pnl"] - a["fee"]) if a else 0
+        p_ok = bool(p and p["stakes"] >= MIN_PARLAY_STAKES)
+        p_win = -(p["pnl"] - p["fee"]) if p_ok else 0
+        c_d = s_d + (p["stakes"] if p_ok else 0)
+        rows.append({
+            "period": k,
+            "games": int(a["games"]) if a else None,
+            "straight_taker_dollars": round(s_d, 2) if s_d else None,
+            "straight_house_win": round(s_win, 2) if s_d else None,
+            "straight_hold": round(s_win / s_d, 5) if s_d else None,
+            "parlay_stakes": round(p["stakes"], 2) if p and p["stakes"] else None,
+            "parlay_house_win": round(-(p["pnl"] - p["fee"]), 2) if p and p["stakes"] else None,
+            "parlay_hold": round(p_win / p["stakes"], 5) if p_ok else None,
+            "parlay_source": (None if not p or not p["stakes"] else "estimate" if p["sampled"] else "exact"),
+            "combined_dollars": round(c_d, 2) if c_d else None,
+            "combined_house_win": round(s_win + p_win, 2) if c_d else None,
+            "combined_hold": round((s_win + p_win) / c_d, 5) if c_d and p_ok else None,
+            "pregame_luck_bps": _luck(a) if a else None,
+            "unsettled_games": int(a["incomplete"]) if a and a["incomplete"] else None,
+        })
+    return rows
+
+
 def build(nfl_summary_games, parlays_by_date=None, parlays_all_by_date=None):
     per = {"nfl": nfl_games_from_summary(nfl_summary_games)}
     for lg, _ in LEAGUES[1:]:
@@ -124,6 +199,8 @@ def build(nfl_summary_games, parlays_by_date=None, parlays_all_by_date=None):
     for date, cats in (parlays_all_by_date or {}).items():
         p = par_all[ny_week_ending(date)]
         for cat, b in cats.items():
+            if cat not in BIG4_PARLAY_CATS:
+                continue
             p["stakes"] += b["stakes"]
             p["pnl"] += b["pnl"]
             p["fee"] += b["fee"]
@@ -171,4 +248,11 @@ def build(nfl_summary_games, parlays_by_date=None, parlays_all_by_date=None):
         w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
         w.writeheader()
         w.writerows(rows)
+    MAIN_ROWS["week"] = period_rollup(per, parlays_all_by_date, "week")
+    MAIN_ROWS["month"] = period_rollup(per, parlays_all_by_date, "month")
+    for per_name, out in (("week", MAIN_WEEKLY_CSV), ("month", MAIN_MONTHLY_CSV)):
+        with open(out, "w", newline="", encoding="utf-8") as f:
+            w = csv.DictWriter(f, fieldnames=list(MAIN_ROWS[per_name][0].keys()))
+            w.writeheader()
+            w.writerows(MAIN_ROWS[per_name])
     return rows, coverage
