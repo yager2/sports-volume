@@ -1,5 +1,5 @@
 {
- "as_of": "2026-10-03T15:10:10.980915+00:00",
+ "as_of": "2026-10-10T16:16:00.407033+00:00",
  "series": {
   "KXNFL1H": {
    "fee_multiplier": 1.0,
@@ -427,11 +427,23 @@
    "product": "player_prop",
    "title": "Pro Football player Passing Touchdowns"
   },
+  "KXNFLPASSTDSPROT": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Passing Touchdowns Protected"
+  },
   "KXNFLPASSYDS": {
    "fee_multiplier": 1.0,
    "fee_type": "quadratic",
    "product": "player_prop",
    "title": "Pro Football Passing Yards"
+  },
+  "KXNFLPASSYDSPROT": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Passing Yards Protected"
   },
   "KXNFLREC": {
    "fee_multiplier": 1.0,
@@ -439,11 +451,23 @@
    "product": "player_prop",
    "title": "Pro Football Player Receptions"
   },
+  "KXNFLRECPROT": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Receptions Protected"
+  },
   "KXNFLRECYDS": {
    "fee_multiplier": 1.0,
    "fee_type": "quadratic",
    "product": "player_prop",
    "title": "Pro Football Receiving Yards"
+  },
+  "KXNFLRECYDSPROT": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Receiving Yards Protected"
   },
   "KXNFLROLE": {
    "fee_multiplier": 1.0,
@@ -469,6 +493,12 @@
    "product": "player_prop",
    "title": "Pro Football Rushing Yards"
   },
+  "KXNFLRSHYDSPROT": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Rushing Yards Protected"
+  },
   "KXNFLSFTY": {
    "fee_multiplier": 1.0,
    "fee_type": "quadratic",
@@ -492,6 +522,12 @@
    "fee_type": "quadratic",
    "product": "player_prop",
    "title": "Pro Football Touchdowns"
+  },
+  "KXNFLTDPROT": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pro Football Touchdowns Protected"
   },
   "KXNFLTEAMSACK": {
    "fee_multiplier": 1.0,
