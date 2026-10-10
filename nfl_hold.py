@@ -654,11 +654,13 @@ def _line(prod, phase, o):
 # ---------- main ----------
 
 def _keep_awake(on: bool) -> None:
-    """Stop Windows sleeping mid-backfill (same trick as run_all.py)."""
+    """Stop Windows sleeping mid-backfill. Display-required too: on Modern Standby
+    laptops, the screen timing out drops the machine into standby and cuts the
+    network (seen 2026-10-09: two ~2h stalls) even with system-required set."""
     if os.name != "nt":
         return
     try:
-        ctypes.windll.kernel32.SetThreadExecutionState(0x80000001 if on else 0x80000000)
+        ctypes.windll.kernel32.SetThreadExecutionState(0x80000003 if on else 0x80000000)  # system + display: Modern Standby ignores system-only
     except Exception:  # noqa: BLE001
         pass
 
