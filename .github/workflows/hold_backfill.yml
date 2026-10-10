@@ -1,0 +1,81 @@
+name: hold-backfill
+
+# Finishes the historical backfill on GitHub's servers so it doesn't depend on
+# the laptop being on: MLB straights, then the exact (unsampled) parlay pass,
+# then the rest of college basketball. Every script is resumable - finished
+# games / days are skipped - so each run just continues where the last one
+# stopped. Runs every 6 hours (~5h of work per run) until all three report
+# done, then writes backfill_done and every later run exits immediately.
+
+on:
+  schedule:
+    - cron: "41 */6 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: hold-backfill
+  cancel-in-progress: false
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    env:
+      KALSHI_API_KEY_ID: ${{ secrets.KALSHI_API_KEY_ID }}
+      KALSHI_PRIVATE_KEY: ${{ secrets.KALSHI_PRIVATE_KEY }}
+      KALSHI_RPS: ${{ secrets.KALSHI_API_KEY_ID != '' && '20' || '10' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Already finished?
+        id: done
+        run: |
+          if [ -f backfill_done ]; then echo "finished=yes" >> "$GITHUB_OUTPUT"; echo "Backfill already complete."; fi
+
+      - uses: actions/setup-python@v5
+        if: steps.done.outputs.finished != 'yes'
+        with:
+          python-version: "3.12"
+
+      - name: Python deps
+        if: steps.done.outputs.finished != 'yes'
+        run: pip install --quiet openpyxl requests cryptography
+
+      - name: Backfill (about 5 hours, resumable)
+        if: steps.done.outputs.finished != 'yes'
+        run: |
+          end=$(( $(date +%s) + 290 * 60 ))
+          left() { echo $(( (end - $(date +%s)) / 60 )); }
+          ok=0
+          run() {   # run a step with whatever time is left; count it done only on a clean exit
+            local m; m=$(left)
+            if [ "$m" -lt 5 ]; then echo "out of time before: $*"; return; fi
+            if timeout "${m}m" "$@"; then ok=$((ok + 1)); else echo "::notice::stopped (time or error): $*"; fi
+          }
+          run python -u sports_hold.py --league mlb --since 2025-08-01
+          run python -u nfl_parlays.py --full --since 2025-09-25
+          run python -u sports_hold.py --league cbb --since 2025-08-01
+          echo "steps finished cleanly: $ok of 3"
+          if [ "$ok" -eq 3 ]; then date -u > backfill_done; fi
+
+      - name: Commit progress
+        if: always() && steps.done.outputs.finished != 'yes'
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add sports_hold_data nfl_hold_data/games nfl_hold_data/parlays nfl_hold_data/espn
+          [ -f backfill_done ] && git add backfill_done
+          git commit -q -m "backfill progress $(date -u +'%Y-%m-%d %H:%M UTC')" || { echo "nothing new"; exit 0; }
+          for i in 1 2 3; do
+            git fetch -q origin main
+            # data files: keep this run's copy if the laptop or daily job wrote the same game
+            git rebase -X theirs origin/main && git push -q && exit 0
+            git rebase --abort 2>/dev/null
+            sleep 20
+          done
+          echo "::warning::could not push progress this run; the next run redoes it"
