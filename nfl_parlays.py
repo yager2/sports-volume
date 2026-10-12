@@ -179,6 +179,10 @@ SINGLE_LEAGUE = {"nfl", "nba", "mlb", "nhl", "cfb", "cbb"}
 BIG4 = {"nfl", "nba", "mlb", "nhl"}
 # Parlays counted in the Big 4 numbers: every leg is an NFL/NBA/MLB/NHL game.
 BIG4_PARLAY_CATS = {"nfl", "nfl_mixed_big4", "nba", "mlb", "nhl", "big4_multi"}
+# Every leg in one of the six tracked leagues (matches the straights). Since
+# 2026-10-12; days processed before only have "nfl_mixed"/"other" for any
+# parlay with a college OR untracked-sport leg, so those can't be split.
+SIX_PARLAY_CATS = BIG4_PARLAY_CATS | {"nfl_mixed_six", "cfb", "cbb", "six_multi"}
 LEG_DATE_RE = re.compile(r"-(\d{2}[A-Z]{3}\d{2})")
 
 
@@ -204,12 +208,14 @@ def _nfl_info(m: dict):
     leagues = {_league(l["market_ticker"]) for l in legs}
     nfl = [l for l in legs if l["market_ticker"].startswith("KXNFL")]
     big4 = leagues <= BIG4
+    six = leagues <= SINGLE_LEAGUE            # every leg in the six tracked leagues
     if nfl:
-        cat = "nfl" if len(nfl) == len(legs) else ("nfl_mixed_big4" if big4 else "nfl_mixed")
+        cat = ("nfl" if len(nfl) == len(legs) else "nfl_mixed_big4" if big4
+               else "nfl_mixed_six" if six else "nfl_mixed")
     elif len(leagues) == 1:
         cat = next(iter(leagues))
     else:
-        cat = "big4_multi" if big4 else "other"
+        cat = "big4_multi" if big4 else "six_multi" if six else "other"
     codes = []
     for l in nfl:
         mm = LEG_GAME_RE.match(l.get("event_ticker") or "")

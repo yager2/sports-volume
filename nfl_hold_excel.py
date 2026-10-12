@@ -2,9 +2,8 @@
 Build nfl_hold.xlsx (and its Google Sheets copy "NFL Hold Tracker") - Kalshi taker hold.
 
 Tabs:
-  - "Weekly"             MAIN VIEW: Big 4 straights / parlays / combined implied hold by NY week + charts
+  - "Weekly"             MAIN VIEW: all six leagues' straights / all parlays / combined, by NY week, + each league + charts
   - "Monthly"            same by calendar month (for state monthly reports)
-  - "All sports weekly"  every NY report week, NFL/NBA/MLB/NHL/CFB/CBB side by side
   - "NFL dashboard"      season-to-date by product + the last 6 weeks, green/red
   - "Week vs week"        Week N of each season side by side (the comp view)
   - "Weekly"             one row per NFL week (hold, expected, luck, outcome factors)
@@ -438,12 +437,13 @@ def sheet_main(wb, summary, period: str):
         return
     weekly = period == "week"
     ws = wb.create_sheet("Weekly" if weekly else "Monthly", 0 if weekly else 1)
-    _title(ws, "Kalshi implied hold - Big 4 leagues, by " + ("New York report week" if weekly else "month"),
-           ("NFL, NBA, MLB, NHL. " + ("Weeks run Monday-Sunday, labelled by the Sunday (Week-Ending), matching NY's weekly report. "
+    _title(ws, "Kalshi implied hold, by " + ("New York report week" if weekly else "month"),
+           ("Straights: NFL, NBA, MLB, NHL, college football, men's college basketball. Parlays: tickets whose every leg is in "
+             "those six leagues (soccer, tennis etc. parlays excluded to match). " + ("Weeks run Monday-Sunday, labelled by the Sunday (Week-Ending), matching NY's weekly report. "
                                       if weekly else "Calendar months, for state monthly reports. ")
             + "Implied hold = share of money takers lost incl. Kalshi fees (green = house/makers won). Straights: every trade "
-              "in every game market. Parlays: tickets whose every leg is a Big 4 game; 'estimate' = sampled until the exact pass "
-              "reaches that period. Parlay hold blank under $250K of stakes."), "all")
+              "in every game market. Parlays: every trade too; 'estimate' = sampled until the exact pass reaches that period. "
+              "Parlay hold blank under $250K of stakes. Each league's straights are to the right."), "all")
     groups = [
         ("Straight bets", [("Straight volume", "straight_taker_dollars", USD, 16), ("House won", "straight_house_win", USD, 14),
                            ("Straights hold", "straight_hold", PCT2, 10)]),
@@ -452,7 +452,8 @@ def sheet_main(wb, summary, period: str):
         ("Combined", [("Total volume", "combined_dollars", USD, 16), ("House won", "combined_house_win", USD, 14),
                       ("Combined hold", "combined_hold", PCT2, 11)]),
         ("Context", [("Games", "games", INT, 8), ("Pre-game luck (bps)", "pregame_luck_bps", INT, 10)]),
-    ]
+    ] + [(f"{name} straights", [(f"{name} volume", f"{lg}_taker_dollars", USD, 14), (f"{name} hold", f"{lg}_hold", PCT2, 9)])
+         for lg, name in ALL_LEAGUES]
     first = ws.cell(row=4, column=1, value="Week-Ending" if weekly else "Month")
     first.fill, first.font, first.alignment = HEAD_FILL, HEAD_FONT, Alignment(vertical="center")
     ws.merge_cells(start_row=4, start_column=1, end_row=5, end_column=1)
@@ -486,7 +487,7 @@ def sheet_main(wb, summary, period: str):
                 cell.font = Font(name=FONT, size=10, bold=True, color="0F172A")
     last = 5 + len(rows)
     for c, mname, key, f, gname in flat:
-        if mname in ("Straights hold", "Parlay hold", "Combined hold", "House won", "Pre-game luck (bps)"):
+        if mname in ("Straights hold", "Parlay hold", "Combined hold", "House won", "Pre-game luck (bps)") or mname.endswith(" hold"):
             L = get_column_letter(c)
             _green_red(ws, f"{L}6:{L}{last}")
     ws.freeze_panes = "B6"
@@ -494,7 +495,7 @@ def sheet_main(wb, summary, period: str):
     # charts to the right of the table
     col_of = {key: c for c, _, key, _, _ in flat}
     cats = Reference(ws, min_col=1, min_row=6, max_row=last)
-    anchor_col = get_column_letter(col + 1)
+    anchor_col = get_column_letter(col + 1)   # right of every column
     lc = LineChart()
     lc.title = "Implied hold by " + ("week" if weekly else "month")
     lc.height, lc.width = 9, 22
@@ -507,7 +508,7 @@ def sheet_main(wb, summary, period: str):
         ser.smooth = False
     lc.set_categories(cats)
     lc.x_axis.number_format = "mm/dd/yy" if weekly else "mmm yy"
-    ws.add_chart(lc, f"{anchor_col}4")
+    ws.add_chart(lc, f"B{last + 3}")      # below the table
     bc = BarChart()
     bc.type, bc.grouping, bc.overlap = "col", "stacked", 100
     bc.title = "Taker volume by " + ("week" if weekly else "month")
@@ -520,7 +521,7 @@ def sheet_main(wb, summary, period: str):
         ser.graphicalProperties.line.noFill = True
     bc.set_categories(cats)
     bc.x_axis.number_format = "mm/dd/yy" if weekly else "mmm yy"
-    ws.add_chart(bc, f"{anchor_col}24")
+    ws.add_chart(bc, f"B{last + 22}")
 
 
 def sheet_charts(wb, weekly_rows):
@@ -597,7 +598,6 @@ def build(game_rows, gp_rows, weekly_rows, summary):
     pasted = _read_pasted()
     wb = Workbook()
     sheet_dashboard(wb, summary, weekly_rows)
-    sheet_all_sports(wb, summary)
     sheet_main(wb, summary, "week")
     sheet_main(wb, summary, "month")
     sheet_weekly(wb, weekly_rows)

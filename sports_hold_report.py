@@ -33,6 +33,10 @@ BIG4 = {"nfl", "nba", "mlb", "nhl"}   # headline total; college leagues shown se
 # Parlays counted with the Big 4: every leg an NFL/NBA/MLB/NHL game (see nfl_parlays.py).
 # Older sampled files only have "nfl" / "nfl_mixed"; "nfl" is all-NFL so it counts.
 BIG4_PARLAY_CATS = {"nfl", "nfl_mixed_big4", "nba", "mlb", "nhl", "big4_multi"}
+# Parlays in the main view: every leg in the six tracked leagues, matching the
+# straights. ("nfl_mixed"/"other" mix college with untracked sports like soccer
+# on days processed before 2026-10-12, so they're left out.)
+SIX_PARLAY_CATS = BIG4_PARLAY_CATS | {"nfl_mixed_six", "cfb", "cbb", "six_multi"}
 MIN_PARLAY_STAKES = 250_000           # below this a period's parlay hold is noise
 
 LEAGUES = [("nfl", "NFL"), ("nba", "NBA"), ("mlb", "MLB"), ("nhl", "NHL"),
@@ -105,7 +109,9 @@ def _luck(a):
 
 
 def period_rollup(per, parlays_all_by_date, period: str):
-    """Main view: Big 4 straights, Big 4 parlays and the two combined, by
+    """Main view: straights for all six tracked leagues (NFL, NBA, MLB, NHL,
+    college football, men's college basketball), every sports parlay, and the
+    two combined - plus each league's straights - by
     New York report week (Mon-Sun, labelled by the Sunday) or calendar month.
 
     Straights: games by their ET date. Parlays: by their last leg's date.
@@ -113,10 +119,13 @@ def period_rollup(per, parlays_all_by_date, period: str):
     """
     key = ny_week_ending if period == "week" else (lambda d: d[:7])
     st = defaultdict(_blank)
+    by_lg = defaultdict(lambda: defaultdict(_blank))      # period -> league -> sums
     for lg, games in per.items():
-        if lg not in BIG4:
-            continue
         for date, complete, a in games:
+            lb = by_lg[key(date)][lg]
+            lb["dollars"] += a["dollars"]
+            lb["pnl"] += a["pnl"]
+            lb["fee"] += a["fee"]
             b = st[key(date)]
             b["games"] += 1
             b["incomplete"] += 0 if complete else 1
@@ -126,7 +135,7 @@ def period_rollup(per, parlays_all_by_date, period: str):
     for date, cats in (parlays_all_by_date or {}).items():
         b = pa[key(date)]
         for cat, v in cats.items():
-            if cat in BIG4_PARLAY_CATS:
+            if cat in SIX_PARLAY_CATS:   # same sports as the straights: every leg in the six leagues
                 b["stakes"] += v["stakes"]
                 b["pnl"] += v["pnl"]
                 b["fee"] += v["fee"]
@@ -166,6 +175,9 @@ def period_rollup(per, parlays_all_by_date, period: str):
             "combined_dollars": round(c_d, 2) if c_d else None,
             "combined_house_win": round(s_win + p_win, 2) if c_d else None,
             "combined_hold": round((s_win + p_win) / c_d, 5) if c_d and p_ok else None,
+            **{f"{lg}_{m}": v for lg, _ in LEAGUES
+               for m, v in (("taker_dollars", round(by_lg[k][lg]["dollars"], 2) if by_lg.get(k, {}).get(lg) else None),
+                            ("hold", _hold(by_lg[k][lg]) if by_lg.get(k, {}).get(lg) else None))},
             "pregame_luck_bps": _luck(a) if a else None,
             "unsettled_games": int(a["incomplete"]) if a and a["incomplete"] else None,
         })
