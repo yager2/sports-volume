@@ -19,7 +19,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 300
+    timeout-minutes: 330
     env:
       RCLONE_CONF: ${{ secrets.RCLONE_CONF }}
       # Kalshi API key (repo secrets). Signed requests sustain ~20/s; without
@@ -46,10 +46,17 @@ jobs:
         run: timeout 80m python nfl_hold.py
         continue-on-error: true   # a Kalshi/ESPN hiccup shouldn't block rebuilding from what we have
 
-      - name: Pull NFL parlays (sampled trade feed)
+      - name: Pull parlays (exact with API key, else sampled)
         # ~5-16 min per trade day; the last 4 trade days are re-checked until
         # every parlay on played games has settled.
-        run: timeout 60m python nfl_parlays.py
+        # Exact (every trade) when the Kalshi key secrets are set - fast enough
+        # with a key; otherwise the 10-min/hour sample (estimate).
+        run: |
+          if [ -n "$KALSHI_API_KEY_ID" ] && [ -n "$KALSHI_PRIVATE_KEY" ]; then
+            timeout 120m python nfl_parlays.py --full
+          else
+            timeout 60m python nfl_parlays.py
+          fi
         continue-on-error: true
 
       - name: Pull NBA, MLB, NHL, college football and basketball games (exact)
