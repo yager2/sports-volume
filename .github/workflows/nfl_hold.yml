@@ -7,6 +7,11 @@ on:
     # Tuesday, TNF on Friday. :17 avoids GitHub's top-of-hour queue delays
     # (see daily.yml).
     - cron: "17 11 * * *"
+    # Monday extras so Sunday's NFL slate is in the Sheet Monday morning even
+    # when GitHub runs a scheduled job late: ~4am and ~8am Central (UTC, so
+    # an hour earlier in CST). Runs only pick up what isn't in yet - safe to repeat.
+    - cron: "7 9 * * 1"
+    - cron: "47 12 * * 1"
   workflow_dispatch: {}        # "Run workflow" button for manual runs
 
 permissions:
