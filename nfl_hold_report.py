@@ -415,9 +415,13 @@ def load_parlays(game_rows):
     better for the house than it really is.
     """
     days = []
-    for p in sorted(glob.glob(PARLAY_GLOB)):
-        full = p.replace(".json.gz", ".full.json.gz")
-        src = full if os.path.exists(full) else p      # the exact pass wins over the sample
+    # Every day with a sampled OR an exact file; the exact pass wins. (Feb-Jul
+    # 2026 only ever had exact files - globbing sampled names alone skipped them.)
+    stems = {os.path.basename(p)[:10] for p in glob.glob(os.path.join(os.path.dirname(PARLAY_GLOB), "????-??-??*.json.gz"))}
+    for day in sorted(stems):
+        base = os.path.join(os.path.dirname(PARLAY_GLOB), day)
+        src = base + ".full.json.gz" if os.path.exists(base + ".full.json.gz") else base + ".json.gz"
+        p = src
         try:
             days.append(json.load(gzip.open(src, "rt", encoding="utf-8")))
         except (OSError, ValueError):
