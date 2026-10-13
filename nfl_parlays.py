@@ -106,14 +106,22 @@ def archive_cutoff() -> float:
     return _CUTOFF
 
 
-def sweep(day: datetime, full: bool) -> list[dict]:
-    """Every parlay trade in the day's sampled windows."""
+def sweep(day: datetime, full: bool) -> list[tuple]:
+    """Every parlay trade in the day's sampled windows, as compact tuples:
+    (ticker, created_time, taker side, contracts, yes price, no price).
+
+    Compact on purpose: a big football Saturday has ~2M parlay trades, and
+    keeping Kalshi's full trade dicts used 2+ GB and pushed the laptop into
+    swapping (2026-10-12: one day took 2 hours).
+    """
     cutoff = archive_cutoff()
 
     def one(w):
         a, b = w
         path = "/historical/trades" if b <= cutoff else "/markets/trades"
-        return [t for t in nh.paginate(path, {"min_ts": a, "max_ts": b, "limit": 1000}, "trades")
+        return [(t["ticker"], t["created_time"], t.get("taker_outcome_side") or t["taker_side"],
+                 float(t.get("count_fp") or 0), float(t["yes_price_dollars"]), float(t["no_price_dollars"]))
+                for t in nh.paginate(path, {"min_ts": a, "max_ts": b, "limit": 1000}, "trades")
                 if is_parlay(t["ticker"])]
     with ThreadPoolExecutor(WORKERS) as ex:
         return [t for ts_ in ex.map(one, windows(day, full)) for t in ts_]
@@ -127,11 +135,16 @@ def lookup(tickers: list[str]) -> dict[str, dict]:
     def one_hist(ch):
         return nh.kalshi("/historical/markets", {"tickers": ",".join(ch), "limit": 1000}).get("markets") or []
 
+    def slim(m):   # only what classification + settlement need (full market dicts are large)
+        return {"status": m.get("status"), "settlement_value_dollars": m.get("settlement_value_dollars"),
+                "mve_selected_legs": [{"event_ticker": l.get("event_ticker"), "market_ticker": l["market_ticker"],
+                                       "side": l["side"]} for l in (m.get("mve_selected_legs") or [])]}
+
     out = {}
     with ThreadPoolExecutor(WORKERS) as ex:
         for ms in ex.map(one, chunks):
             for m in ms:
-                out[m["ticker"]] = m
+                out[m["ticker"]] = slim(m)
     # Parlays settled before Kalshi's archive cutoff only exist in /historical/markets.
     rest = [t for t in tickers if t not in out]
     if rest:
@@ -139,7 +152,7 @@ def lookup(tickers: list[str]) -> dict[str, dict]:
         with ThreadPoolExecutor(WORKERS) as ex:
             for ms in ex.map(one_hist, chunks):
                 for m in ms:
-                    out[m["ticker"]] = m
+                    out[m["ticker"]] = slim(m)
     return out
 
 
@@ -302,24 +315,22 @@ def _finish(d: dict, rows, tix, pending: list, info: dict) -> dict:
 def process_day(day: datetime, full: bool, gi: GameIndex) -> dict:
     t0 = time.time()
     trades = sweep(day, full)
-    tickers = sorted({t["ticker"] for t in trades})
+    tickers = sorted({t[0] for t in trades})
     mk = lookup(tickers)
     rows = defaultdict(lambda: [0.0] * 7)      # key -> n, contracts, $, pnl, fee, exp_$, exp_pnl
     tix = defaultdict(lambda: [0, 0.0])        # (cat, legs, date) -> parlays, parlays won
     counted, pending, info = set(), [], {}
     missing = 0
     for t in trades:
-        m = mk.get(t["ticker"])
+        m = mk.get(t[0])
         if m is None:
             missing += 1
             continue
         ni = _nfl_info(m)
         if ni is None:
             continue
-        info[t["ticker"]] = ni
-        side = t.get("taker_outcome_side") or t["taker_side"]
-        compact = [t["ticker"], t["created_time"], side, float(t.get("count_fp") or 0),
-                   float(t["yes_price_dollars"]), float(t["no_price_dollars"])]
+        info[t[0]] = ni
+        compact = list(t)
         if _settled(m):
             _accumulate(compact, m, gi, rows, tix, counted)
         else:
