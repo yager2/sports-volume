@@ -49,7 +49,7 @@ import re
 import sys
 import time
 from collections import defaultdict
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
 
 import nfl_hold as nh
@@ -127,32 +127,32 @@ def sweep(day: datetime, full: bool) -> list[tuple]:
         return [t for ts_ in ex.map(one, windows(day, full)) for t in ts_]
 
 
+def _slim(m: dict) -> dict:
+    """Only what classification + settlement need (full market dicts are large)."""
+    return {"status": m.get("status"), "settlement_value_dollars": m.get("settlement_value_dollars"),
+            "mve_selected_legs": [{"event_ticker": l.get("event_ticker"), "market_ticker": l["market_ticker"],
+                                   "side": l["side"]} for l in (m.get("mve_selected_legs") or [])]}
+
+
 def lookup(tickers: list[str]) -> dict[str, dict]:
-    chunks = [tickers[i:i + 100] for i in range(0, len(tickers), 100)]
+    """Parlay markets by ticker (100 per request), slimmed inside each request so
+    full responses never pile up while results wait to be collected."""
+    def fetch(path, ch):
+        return [(m["ticker"], _slim(m))
+                for m in (nh.kalshi(path, {"tickers": ",".join(ch), "limit": 1000}).get("markets") or [])]
 
-    def one(ch):
-        return nh.kalshi("/markets", {"tickers": ",".join(ch), "limit": 1000}).get("markets") or []
-    def one_hist(ch):
-        return nh.kalshi("/historical/markets", {"tickers": ",".join(ch), "limit": 1000}).get("markets") or []
+    def run(path, tks):
+        chunks = [tks[i:i + 100] for i in range(0, len(tks), 100)]
+        with ThreadPoolExecutor(WORKERS) as ex:
+            for f in as_completed([ex.submit(fetch, path, ch) for ch in chunks]):
+                out.update(f.result())
 
-    def slim(m):   # only what classification + settlement need (full market dicts are large)
-        return {"status": m.get("status"), "settlement_value_dollars": m.get("settlement_value_dollars"),
-                "mve_selected_legs": [{"event_ticker": l.get("event_ticker"), "market_ticker": l["market_ticker"],
-                                       "side": l["side"]} for l in (m.get("mve_selected_legs") or [])]}
-
-    out = {}
-    with ThreadPoolExecutor(WORKERS) as ex:
-        for ms in ex.map(one, chunks):
-            for m in ms:
-                out[m["ticker"]] = slim(m)
+    out: dict[str, dict] = {}
+    run("/markets", tickers)
     # Parlays settled before Kalshi's archive cutoff only exist in /historical/markets.
     rest = [t for t in tickers if t not in out]
     if rest:
-        chunks = [rest[i:i + 100] for i in range(0, len(rest), 100)]
-        with ThreadPoolExecutor(WORKERS) as ex:
-            for ms in ex.map(one_hist, chunks):
-                for m in ms:
-                    out[m["ticker"]] = slim(m)
+        run("/historical/markets", rest)
     return out
 
 
