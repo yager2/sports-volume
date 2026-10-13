@@ -55,6 +55,16 @@ LEAGUES = {
     "nhl": {"name": "NHL", "prefix": "KXNHL", "ml": "KXNHLGAME", "game_h": 2.6},
     "cfb": {"name": "College football", "prefix": "KXNCAAF", "ml": "KXNCAAFGAME", "game_h": 3.4},
     "cbb": {"name": "Men's college basketball", "prefix": "KXNCAAMB", "ml": "KXNCAAMBGAME", "game_h": 2.1},
+    # 2026 FIFA World Cup (Jun 11 - Jul 19, 2026). Kalshi's archive doesn't index
+    # these markets by event (per-match lookups and /events come back empty), but
+    # listing each series works - so this league is loaded series by series.
+    # KXWCBA* (Chinese women's basketball), KXWCCREG (college conference), KXWCCOD*
+    # (esports) and KXWCW / KXWCWOMEN (women's World Cup) share the prefix and are
+    # excluded - by exact name where a broad prefix would also drop real per-match
+    # series like KXWCCORNERS or KXWCWINMARGIN.
+    "wc": {"name": "World Cup", "prefix": "KXWC", "ml": "KXWCGAME", "game_h": 1.95,
+           "list_by_series": True, "exclude": ("KXWCBA", "KXWCCREG", "KXWCCOD"), "exclude_exact": {"KXWCW", "KXWCWOMEN"},
+           "date_re": r"26(?:JUN|JUL)\d{2}"},
 }
 # Combo / parlay products are never straights.
 EXCLUDE_SERIES_RE = re.compile(r"SGP|COMBO|PREPACK|MVE|PARLAY")
@@ -62,16 +72,22 @@ PERIOD_RE = re.compile(r"^(1H|2H|1Q|2Q|3Q|4Q|1P|2P|3P|F3|F5|F7|INNING|FIRST\d|2M
 PLAYER_PROP = {
     "PTS", "REB", "AST", "3PT", "BLK", "STL", "PRA", "PR", "PA", "RA", "DD", "TD", "2D", "3D",
     "HIT", "HITS", "HR", "HRR", "KS", "RBI", "TB", "SB", "RUNS", "SOG", "GOAL", "ANYGOAL", "FIRSTGOAL",
-    "SAVES", "SAVE", "PASSYDS", "RSHYDS", "RECYDS", "REC", "PASSTDS", "ANYTD", "FIRSTTD", "BENCHPTS",
+    "SAVES", "SAVE", "SHOT", "SOA", "PLAYERGOALS", "PASSYDS", "RSHYDS", "RECYDS", "REC", "PASSTDS", "ANYTD", "FIRSTTD", "BENCHPTS",
 }
 BUCKETS = ["a:<$25", "b:$25-100", "c:$100-1k", "d:>$1k"]
 DAILY_LOOKBACK_DAYS = 10
 GAMES_AT_ONCE = 4                # with an API key; anonymous runs one game at a time
 
 
-def code_re(prefix: str) -> re.Pattern:
+def code_re(prefix: str, date_re: str | None = None) -> re.Pattern:
     # SERIES-26OCT06NOPOKC ; MLB carries first-pitch time: SERIES-26OCT061800LADATL
-    return re.compile(rf"^({prefix}[A-Z0-9]*)-(\d{{2}}[A-Z]{{3}}\d{{2}}(?:\d{{4}})?[A-Z]{{3,18}})$")
+    d = date_re or r"\d{2}[A-Z]{3}\d{2}"
+    return re.compile(rf"^({prefix}[A-Z0-9]*)-({d}(?:\d{{4}})?[A-Z]{{3,18}})$")
+
+
+def league_re(lg: str) -> re.Pattern:
+    cfg = LEAGUES[lg]
+    return code_re(cfg["prefix"], cfg.get("date_re"))
 
 
 def product_of(prefix: str, series: str) -> str:
@@ -103,11 +119,15 @@ def load_series(lg: str, refresh: bool = False) -> dict:
         if (datetime.now(timezone.utc) - datetime.fromisoformat(cached["as_of"])).days < nh.SERIES_MAX_AGE_DAYS:
             return cached["series"]
     print(f"[{lg}] discovering per-game series...")
-    rx = code_re(cfg["prefix"])
+    rx = league_re(lg)
     allseries = list(nh.paginate("/series", {"category": "Sports", "limit": 1000}, "series"))
-    cand = [s for s in allseries if s["ticker"].startswith(cfg["prefix"]) and not EXCLUDE_SERIES_RE.search(s["ticker"])]
+    cand = [s for s in allseries if s["ticker"].startswith(cfg["prefix"]) and not EXCLUDE_SERIES_RE.search(s["ticker"])
+            and not s["ticker"].startswith(cfg.get("exclude", ())) and s["ticker"] not in cfg.get("exclude_exact", ())]
 
     def probe(s):
+        if cfg.get("list_by_series"):   # events aren't indexed: look at the series' markets instead
+            ms = nh.kalshi("/historical/markets", {"series_ticker": s["ticker"], "limit": 200}).get("markets") or []
+            return s, any(rx.match(m.get("event_ticker") or "") for m in ms)
         evs = nh.kalshi("/events", {"series_ticker": s["ticker"], "limit": 25}).get("events") or []
         return s, bool(evs) and all(rx.match(e["event_ticker"]) for e in evs)
 
@@ -351,7 +371,7 @@ def summarize(g: dict) -> str:
 def finished_games(lg: str, min_close: float | None, max_close: float | None, archive: bool) -> list[str]:
     """Game codes whose moneyline has fully settled, from the moneyline series alone (cheap)."""
     cfg = LEAGUES[lg]
-    rx = code_re(cfg["prefix"])
+    rx = league_re(lg)
     ms = {}
     if archive:
         for m in nh.paginate("/historical/markets", {"series_ticker": cfg["ml"], "limit": 1000}, "markets"):
@@ -383,7 +403,7 @@ def series_games(lg: str, series: dict) -> dict[str, set]:
     per real event) instead of every series - Kalshi's ~4/s request budget
     is the bottleneck, and most series didn't exist for older games.
     """
-    rx = code_re(LEAGUES[lg]["prefix"])
+    rx = league_re(lg)
 
     def one(s):
         codes = set()
@@ -411,8 +431,53 @@ def markets_for_game(code: str, series_codes: dict[str, set], in_archive: bool) 
         return [m for ms in ex.map(one, todo) for m in ms]
 
 
+def run_by_series(lg: str, args, cutoff: float, series: dict) -> None:
+    """Leagues whose archive isn't indexed by event (World Cup): list every
+    market of every per-game series, group by match, then process each match."""
+    rx = league_re(lg)
+    cfg = LEAGUES[lg]
+    print(f"[{lg}] listing every market of {len(series)} series...", flush=True)
+    by_game = defaultdict(dict)
+
+    def one(s):
+        return list(nh.paginate("/historical/markets", {"series_ticker": s, "limit": 1000}, "markets")) + \
+               list(nh.paginate("/markets", {"series_ticker": s, "limit": 1000}, "markets"))
+    with ThreadPoolExecutor(nh.WORKERS) as ex:
+        for ms in ex.map(one, list(series)):
+            for m in ms:
+                mm = rx.match(m.get("event_ticker") or "")
+                if mm:
+                    by_game[mm.group(2)][m["ticker"]] = m
+    codes = sorted(by_game, key=lambda c: (datetime.strptime(c[:7], "%y%b%d"), c))
+    if args.game:
+        codes = [c for c in codes if c == args.game]
+    done_ok = lambda c: all(m.get("status") in ("finalized", "settled")
+                            for m in by_game[c].values() if m["event_ticker"].startswith(cfg["ml"] + "-"))
+    todo = [c for c in codes if done_ok(c) and (args.redo or not existing_complete(lg, c))]
+    print(f"[{lg}] {len(codes)} matches, {len(todo)} to pull", flush=True)
+    t_start = time.time()
+    for i, code in enumerate(todo, 1):
+        t0 = time.time()
+        ms = list(by_game[code].values())
+        try:
+            g = process_game(lg, code, ms, series, cutoff)
+        except (Exception, SystemExit) as e:
+            print(f"  [{lg} {i}/{len(todo)}] {code}: FAILED ({e}) - will retry next run", flush=True)
+            continue
+        if g is None:
+            print(f"  [{lg} {i}/{len(todo)}] {code}: no start time, skipped", flush=True)
+            continue
+        save(g)
+        el = time.time() - t_start
+        print(f"  [{lg} {i}/{len(todo)}] {code}: {g['markets']} mkts, {g['trades']:,} trades, {time.time() - t0:.0f}s, "
+              f"{summarize(g)}, complete={g['complete']}  (elapsed {el / 60:.0f}m, ~{el / i * (len(todo) - i) / 60:.0f}m left)",
+              flush=True)
+
+
 def run_league(lg: str, args, cutoff: float) -> None:
     series = load_series(lg, args.refresh_series)
+    if LEAGUES[lg].get("list_by_series"):
+        return run_by_series(lg, args, cutoff, series)
     if args.game:
         todo = [args.game]
         archive = True
@@ -481,7 +546,8 @@ def main():
     cutoff = nh.ts(nh.kalshi("/historical/cutoff").get("trades_created_ts")) or 0
     nh._keep_awake(True)
     try:
-        for lg in ([args.league] if args.league else list(LEAGUES)):
+        # The World Cup is finished history: only run it when asked for by name.
+        for lg in ([args.league] if args.league else [l for l in LEAGUES if l != "wc"]):
             run_league(lg, args, cutoff)
     finally:
         nh._keep_awake(False)

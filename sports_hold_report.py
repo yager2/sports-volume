@@ -40,7 +40,7 @@ SIX_PARLAY_CATS = BIG4_PARLAY_CATS | {"nfl_mixed_six", "cfb", "cbb", "six_multi"
 MIN_PARLAY_STAKES = 250_000           # below this a period's parlay hold is noise
 
 LEAGUES = [("nfl", "NFL"), ("nba", "NBA"), ("mlb", "MLB"), ("nhl", "NHL"),
-           ("cfb", "College football"), ("cbb", "College basketball")]
+           ("cfb", "College football"), ("cbb", "College basketball"), ("wc", "World Cup")]
 
 
 def ny_week_ending(date_iso: str) -> str:

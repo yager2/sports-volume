@@ -189,8 +189,10 @@ RESOLVE_DAYS = 21                # keep re-checking a day's unsettled parlays th
 LEAGUE_PREFIX = [("KXNFL", "nfl"), ("KXNBA", "nba"), ("KXMLB", "mlb"), ("KXNHL", "nhl"),
                  ("KXNCAAF", "cfb"), ("KXNCAAMB", "cbb"),
                  # 2026 FIFA World Cup (Jun 11 - Jul 19, 2026). Not KXWCBA* (Chinese women's
-                 # basketball) or KXWCC* (college conference futures), which share the prefix.
-                 ("KXWCBA", "other"), ("KXWCC", "other"), ("KXWC", "wc"), ("KXMENWORLDCUP", "wc")]
+                 # basketball), KXWCCREG (college conference) or KXWCCOD* (esports), which
+                 # share the prefix; KXWCCORNERS etc. are real World Cup markets.
+                 ("KXWCBA", "other"), ("KXWCCREG", "other"), ("KXWCCOD", "other"),
+                 ("KXWC", "wc"), ("KXMENWORLDCUP", "wc")]
 SINGLE_LEAGUE = {"nfl", "nba", "mlb", "nhl", "cfb", "cbb", "wc"}   # tracked leagues (wc = 2026 World Cup)
 BIG4 = {"nfl", "nba", "mlb", "nhl"}
 # Parlays counted in the Big 4 numbers: every leg is an NFL/NBA/MLB/NHL game.

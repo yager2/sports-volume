@@ -368,7 +368,7 @@ def sheet_week_compare(wb, summary):
 
 
 ALL_LEAGUES = [("nfl", "NFL"), ("nba", "NBA"), ("mlb", "MLB"), ("nhl", "NHL"),
-               ("cfb", "College football"), ("cbb", "College basketball")]
+               ("cfb", "College football"), ("cbb", "College basketball"), ("wc", "World Cup")]
 
 
 def sheet_all_sports(wb, summary):
@@ -438,8 +438,8 @@ def sheet_main(wb, summary, period: str):
     weekly = period == "week"
     ws = wb.create_sheet("Weekly" if weekly else "Monthly", 0 if weekly else 1)
     _title(ws, "Kalshi implied hold, by " + ("New York report week" if weekly else "month"),
-           ("Straights: NFL, NBA, MLB, NHL, college football, men's college basketball. Parlays: tickets whose every leg is in "
-             "those six leagues (soccer, tennis etc. parlays excluded to match). " + ("Weeks run Monday-Sunday, labelled by the Sunday (Week-Ending), matching NY's weekly report. "
+           ("Straights: NFL, NBA, MLB, NHL, college football, men's college basketball, 2026 World Cup. Parlays: tickets whose "
+             "every leg is in those leagues (other soccer, tennis etc. excluded to match). " + ("Weeks run Monday-Sunday, labelled by the Sunday (Week-Ending), matching NY's weekly report. "
                                       if weekly else "Calendar months, for state monthly reports. ")
             + "Implied hold = share of money takers lost incl. Kalshi fees (green = house/makers won). Straights: every trade "
               "in every game market. Parlays: every trade too; 'estimate' = sampled until the exact pass reaches that period. "

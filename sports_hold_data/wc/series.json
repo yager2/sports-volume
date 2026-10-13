@@ -1,0 +1,179 @@
+{
+ "as_of": "2026-10-13T18:49:16.627675+00:00",
+ "series": {
+  "KXWC1H": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "World Cup 1st Half"
+  },
+  "KXWC1HBTTS": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "World Cup 1st Half BTTS"
+  },
+  "KXWC1HSCORE": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "World Cup 1st Half Score"
+  },
+  "KXWC1HSPREAD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "World Cup First Half Spread"
+  },
+  "KXWC1HTOTAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "World Cup 1st Half Total"
+  },
+  "KXWC2H": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "World Cup 2nd Half Winner"
+  },
+  "KXWC2HBTTS": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "World Cup 2nd Half BTTS"
+  },
+  "KXWC2HSPREAD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "World Cup Second Half Spread"
+  },
+  "KXWC2HTOTAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "World Cup 2nd Half Total"
+  },
+  "KXWCADVANCE": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "World Cup Advance"
+  },
+  "KXWCAST": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "World Cup Assists"
+  },
+  "KXWCBRACE": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "World Cup Any Player to Score a Brace"
+  },
+  "KXWCBTTS": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "World Cup BTTS"
+  },
+  "KXWCCORNERS": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "World Cup Corners"
+  },
+  "KXWCDELAY": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "World Cup Delay"
+  },
+  "KXWCFIRSTGOAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "World Cup First Goal"
+  },
+  "KXWCFTTS": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "World Cup Team To Score First"
+  },
+  "KXWCGAME": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic_with_maker_fees",
+   "product": "moneyline",
+   "title": "World Cup Game"
+  },
+  "KXWCGOAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "World Cup Goal"
+  },
+  "KXWCMOF": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "World Cup Method of Finish"
+  },
+  "KXWCMOV": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "World Cup Method of Victory"
+  },
+  "KXWCPLAY": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "World Cup Play in Game"
+  },
+  "KXWCSCORE": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "World Cup Correct Score"
+  },
+  "KXWCSCOREET": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Correct Score after Extra Time"
+  },
+  "KXWCSOA": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "World Cup Score or Assist"
+  },
+  "KXWCSPREAD": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "spread",
+   "title": "World Cup Spread"
+  },
+  "KXWCTCORNERS": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "World Cup Team Corners"
+  },
+  "KXWCTEAMTOTAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "World Cup Team Total"
+  },
+  "KXWCTOTAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "total",
+   "title": "World Cup Total"
+  }
+ }
+}
