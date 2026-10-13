@@ -600,14 +600,11 @@ def build(game_rows, gp_rows, weekly_rows, summary):
     sheet_dashboard(wb, summary, weekly_rows)
     sheet_main(wb, summary, "week")
     sheet_main(wb, summary, "month")
-    sheet_weekly(wb, weekly_rows)
-    sheet_games(wb, game_rows)
-    sheet_game_product(wb, gp_rows)
-    sheet_buckets(wb, summary)
+    # Trimmed 2026-10-13 at the user's request: no separate NFL weekly, by-game,
+    # by-game-x-product, ticket-size or NFL-charts tabs (the CSVs still carry that detail).
     sheet_parlays(wb, summary)
     sheet_week_compare(wb, summary)
     sheet_compare(wb, summary, pasted)
-    sheet_charts(wb, weekly_rows)
     sheet_notes(wb, summary, game_rows)
     wb.active = 0
     tmp = XLSX_OUT + ".tmp.xlsx"
