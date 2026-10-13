@@ -36,7 +36,7 @@ BIG4_PARLAY_CATS = {"nfl", "nfl_mixed_big4", "nba", "mlb", "nhl", "big4_multi"}
 # Parlays in the main view: every leg in the six tracked leagues, matching the
 # straights. ("nfl_mixed"/"other" mix college with untracked sports like soccer
 # on days processed before 2026-10-12, so they're left out.)
-SIX_PARLAY_CATS = BIG4_PARLAY_CATS | {"nfl_mixed_six", "cfb", "cbb", "six_multi", "wc"}
+SIX_PARLAY_CATS = BIG4_PARLAY_CATS | {"nfl_mixed_six", "cfb", "cbb", "six_multi"}   # not "wc": no World Cup straights
 MIN_PARLAY_STAKES = 250_000           # below this a period's parlay hold is noise
 
 LEAGUES = [("nfl", "NFL"), ("nba", "NBA"), ("mlb", "MLB"), ("nhl", "NHL"),

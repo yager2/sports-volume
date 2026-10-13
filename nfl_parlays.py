@@ -191,14 +191,14 @@ LEAGUE_PREFIX = [("KXNFL", "nfl"), ("KXNBA", "nba"), ("KXMLB", "mlb"), ("KXNHL",
                  # 2026 FIFA World Cup (Jun 11 - Jul 19, 2026). Not KXWCBA* (Chinese women's
                  # basketball) or KXWCC* (college conference futures), which share the prefix.
                  ("KXWCBA", "other"), ("KXWCC", "other"), ("KXWC", "wc"), ("KXMENWORLDCUP", "wc")]
-SINGLE_LEAGUE = {"nfl", "nba", "mlb", "nhl", "cfb", "cbb", "wc"}   # tracked leagues
+SINGLE_LEAGUE = {"nfl", "nba", "mlb", "nhl", "cfb", "cbb"}   # tracked leagues (World Cup labeled "wc" but not tracked)
 BIG4 = {"nfl", "nba", "mlb", "nhl"}
 # Parlays counted in the Big 4 numbers: every leg is an NFL/NBA/MLB/NHL game.
 BIG4_PARLAY_CATS = {"nfl", "nfl_mixed_big4", "nba", "mlb", "nhl", "big4_multi"}
 # Every leg in one of the six tracked leagues (matches the straights). Since
 # 2026-10-12; days processed before only have "nfl_mixed"/"other" for any
 # parlay with a college OR untracked-sport leg, so those can't be split.
-SIX_PARLAY_CATS = BIG4_PARLAY_CATS | {"nfl_mixed_six", "cfb", "cbb", "six_multi", "wc"}
+SIX_PARLAY_CATS = BIG4_PARLAY_CATS | {"nfl_mixed_six", "cfb", "cbb", "six_multi"}
 LEG_DATE_RE = re.compile(r"-(\d{2}[A-Z]{3}\d{2})")
 
 
