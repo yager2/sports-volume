@@ -131,7 +131,7 @@ def _slim(m: dict) -> dict:
     """Only what classification + settlement need (full market dicts are large)."""
     return {"status": m.get("status"), "settlement_value_dollars": m.get("settlement_value_dollars"),
             "mve_selected_legs": [{"event_ticker": l.get("event_ticker"), "market_ticker": l["market_ticker"],
-                                   "side": l["side"]} for l in (m.get("mve_selected_legs") or [])]}
+                                   "side": l.get("side")} for l in (m.get("mve_selected_legs") or [])]}
 
 
 def lookup(tickers: list[str]) -> dict[str, dict]:
@@ -274,7 +274,11 @@ def _accumulate(t: list, m: dict, gi: GameIndex, rows, tix, counted: set) -> Non
         if cl is None:
             q_yes = None
             break
-        q_yes *= cl if l["side"] == "yes" else 1 - cl
+        side = l.get("side")
+        if side not in ("yes", "no"):      # a few World Cup legs carry no side - skip the fair-price reference
+            q_yes = None
+            break
+        q_yes *= cl if side == "yes" else 1 - cl
     p = yes_p if side == "yes" else no_p
     s = sv if side == "yes" else 1 - sv
     r = rows[(cat, lb, date_key, phase, side, nh.bucket_of(c * p))]
