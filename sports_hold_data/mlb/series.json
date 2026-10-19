@@ -1,5 +1,5 @@
 {
- "as_of": "2026-10-07T03:20:00.294631+00:00",
+ "as_of": "2026-10-19T16:59:29.902277+00:00",
  "series": {
   "KXMLBASGAME": {
    "fee_multiplier": 1.0,
@@ -24,6 +24,12 @@
    "fee_type": "quadratic",
    "product": "game_prop",
    "title": "All Star Game Strikesouts"
+  },
+  "KXMLBBGAME": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Mobile Legends Bang Bang Game"
   },
   "KXMLBDELAY": {
    "fee_multiplier": 1.0,
