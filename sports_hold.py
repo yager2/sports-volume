@@ -317,7 +317,10 @@ def process_game(lg: str, code: str, markets: list[dict], series: dict, cutoff: 
     sides = [m["ticker"].rsplit("-", 1)[1] for m in ml]
     away = next((a for a in sides if teams.startswith(a) and teams[len(a):] in sides), sides[0] if sides else "?")
     home = teams[len(away):] if teams.startswith(away) else (sides[1] if len(sides) > 1 else "?")
-    complete = (not errors and all(r["status"] in ("finalized", "settled") and r["settle"] is not None for r in rows))
+    # A real finished game always has trades. Zero trades means only a couple of
+    # early-settled markets were listed (seen for CFB a week ahead) - not done yet.
+    complete = (not errors and sum(r["n_trades"] for r in rows) > 0
+                and all(r["status"] in ("finalized", "settled") and r["settle"] is not None for r in rows))
     return {
         "league": lg, "game": code, "date": datetime.strptime(code[:7], "%y%b%d").date().isoformat(),
         "away": away, "home": home, "kickoff_utc": nh.iso(kickoff), "kickoff_source": k_src,
@@ -344,7 +347,8 @@ def existing_complete(lg: str, code: str) -> bool:
     if not os.path.exists(p):
         return False
     try:
-        return json.load(gzip.open(p, "rt", encoding="utf-8")).get("complete", False)
+        g = json.load(gzip.open(p, "rt", encoding="utf-8"))
+        return bool(g.get("complete")) and g.get("trades", 1) > 0   # re-pull empty placeholders
     except (OSError, ValueError):
         return False
 
