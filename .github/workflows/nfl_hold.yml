@@ -12,7 +12,12 @@ on:
     # an hour earlier in CST). Runs only pick up what isn't in yet - safe to repeat.
     - cron: "7 9 * * 1"
     - cron: "47 12 * * 1"
-  workflow_dispatch: {}        # "Run workflow" button for manual runs
+  workflow_dispatch:           # "Run workflow" button for manual runs
+    inputs:
+      skip_parlays:
+        description: "Skip the parlay pull (fast refresh of straights + sheet)"
+        type: boolean
+        default: false
 
 permissions:
   contents: write             # commit refreshed nfl_hold files back to the repo
@@ -52,6 +57,7 @@ jobs:
         continue-on-error: true   # a Kalshi/ESPN hiccup shouldn't block rebuilding from what we have
 
       - name: Pull parlays (exact with API key, else sampled)
+        if: ${{ !inputs.skip_parlays }}
         # ~5-16 min per trade day; the last 4 trade days are re-checked until
         # every parlay on played games has settled.
         # Exact (every trade) when the Kalshi key secrets are set - fast enough
