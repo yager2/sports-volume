@@ -1,5 +1,5 @@
 {
- "as_of": "2026-10-15T11:16:48.095290+00:00",
+ "as_of": "2026-10-22T16:22:41.635302+00:00",
  "series": {
   "KXNBA1H": {
    "fee_multiplier": 1.0,
@@ -13,6 +13,12 @@
    "product": "period",
    "title": "NBA 1st Half Spread"
   },
+  "KXNBA1HTEAMTOTAL": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "NBA 1st Half Team Total"
+  },
   "KXNBA1HTOTAL": {
    "fee_multiplier": 1.0,
    "fee_type": "quadratic",
@@ -24,6 +30,12 @@
    "fee_type": "quadratic",
    "product": "period",
    "title": "Pro Baskeball 1st Half Winner"
+  },
+  "KXNBA1Q": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "NBA 1st Quarter Winner"
   },
   "KXNBA1QSPREAD": {
    "fee_multiplier": 1.0,
@@ -49,6 +61,12 @@
    "product": "player_prop",
    "title": "NBA Player Double Double"
   },
+  "KXNBA2H": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "NBA 2nd Half Winner"
+  },
   "KXNBA2HSPREAD": {
    "fee_multiplier": 1.0,
    "fee_type": "quadratic",
@@ -66,6 +84,12 @@
    "fee_type": "quadratic",
    "product": "period",
    "title": "Pro Basketball 2nd Half Winner"
+  },
+  "KXNBA2Q": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "2nd Quarter Winner"
   },
   "KXNBA2QSPREAD": {
    "fee_multiplier": 1.0,
@@ -97,6 +121,18 @@
    "product": "period",
    "title": "NBA Player Threes"
   },
+  "KXNBA3PTPROT": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "NBA Player Threes Protected"
+  },
+  "KXNBA3Q": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "3rd Quarter Winner"
+  },
   "KXNBA3QSPREAD": {
    "fee_multiplier": 1.0,
    "fee_type": "quadratic",
@@ -114,6 +150,12 @@
    "fee_type": "quadratic",
    "product": "period",
    "title": "NBA 3rd Quarter Winner"
+  },
+  "KXNBA4Q": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "period",
+   "title": "4th Quarter Winner"
   },
   "KXNBA4QSPREAD": {
    "fee_multiplier": 1.0,
@@ -138,6 +180,12 @@
    "fee_type": "quadratic",
    "product": "player_prop",
    "title": "NBA Player Assists"
+  },
+  "KXNBAASTPROT": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "NBA Player Assists Protected"
   },
   "KXNBABLK": {
    "fee_multiplier": 1.0,
@@ -175,11 +223,23 @@
    "product": "game_prop",
    "title": "Pro Basketball Next Governor"
   },
+  "KXNBAOT": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "NBA Overtime"
+  },
   "KXNBAOVERTIME": {
    "fee_multiplier": 1.0,
    "fee_type": "quadratic",
    "product": "game_prop",
    "title": "NBA Overtime"
+  },
+  "KXNBAPRA": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "player_prop",
+   "title": "NBA Player Points + Rebounds + Assists"
   },
   "KXNBAPTS": {
    "fee_multiplier": 1.0,
@@ -193,11 +253,23 @@
    "product": "game_prop",
    "title": "NBA Game Points Leader"
   },
+  "KXNBAPTSPROT": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "NBA Player Points Protected"
+  },
   "KXNBAREB": {
    "fee_multiplier": 1.0,
    "fee_type": "quadratic",
    "product": "player_prop",
    "title": "NBA Player Rebounds"
+  },
+  "KXNBAREBPROT": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "NBA Player Rebounds Protected"
   },
   "KXNBASPREAD": {
    "fee_multiplier": 1.0,
@@ -222,6 +294,12 @@
    "fee_type": "quadratic",
    "product": "player_prop",
    "title": "NBA Player Steals"
+  },
+  "KXNBASTOCK": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "NBA Player Steals + Blocks"
   },
   "KXNBASUMMER1HSPREAD": {
    "fee_multiplier": 1.0,
@@ -276,6 +354,12 @@
    "fee_type": "quadratic_with_maker_fees",
    "product": "total",
    "title": "NBA Total"
+  },
+  "KXNBAWINMARGIN": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "NBA Win Margin"
   }
  }
 }
