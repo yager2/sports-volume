@@ -104,6 +104,6 @@ jobs:
           for f in nfl_hold.xlsx nfl_hold_dashboard.html nfl_hold_by_game.csv NFL_HOLD_METHODOLOGY.md; do
             [ -f "$f" ] && rclone copy "$f" gdrive:SportsVolume --no-traverse
           done
-          # Same workbook as a native Google Sheet ("NFL Hold Tracker"); rclone
+          # Same workbook as a native Google Sheet ("Hold Tracker"); rclone
           # converts on upload and replaces the existing Sheet in place.
-          [ -f nfl_hold.xlsx ] && rclone copyto nfl_hold.xlsx "gdrive:SportsVolume/NFL Hold Tracker.xlsx" --drive-import-formats xlsx
+          [ -f nfl_hold.xlsx ] && rclone copyto nfl_hold.xlsx "gdrive:SportsVolume/Hold Tracker.xlsx" --drive-import-formats xlsx
