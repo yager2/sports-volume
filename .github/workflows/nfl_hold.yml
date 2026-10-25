@@ -2,15 +2,19 @@ name: nfl-hold
 
 on:
   schedule:
-    # 11:17 UTC = 6:17am CDT (summer) / 5:17am CST after the Nov DST change.
-    # Daily covers every NFL slot: Sunday games land Monday morning, MNF on
-    # Tuesday, TNF on Friday. :17 avoids GitHub's top-of-hour queue delays
-    # (see daily.yml).
+    # As early as yesterday's games are settled on Kalshi. The latest games
+    # (West Coast NHL/NBA, late college football) start ~11pm ET and finish by
+    # ~2:30am ET; Kalshi settles them within minutes. So:
+    #   07:23 UTC = 2:23am CDT / 1:23am CST  - first pass (most days complete here)
+    #   09:23 UTC = 4:23am CDT / 3:23am CST  - backup: stragglers, or if GitHub starts the first late
+    #   11:17 UTC = 6:17am CDT / 5:17am CST  - backup
+    # GitHub often starts scheduled jobs hours late, so the extra slots matter.
+    # Each run only pulls what isn't in yet (safe to repeat; public repo, so free).
+    # Odd minutes avoid GitHub's top-of-hour queue delays (see daily.yml).
+    - cron: "23 7 * * *"
+    - cron: "23 9 * * *"
     - cron: "17 11 * * *"
-    # Monday extras so Sunday's NFL slate is in the Sheet Monday morning even
-    # when GitHub runs a scheduled job late: ~4am and ~8am Central (UTC, so
-    # an hour earlier in CST). Runs only pick up what isn't in yet - safe to repeat.
-    - cron: "7 9 * * 1"
+    # Monday extra so Sunday's NFL slate is in even if all three above start late.
     - cron: "47 12 * * 1"
   workflow_dispatch:           # "Run workflow" button for manual runs
     inputs:
@@ -100,6 +104,6 @@ jobs:
           for f in nfl_hold.xlsx nfl_hold_dashboard.html nfl_hold_by_game.csv NFL_HOLD_METHODOLOGY.md; do
             [ -f "$f" ] && rclone copy "$f" gdrive:SportsVolume --no-traverse
           done
-          # Same workbook as a native Google Sheet ("NFL Hold Tracker"); rclone
+          # Same workbook as a native Google Sheet ("Hold Tracker"); rclone
           # converts on upload and replaces the existing Sheet in place.
-          [ -f nfl_hold.xlsx ] && rclone copyto nfl_hold.xlsx "gdrive:SportsVolume/NFL Hold Tracker.xlsx" --drive-import-formats xlsx
+          [ -f nfl_hold.xlsx ] && rclone copyto nfl_hold.xlsx "gdrive:SportsVolume/Hold Tracker.xlsx" --drive-import-formats xlsx

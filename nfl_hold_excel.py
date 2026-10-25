@@ -1,5 +1,5 @@
 """
-Build nfl_hold.xlsx (and its Google Sheets copy "NFL Hold Tracker") - Kalshi taker hold.
+Build nfl_hold.xlsx (and its Google Sheets copy "Hold Tracker") - Kalshi taker hold.
 
 Tabs:
   - "Weekly"             MAIN VIEW: all six leagues' straights / all parlays / combined, by NY week, + each league + charts
