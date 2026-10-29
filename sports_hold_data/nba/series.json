@@ -1,5 +1,5 @@
 {
- "as_of": "2026-10-22T16:22:41.635302+00:00",
+ "as_of": "2026-10-29T17:28:51.327066+00:00",
  "series": {
   "KXNBA1H": {
    "fee_multiplier": 1.0,
@@ -89,7 +89,7 @@
    "fee_multiplier": 1.0,
    "fee_type": "quadratic",
    "product": "period",
-   "title": "2nd Quarter Winner"
+   "title": "NBA 2nd Quarter Winner"
   },
   "KXNBA2QSPREAD": {
    "fee_multiplier": 1.0,
@@ -101,7 +101,7 @@
    "fee_multiplier": 1.0,
    "fee_type": "quadratic",
    "product": "period",
-   "title": "NBA 1st Quarter Total"
+   "title": "NBA 2nd Quarter Total"
   },
   "KXNBA2QWINNER": {
    "fee_multiplier": 1.0,
@@ -131,7 +131,7 @@
    "fee_multiplier": 1.0,
    "fee_type": "quadratic",
    "product": "period",
-   "title": "3rd Quarter Winner"
+   "title": "NBA 3rd Quarter Winner"
   },
   "KXNBA3QSPREAD": {
    "fee_multiplier": 1.0,
@@ -155,7 +155,7 @@
    "fee_multiplier": 1.0,
    "fee_type": "quadratic",
    "product": "period",
-   "title": "4th Quarter Winner"
+   "title": "NBA 4th Quarter Winner"
   },
   "KXNBA4QSPREAD": {
    "fee_multiplier": 1.0,
