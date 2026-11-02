@@ -1,5 +1,5 @@
 {
- "as_of": "2026-10-26T16:13:16.994021+00:00",
+ "as_of": "2026-11-02T17:16:46.468141+00:00",
  "series": {
   "KXNFL1H": {
    "fee_multiplier": 1.0,
@@ -439,6 +439,12 @@
    "product": "player_prop",
    "title": "Pro Football Passing Yards"
   },
+  "KXNFLPASSYDSPRECISE": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pass Yards Precise"
+  },
   "KXNFLPASSYDSPROT": {
    "fee_multiplier": 1.0,
    "fee_type": "quadratic",
@@ -564,6 +570,12 @@
    "fee_type": "quadratic_with_maker_fees",
    "product": "total",
    "title": "Pro Football Total Points"
+  },
+  "KXNFLTOTALPRECISE": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Total Precise"
   },
   "KXNFLTOTALTD": {
    "fee_multiplier": 1.0,
