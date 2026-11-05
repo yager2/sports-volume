@@ -1,5 +1,5 @@
 {
- "as_of": "2026-10-29T17:28:51.327066+00:00",
+ "as_of": "2026-11-05T17:31:33.771755+00:00",
  "series": {
   "KXNBA1H": {
    "fee_multiplier": 1.0,
@@ -192,6 +192,18 @@
    "fee_type": "quadratic",
    "product": "player_prop",
    "title": "NBA Player Blocks"
+  },
+  "KXNBAESCALATOR3PT": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "NBA Player Threes Escalator"
+  },
+  "KXNBAESCALATORPTS": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "NBA Player Points Escalator"
   },
   "KXNBAFTM": {
    "fee_multiplier": 1.0,
