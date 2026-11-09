@@ -184,6 +184,7 @@ ROW_COLS = ["category", "legs", "last_leg_date", "phase", "side", "bucket",
             "trades", "contracts", "taker_dollars", "taker_pnl", "taker_fee", "exp_dollars", "exp_pnl"]
 PENDING_COLS = ["ticker", "created_time", "side", "count", "yes_price", "no_price"]
 RESOLVE_DAYS = 21                # keep re-checking a day's unsettled parlays this long
+STUCK_TOLERANCE = 0.001          # held-open stake a day may carry and still count (0.1% of its stakes)
 
 
 LEAGUE_PREFIX = [("KXNFL", "nfl"), ("KXNBA", "nba"), ("KXMLB", "mlb"), ("KXNHL", "nhl"),
@@ -307,15 +308,25 @@ def _finish(d: dict, rows, tix, pending: list, info: dict) -> dict:
     don't hold the day open.
     """
     today_iso = datetime.now(timezone.utc).date().isoformat()
-    blocking = sum(1 for t in pending
-                   if t[0] in info and info[t[0]][0] in SINGLE_LEAGUE and info[t[0]][2] < today_iso)
+    held = [t for t in pending
+            if t[0] in info and info[t[0]][0] in SINGLE_LEAGUE and info[t[0]][2] < today_iso]
+    blocking = len(held)
+    # A few tickets Kalshi leaves unsettled for days (seen: 11 NHL parlays from
+    # 2026-11-07) shouldn't hold a whole day's parlays out of the sheet. If what's
+    # held is a sliver of the day's stakes, the day counts; those tickets stay in
+    # pending_trades and resolve() folds them in once they settle. A day the
+    # morning after a slate still has thousands held, so it stays open as before.
+    held_stake = sum(t[3] * (t[4] if t[2] == "yes" else t[5]) for t in held)
+    day_stake = sum(v[2] for v in rows.values())
     d["rows"] = [[*k, *[round(x, 4) for x in v[:7]]] for k, v in rows.items()]
     d["tickets"] = [[*k, v[0], v[1]] for k, v in tix.items()]
     d["pending_trades"] = pending
     d["pending_info"] = {tk: list(info[tk][:3]) for tk in {t[0] for t in pending} if tk in info}
     d["pending"] = len(pending)
     d["blocking"] = blocking
-    d["complete"] = blocking == 0 and d.get("missing", 0) == 0
+    d["held_stake"] = round(held_stake, 2)
+    d["complete"] = d.get("missing", 0) == 0 and (
+        blocking == 0 or held_stake <= STUCK_TOLERANCE * day_stake)
     d["row_cols"], d["pending_cols"] = ROW_COLS, PENDING_COLS
     d["ticket_cols"] = ["category", "legs", "last_leg_date", "parlays", "parlays_won"]
     return d
