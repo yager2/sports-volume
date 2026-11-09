@@ -1,5 +1,5 @@
 {
- "as_of": "2026-11-02T19:39:34.113938+00:00",
+ "as_of": "2026-11-09T19:57:27.123321+00:00",
  "series": {
   "KXNCAAF1H": {
    "fee_multiplier": 1.0,
@@ -270,6 +270,12 @@
    "fee_type": "quadratic",
    "product": "game_prop",
    "title": "College Football Total Touchdowns"
+  },
+  "KXNCAAFWINMARGIN": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "College Football Winning Margin"
   }
  }
 }
