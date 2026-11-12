@@ -1,5 +1,5 @@
 {
- "as_of": "2026-11-05T17:31:33.771755+00:00",
+ "as_of": "2026-11-12T17:43:42.593021+00:00",
  "series": {
   "KXNBA1H": {
    "fee_multiplier": 1.0,
@@ -252,6 +252,12 @@
    "fee_type": "quadratic",
    "product": "player_prop",
    "title": "NBA Player Points + Rebounds + Assists"
+  },
+  "KXNBAPRAPROT": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Pts + Reb + Ast Protected"
   },
   "KXNBAPTS": {
    "fee_multiplier": 1.0,
