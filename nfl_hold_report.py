@@ -410,9 +410,14 @@ PARLAYS_ALL_BY_DATE = defaultdict(lambda: defaultdict(lambda: defaultdict(float)
 def load_parlays(game_rows):
     """Weekly parlay rollup from the sampled trade-day files.
 
-    Only COMPLETE trade days count: a losing parlay settles the moment one leg
-    misses, a winner waits for its last leg - so a half-settled day would look
-    better for the house than it really is.
+    Every settled parlay counts, in the week of its last leg - the way a
+    sportsbook books a parlay once it is graded. Unsettled ones stay in the
+    day file's pending_trades and are added by later runs as Kalshi settles
+    them, so a finished week is complete as soon as its games are graded.
+    A week still in progress can read high for a while: a loser is graded the
+    moment one leg misses, a winner only after its last game.
+    (Until 2026-11-16 only fully settled trade days counted, so one slow leg
+    or a few stuck tickets held back a whole day's parlays.)
     """
     days = []
     # Every day with a sampled OR an exact file; the exact pass wins. (Feb-Jul
@@ -438,8 +443,7 @@ def load_parlays(game_rows):
     skipped = 0
     for d in days:
         if not d.get("complete"):
-            skipped += 1
-            continue
+            skipped += 1      # still settling - its graded parlays count now, the rest later
         f = d["sample_frac"]
         for cat, legs, date, phase, side, b, n, c, dol, pnl, fee, ed, ep in d["rows"]:
             if date != "?":
@@ -589,7 +593,7 @@ def main():
     write_csv(WEEKLY_CSV, weekly_rows)
     write_csv(PARLAYS_CSV, parlay_rows)
     if skipped:
-        print(f"  ({skipped} parlay trade day(s) not fully settled yet - left out)")
+        print(f"  ({skipped} parlay trade day(s) still settling - graded parlays counted, rest added later)")
     os.makedirs(os.path.dirname(SUMMARY_JSON), exist_ok=True)
     json.dump(summary, open(SUMMARY_JSON, "w", encoding="utf-8"), separators=(",", ":"))
     write_dashboard(summary)
