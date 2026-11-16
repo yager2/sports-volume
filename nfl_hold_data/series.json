@@ -1,5 +1,5 @@
 {
- "as_of": "2026-11-09T17:42:18.843967+00:00",
+ "as_of": "2026-11-16T19:44:05.174530+00:00",
  "series": {
   "KXNFL1H": {
    "fee_multiplier": 1.0,
@@ -421,6 +421,12 @@
    "product": "player_prop",
    "title": "Pro Football Passing Interceptions"
   },
+  "KXNFLPASSINTPROT": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Passing Interceptions Protected"
+  },
   "KXNFLPASSTDS": {
    "fee_multiplier": 1.0,
    "fee_type": "quadratic",
@@ -469,6 +475,12 @@
    "product": "player_prop",
    "title": "Pro Football Receiving Yards"
   },
+  "KXNFLRECYDSPRECISE": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Receiving Yards Precise"
+  },
   "KXNFLRECYDSPROT": {
    "fee_multiplier": 1.0,
    "fee_type": "quadratic",
@@ -487,6 +499,12 @@
    "product": "player_prop",
    "title": "Pro Football Rush and Receiving Yards"
   },
+  "KXNFLRRYDSPROT": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Rushing and Receiving Yards Protected"
+  },
   "KXNFLRSHATT": {
    "fee_multiplier": 1.0,
    "fee_type": "quadratic",
@@ -498,6 +516,12 @@
    "fee_type": "quadratic",
    "product": "player_prop",
    "title": "Pro Football Rushing Yards"
+  },
+  "KXNFLRSHYDSPRECISE": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "Rushing Yards Precise"
   },
   "KXNFLRSHYDSPROT": {
    "fee_multiplier": 1.0,
