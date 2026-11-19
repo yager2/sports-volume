@@ -1,5 +1,5 @@
 {
- "as_of": "2026-11-12T17:43:42.593021+00:00",
+ "as_of": "2026-11-19T18:27:31.208247+00:00",
  "series": {
   "KXNBA1H": {
    "fee_multiplier": 1.0,
@@ -61,6 +61,12 @@
    "product": "player_prop",
    "title": "NBA Player Double Double"
   },
+  "KXNBA2DPROT": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "NBA Player Double Double Protected"
+  },
   "KXNBA2H": {
    "fee_multiplier": 1.0,
    "fee_type": "quadratic",
@@ -114,6 +120,12 @@
    "fee_type": "quadratic",
    "product": "player_prop",
    "title": "NBA Player Triple Double"
+  },
+  "KXNBA3DPROT": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "NBA Player Triple Double Protected"
   },
   "KXNBA3PT": {
    "fee_multiplier": 1.0,
@@ -192,6 +204,12 @@
    "fee_type": "quadratic",
    "product": "player_prop",
    "title": "NBA Player Blocks"
+  },
+  "KXNBABLKPROT": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "NBA Player Blocks Protected"
   },
   "KXNBAESCALATOR3PT": {
    "fee_multiplier": 1.0,
@@ -313,11 +331,23 @@
    "product": "player_prop",
    "title": "NBA Player Steals"
   },
+  "KXNBASTLPROT": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "NBA Player Steals Protected"
+  },
   "KXNBASTOCK": {
    "fee_multiplier": 1.0,
    "fee_type": "quadratic",
    "product": "game_prop",
    "title": "NBA Player Steals + Blocks"
+  },
+  "KXNBASTOCKPROT": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "NBA Player Steals + Blocks Protected"
   },
   "KXNBASUMMER1HSPREAD": {
    "fee_multiplier": 1.0,
@@ -372,6 +402,12 @@
    "fee_type": "quadratic_with_maker_fees",
    "product": "total",
    "title": "NBA Total"
+  },
+  "KXNBATOTALPRECISE": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "NBA Total Points Range"
   },
   "KXNBAWINMARGIN": {
    "fee_multiplier": 1.0,
