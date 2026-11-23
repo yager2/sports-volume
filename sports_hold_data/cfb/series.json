@@ -1,5 +1,5 @@
 {
- "as_of": "2026-11-16T21:04:39.406096+00:00",
+ "as_of": "2026-11-23T21:35:29.054439+00:00",
  "series": {
   "KXNCAAF1H": {
    "fee_multiplier": 1.0,
@@ -222,6 +222,12 @@
    "fee_type": "quadratic",
    "product": "game_prop",
    "title": "College Football Team Rushing Touchdowns"
+  },
+  "KXNCAAFTEAMRSHYDS": {
+   "fee_multiplier": 1.0,
+   "fee_type": "quadratic",
+   "product": "game_prop",
+   "title": "College Football Team Rushing Yards"
   },
   "KXNCAAFTEAMSACK": {
    "fee_multiplier": 1.0,
