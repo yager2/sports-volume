@@ -1,0 +1,35 @@
+[
+ {
+  "kickoff_utc": "2026-11-26T18:00Z",
+  "season": 2026,
+  "season_type": "reg",
+  "week": 12,
+  "away": "CHI",
+  "home": "DET",
+  "away_score": 39,
+  "home_score": 35,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2026-11-26T21:30Z",
+  "season": 2026,
+  "season_type": "reg",
+  "week": 12,
+  "away": "PHI",
+  "home": "DAL",
+  "away_score": 39,
+  "home_score": 38,
+  "final": true
+ },
+ {
+  "kickoff_utc": "2026-11-27T01:20Z",
+  "season": 2026,
+  "season_type": "reg",
+  "week": 12,
+  "away": "KC",
+  "home": "BUF",
+  "away_score": 10,
+  "home_score": 13,
+  "final": true
+ }
+]
