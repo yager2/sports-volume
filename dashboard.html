@@ -342,13 +342,13 @@ footer .mono { font-size: 11px; }
         <div class="val" id="hero-val">—</div>
         <div class="hero-sub">
           <span class="delta" id="hero-delta"></span>
-          <span class="meta">August to date <b id="hero-sum">—</b></span>
+          <span class="meta">Since Aug 1 <b id="hero-sum">—</b></span>
           <span class="meta">Sports volume &middot; all seven venues &middot; whole&#8209;exchange totals in the Kalshi panel below</span>
         </div>
       </div>
       <figure class="hero-spark">
-        <svg id="hero-spark" viewBox="0 0 300 52" preserveAspectRatio="none" role="img" aria-label="Daily total volume, August 2026"></svg>
-        <figcaption>Aug 1 – 31</figcaption>
+        <svg id="hero-spark" viewBox="0 0 300 52" preserveAspectRatio="none" role="img" aria-label="Daily total volume since August 1, 2026"></svg>
+        <figcaption id="spark-range">&nbsp;</figcaption>
       </figure>
     </div>
   </section>
@@ -367,7 +367,7 @@ footer .mono { font-size: 11px; }
           <tr>
             <td class="pv-name"><span class="dot" style="background:var(--v1)"></span>Kalshi</td>
             <td><span class="pill pill-real">Real</span></td>
-            <td class="pv-basis">Volume-weighted average price from Kalshi's own trade feed &mdash; the sports figure prices each series off its exact per-trade VWAP; the whole-exchange total uses a ~5M-trade sample of the public feed, refreshed weekly. <i>Separately:</i> the whole-exchange <b>contract count</b> itself (not this price) comes from DeFi Rate, who display it abbreviated (e.g. "$2.09B") &mdash; about &plusmn;0.3% built-in rounding versus the exact per-market figures the other six venues give us.</td>
+            <td class="pv-basis">Volume-weighted average price from Kalshi's own trade feed &mdash; the sports figure prices each series off its exact per-trade VWAP; the whole-exchange total uses a multi-million-trade sample of the public feed, refreshed weekly. <i>Separately:</i> the whole-exchange <b>contract count</b> itself (not this price) comes from DeFi Rate, who display it abbreviated (e.g. "$2.09B") &mdash; about &plusmn;0.3% built-in rounding versus the exact per-market figures the other six venues give us.</td>
           </tr>
           <tr>
             <td class="pv-name"><span class="dot" style="background:var(--v2)"></span>Polymarket US</td>
@@ -412,7 +412,7 @@ footer .mono { font-size: 11px; }
         <div class="kx-stat">
           <div class="kx-lbl">Total volume &middot; <span id="kx-date">&ndash;</span></div>
           <div class="kx-big" id="kx-total">&ndash;</div>
-          <div class="kx-note">all categories &middot; August to date <span id="kx-mtd">&ndash;</span></div>
+          <div class="kx-note">all categories &middot; since Aug 1 <span id="kx-mtd">&ndash;</span></div>
         </div>
         <div class="kx-stat kx-hl">
           <div class="kx-lbl">Combos &amp; exotics <span id="kx-basis">by contracts</span></div>
@@ -435,7 +435,7 @@ footer .mono { font-size: 11px; }
     <div class="sec-label" id="h-chart">Daily trend by venue</div>
     <div class="card chartcard rise">
       <div class="chart-head">
-        <h3 id="chart-title">Daily volume through August</h3>
+        <h3 id="chart-title">Daily volume</h3>
         <span class="hint">hover any panel for that day across all venues</span>
       </div>
       <div class="panels" id="panels"></div>
@@ -455,9 +455,9 @@ footer .mono { font-size: 11px; }
   </section>
 
   <footer>
-    <p><b>Comparable across all seven.</b> <b>Taker Volume</b> = contracts traded, one-sided (a buy matched with a sell is one fill, not two &mdash; the taker's side, not maker + taker), each a $1-max-payout instrument &mdash; this is the metric every one of these venues reports as its own "volume" (Kalshi's own API calls it "taker volume" outright), and what DeFi Rate / DefiLlama / Pew publish. <b>Notional&nbsp;$</b> re-weights each contract by its volume-weighted traded price &mdash; roughly the dollars that actually changed hands (~⅓ of the taker-volume figure). Same definition for every venue in both columns; re-verified against each venue's live source on 2026-09-21 (see VOLUME_METHODOLOGY.md). Not every venue's Notional&nbsp;$ rests on the same footing, though &mdash; see the <b>"Where the Notional&nbsp;$ figure comes from"</b> table below for which are real prices and which are estimated.</p>
+    <p><b>Comparable across all seven.</b> <b>Taker Volume</b> = contracts traded, one-sided (a buy matched with a sell is one fill, not two &mdash; the taker's side, not maker + taker), each a $1-max-payout instrument &mdash; this is the metric every one of these venues reports as its own "volume" (Kalshi's own API calls it "taker volume" outright), and what DeFi Rate / DefiLlama / Pew publish. <b>Notional&nbsp;$</b> re-weights each contract by its volume-weighted traded price &mdash; roughly the dollars that actually changed hands (~⅓ of the taker-volume figure). Same definition for every venue in both columns; audit history is in VOLUME_METHODOLOGY.md. Not every venue's Notional&nbsp;$ rests on the same footing, though &mdash; see the <b>"Where the Notional&nbsp;$ figure comes from"</b> table below for which are real prices and which are estimated.</p>
     <p style="margin-top:7px"><b>Two things the metric can't normalise out.</b> <i>Market-making:</i> Kalshi runs aggressive maker-incentive programs (the CFTC warned it about them in Aug&nbsp;2026), so a larger share of its reported volume is automated liquidity than at the others &mdash; a real difference between the exchanges, not a counting artifact. <i>Reporting lag:</i> Kalshi's daily total (DeFi Rate) trails ~2 days; DKeX / UDX / Rothera finalise overnight, so a hard-outlier-low latest day is marked <i>provisional</i>.</p>
-    <p style="margin-top:7px"><b>Coverage.</b> This page shows each venue's <b>sports</b> volume (single-leg + parlays). Novig / DKeX / UDX are 100% sports; Polymarket&nbsp;US, Crypto.com and Rothera are the sports slice of a wider book; Kalshi is its single-leg sports plus its sports parlay engine. Whole-exchange totals for every venue are in the accompanying spreadsheet's "Total exchange" tab, and Kalshi's category breakdown is in the panel below. <b>Crypto.com</b> = the Nadex / CDNA "EVENTS" book (Crypto.com OG <i>plus</i> FanDuel Predicts) less a ~0.2% non-sports tail; <b>Rothera</b> = the CFTC exchange behind <i>Robinhood</i>, MLB-heavy, minus a small US-macro / elections tail. Both estimate Notional&nbsp;$ with the day's cross-venue average price (no per-market price feed). <b>Combo&nbsp;%</b> is parlay volume over that venue's sports book &mdash; Novig / DKeX / Polymarket&nbsp;US / UDX / Crypto.com from each combo product line; <b>Kalshi</b> from its `KXMVE` multi-event engine (leg-checked ~100% sports legs), a ~5M-trade sample (refreshed weekly) scaled to the daily total &mdash; <b>~63% by contracts but ~18% by dollars</b> of Kalshi's whole exchange (parlay legs are many and cheap; this sample-based split can move noticeably week to week, see VOLUME_METHODOLOGY.md). The table's Combo column blends the five report-based venues; Kalshi's sample-based figure sits on its card. Rothera runs no on-exchange parlay.</p>
+    <p style="margin-top:7px"><b>Coverage.</b> This page shows each venue's <b>sports</b> volume (single-leg + parlays). Novig / DKeX / UDX are 100% sports; Polymarket&nbsp;US, Crypto.com and Rothera are the sports slice of a wider book; Kalshi is its single-leg sports plus its sports parlay engine. Whole-exchange totals for every venue are in the accompanying spreadsheet's "Total exchange" tab, and Kalshi's category breakdown is in the panel below. <b>Crypto.com</b> = the Nadex / CDNA "EVENTS" book (Crypto.com OG <i>plus</i> FanDuel Predicts) less a ~0.2% non-sports tail; <b>Rothera</b> = the CFTC exchange behind <i>Robinhood</i>, MLB-heavy, minus a small US-macro / elections tail. Both estimate Notional&nbsp;$ with the day's cross-venue average price (no per-market price feed). <b>Combo&nbsp;%</b> is parlay volume over that venue's sports book &mdash; Novig / DKeX / Polymarket&nbsp;US / UDX / Crypto.com from each combo product line; <b>Kalshi</b> from its `KXMVE` multi-event engine (leg-checked ~100% sports legs), a trade-feed sample (refreshed weekly) scaled to the daily total; parlay legs are many and cheap, so its share is far higher by contracts than by dollars, and this sample-based split can move noticeably week to week (see the Kalshi panel). <b>Polymarket&nbsp;US</b> combo volume includes its multi-category combo product from October on (the report does not break out legs). The table's Combo column blends the five report-based venues; Kalshi's sample-based figure sits on its card. Rothera runs no on-exchange parlay.</p>
     <p style="margin-top:8px" class="mono" id="foot-src">snapshot loaded Sep 1 2026</p>
   </footer>
 </div>
@@ -568,7 +568,7 @@ footer .mono { font-size: 11px; }
     var last = rows[li];
     var prev = rows[li - 1] || rows[li];
 
-    document.getElementById("asof-date").textContent = shortDate(state.data.through) + " 2026";
+    document.getElementById("asof-date").textContent = niceDate(state.data.through);
     document.getElementById("u-n").setAttribute("aria-pressed", isN);
     document.getElementById("u-c").setAttribute("aria-pressed", !isN);
     document.getElementById("hero-lbl").textContent =
@@ -587,6 +587,10 @@ footer .mono { font-size: 11px; }
     de.innerHTML = (dpc >= 0 ? "&#9650; " : "&#9660; ") + fmtPct(dpc) + " vs prior day";
     var sum = rows.reduce(function (a, r) { return a + tot(r); }, 0);
     document.getElementById("hero-sum").textContent = fmt(sum, true);
+    document.getElementById("spark-range").textContent =
+      shortDate(rows[0].date) + " – " + shortDate(rows[rows.length - 1].date);
+    document.getElementById("foot-src").textContent =
+      "data through " + niceDate(state.data.through) + " · built " + niceDate(state.data.loaded);
 
     drawSpark(document.getElementById("hero-spark"), rows.map(tot), css("--accent"), 300, 52);
 
@@ -709,8 +713,7 @@ footer .mono { font-size: 11px; }
     var sm = mix.sampled_trades ? (mix.sampled_trades / 1e6).toFixed(1) + "M" : "sampled";
     var np = (state.data.kalshiProjected || []).length;
     document.getElementById("kx-foot").innerHTML =
-      "Daily total from DeFi Rate's Kalshi volume table (built from Kalshi's own API; its monthly " +
-      "sum matches the “$33.7B so far in August” Kalshi reported)." +
+      "Daily total from DeFi Rate's Kalshi volume table (built from Kalshi's own API)." +
       (np ? " DeFi Rate lags ~2 days, so the last " + np + " day(s), marked <b>~</b>, are projected " +
         "from our own verified Kalshi <i>sports</i> figure ÷ its recent share of the total." : "") +
       " Category split is from " + sm + " trades sampled off the public trade feed: combos &amp; exotics is <b>" +
@@ -768,7 +771,7 @@ footer .mono { font-size: 11px; }
         '<div class="p-head"><span class="p-dot" style="background:' + col + '"></span>' +
         '<span class="p-name">' + vn.name + '</span>' +
         '<span class="p-max">peak ' + (isN ? "$" : "") + fmt(vmax, false).replace(/^\$/, "") + '</span></div>' +
-        '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" role="img" aria-label="' + vn.name + ' daily volume, August 2026">' +
+        '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" role="img" aria-label="' + vn.name + ' daily volume since August 1">' +
         '<line x1="' + pL + '" y1="' + Y(vmax).toFixed(1) + '" x2="' + (W - pR) + '" y2="' + Y(vmax).toFixed(1) +
         '" stroke="var(--grid)" stroke-width="1" vector-effect="non-scaling-stroke"/>' +
         (area ? '<path d="' + area + '" fill="' + col + '" fill-opacity="0.13"/>' : '') +

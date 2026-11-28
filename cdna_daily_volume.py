@@ -82,6 +82,10 @@ ROW = re.compile(
     r"^(\d{2}-[A-Z]{3}-\d{2})\s+([A-Z_]+)\s+([A-Z_]+)\s+(\S+)\s+([\d,]+(?:\.\d+)?)\s*$")
 
 
+NO_DESC_ROW = re.compile(
+    r"^\d{2}-[A-Z]{3}-\d{2}\s+[A-Z_]+\s+([A-Z_]+)\s+NO DESCRIPTION\s+([\d,]+(?:\.\d+)?)\s*$")
+
+
 def pdf_url(date: str) -> str:
     return f"{BASE_URL}/{date.replace('-', '')}_dailybulletin.pdf"
 
@@ -148,10 +152,23 @@ def parse_summary(txt_path: str) -> dict:
     unknown: dict = {}
     non_sports = 0.0
     all_classes = 0.0       # whole Nadex/CDNA book - EVENTS + fx/commodity/crypto binaries
+    unclassified = 0.0      # EVENTS volume the bulletin printed as "NO DESCRIPTION"
 
     for line in lines[:end]:
         s = line.strip()
         if not s or s.startswith("Date") or "Page" in s or "Bulletin" in s:
+            continue
+        nd = NO_DESC_ROW.match(s)
+        if nd:
+            vol = float(nd.group(2).replace(",", ""))
+            all_classes += vol
+            if nd.group(1) == "EVENTS":
+                # Source defect (mainly 2026-10-17..11-10, up to ~98M/day): the
+                # contract name is missing. The labelled sports volume collapsed
+                # by the matching amount on those days, so count it as straight
+                # sports and report it separately.
+                unclassified += vol
+                straight += vol
             continue
         m = ROW.match(s)
         if not m:
@@ -187,6 +204,7 @@ def parse_summary(txt_path: str) -> dict:
         "combo_volume": combo,
         "total_volume": straight + combo,
         "non_sports_volume": non_sports,
+        "unclassified_volume": unclassified,
         "all_volume": all_classes,
         "by_sport": by_sport,
         "unknown": unknown,
@@ -219,6 +237,7 @@ def main():
             "combo_volume": round(parsed["combo_volume"], 2),
             "combo_pct": round(combo_pct, 2),
             "all_volume": round(parsed["all_volume"], 2),
+            "unclassified_volume": round(parsed["unclassified_volume"], 2),
         })
         for sport, vol in parsed["by_sport"].items():
             sport_rows.append({"date": date, "sport": sport, "volume": round(vol, 2)})
@@ -227,7 +246,7 @@ def main():
 
     vc.write_csv(TOTALS_CSV,
                  ["date", "total_volume", "straight_volume", "combo_volume", "combo_pct",
-                  "all_volume"],
+                  "all_volume", "unclassified_volume"],
                  totals_rows)
     vc.write_csv(BY_SPORT_CSV, ["date", "sport", "volume"], sport_rows)
     if unknown_rows:

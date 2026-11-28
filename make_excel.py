@@ -207,11 +207,11 @@ def sheet_parlay(wb, rows):
     ws.cell(row=r + 1, column=1,
             value=("Combo % = parlay volume / that venue's sports book. Kalshi's parlay is its "
                    "KXMVE multi-event engine (leg-checked ~100% sports legs despite the "
-                   "'cross-category' name), from a ~5M-trade sample (refreshed weekly) scaled to "
-                   "the daily total; ~70% of Kalshi's sports book by contracts, ~24% by $ (parlay "
-                   "legs are many and cheap - this sample-based split can move noticeably week to "
-                   "week, see VOLUME_METHODOLOGY.md). Not folded into the Sports tab's blended "
-                   "Combo %. Rothera runs no on-exchange parlay product."))
+                   "'cross-category' name), from a trade-feed sample (refreshed weekly) scaled to "
+                   "the daily total, so its split can move noticeably week to week. Polymarket US "
+                   "includes its multi-category combo product from October 2026 on (legs are not "
+                   "broken out). Kalshi is not folded into the blended Combo %. Rothera runs no "
+                   "on-exchange parlay product."))
     ws.cell(row=r + 1, column=1).font = Font(italic=True, size=9, color="666666")
 
 
@@ -228,9 +228,7 @@ def sheet_notes(wb):
         ("these venues reports as its own 'volume' under CFTC Part 16.01 (Kalshi's own", False),
         ("API calls it 'taker volume' outright). 'Notional $' re-weights each contract", False),
         ("by its traded price (~ the dollars that changed hands, roughly 1/3 of the", False),
-        ("taker-volume figure). Every venue re-verified against its live source as of", False),
-        (f"{loaded}: independently recomputed totals matched the committed figures exactly", False),
-        ("for all seven venues (see VOLUME_METHODOLOGY.md for the audit detail).", False),
+        ("taker-volume figure). Audit history is in VOLUME_METHODOLOGY.md.", False),
         ("", False),
         ("TAB 'Sports volume'  - each venue's sports book only. Apples-to-apples on sports.", True),
         ("  Kalshi = single-leg sports + its sports parlay engine.", False),
@@ -239,7 +237,7 @@ def sheet_notes(wb):
         ("", False),
         ("TAB 'Total exchange'  - each venue's WHOLE book, every category (sports, crypto,", True),
         ("  politics, economics, ...). Apples-to-apples on total platform activity.", False),
-        ("  Kalshi total from DeFi Rate (last ~2 days projected). Polymarket = all QCX.", False),
+        ("  Kalshi total from DeFi Rate (any day it lacks is projected). Polymarket = all QCX.", False),
         ("  Crypto.com = the whole Nadex/CDNA book (events + fx/commodity/crypto binaries).", False),
         ("  Rothera = sports + its US-macro / elections markets.", False),
         ("  Novig / DKeX / UDX total == their sports figure (sports-only exchanges).", False),
@@ -260,7 +258,7 @@ def sheet_notes(wb):
         ("Kalshi", "real",
          "Volume-weighted avg. from Kalshi's own trade feed - the sports figure prices "
          "each series off its exact per-trade VWAP; the whole-exchange total uses a "
-         "~5M-trade sample of the public feed, refreshed weekly. Separately: the "
+         "trade-feed sample, refreshed weekly. Separately: the "
          "whole-exchange CONTRACT COUNT (not this price) comes from DeFi Rate, who "
          "display it abbreviated (e.g. \"$2.09B\") - about +/-0.3% built-in rounding "
          "vs. the exact per-market figures the other six venues give us."),

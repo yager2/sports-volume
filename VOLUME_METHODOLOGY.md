@@ -200,6 +200,29 @@ August 2026. External estimates put the whole QCX entity (all categories) near
 (~\$100–165M/day) would have been larger than the entire entity's daily volume,
 which is what first flagged the issue.
 
+## Breakage audit and fixes (2026-11-27)
+
+Several sources had changed or failed without the run showing as failed.
+
+| Problem | Effect | Fix |
+|---|---|---|
+| Kalshi candlestick API caps a request at 10,000 candles; the puller re-read everything from Aug 1 in 100-market batches | Every run from ~Nov 9 failed the Kalshi sports step; sports data stuck at Oct 10 (the earlier 60-min timeouts had stalled it since then) | Incremental pull (trailing 3 days plus any gap), requests chunked under the cap, DST-correct Eastern-time days |
+| Weekly Kalshi category resample had no size limit | Run cancelled at 60 min whenever the sample came due (e.g. Nov 25-27), so nothing was committed | Capped at 150 pages per one-hour window; per-step timeouts; commit step always runs |
+| DeFi Rate redesigned its page | Kalshi whole-exchange total not read after Sep 24 | Parser updated to the new table; overlap with cached history matched within 1.1% |
+| Polymarket US launched `crossd` ("Combination Multi-Category Outcome Contracts"), replacing `caoc` around Oct 20 | ~2/3 of all QCX volume dropped; parlay share read ~0% | `crossd` counted as sports parlay (see assumption below); 40+ other new non-sports codes classified |
+| Crypto.com bulletin printed "NO DESCRIPTION" instead of contract names (mainly Oct 17 - Nov 10) | Up to ~98M contracts a day silently skipped; parlay share read ~99% | Counted as straight sports volume; reported in `unclassified_volume` |
+| Failed steps still showed the run as successful | Breakage went unnoticed | Final health check (`check_freshness.py`) turns the run red and GitHub emails the owner |
+
+**Two judgement calls to keep in mind:**
+
+- `crossd` is *multi-category* by name and the report publishes no leg detail.
+  It is counted as sports because it took over directly from the athletic-only
+  `caoc` product (combined combo share held at roughly two-thirds across the
+  switch). Any non-sports legs are included.
+- Crypto.com's "NO DESCRIPTION" volume is counted as sports because labelled
+  sports volume fell by a matching amount on those days. It could include a small
+  amount of election contracts around Nov 3.
+
 ## Per-venue notes
 
 - **Kalshi** — sports = every series in Kalshi's "Sports" category (~3,600

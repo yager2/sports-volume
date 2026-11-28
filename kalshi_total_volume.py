@@ -98,9 +98,11 @@ def fetch_defirate() -> dict:
         html = urllib.request.urlopen(
             urllib.request.Request(DEFIRATE_URL, headers={"User-Agent": "Mozilla/5.0"}),
             timeout=30).read().decode("utf-8", "replace")
+        # Page redesign (~2026-09-25): the daily table is now
+        # <tr id="kalshi-daily-YYYY-MM-DD" ...><td data-c="v">$4.42B</td>...
         rows = re.findall(
-            r'<td class="tide-chart__cell-label">(\d{4}-\d\d-\d\d)</td><td>[^<]*</td><td>([^<]*)</td>',
-            html)
+            r'<tr id="kalshi-daily-(\d{4}-\d\d-\d\d)"(?:(?!</tr>).)*?data-c="v"[^>]*>([^<]*)</td>',
+            html, flags=re.S)
         fresh = {d: _to_num(v) for d, v in rows if _to_num(v)}
         if len(fresh) >= 5:
             cache.update(fresh)
@@ -180,6 +182,12 @@ def is_parlay(ticker: str, cat: dict) -> bool:
     return s.startswith("KXMVE") or "COMBO" in s or "PREPACK" in s or "SGP" in s
 
 
+# Cap on /markets/trades pages (1000 trades each) per one-hour window. A busy
+# hour is 400k+ trades; reading all of it made the weekly resample take hours
+# and blow the CI job's time limit, so nothing got committed.
+MAX_PAGES_PER_WINDOW = 150
+
+
 def sample_mix(cat: dict) -> dict:
     y = datetime.now(timezone.utc) - timedelta(days=1)
     days = [(y - timedelta(days=1)).strftime("%Y-%m-%d"), y.strftime("%Y-%m-%d")]
@@ -187,10 +195,10 @@ def sample_mix(cat: dict) -> dict:
     by_c, by_n, n = collections.Counter(), collections.Counter(), 0
     parlay_c = parlay_n = 0.0        # parlay slice (cross-cut; sits inside Combos & exotics)
     for d in days:
-        mid = datetime.strptime(d, "%Y-%m-%d").replace(tzinfo=timezone.utc) - ks.ET_OFFSET
+        mid_ts = ks.et_midnight_ts(d)
         for h in hours:
-            lo = int((mid + timedelta(hours=h)).timestamp())
-            hi, cursor = lo + 3600, None
+            lo = mid_ts + h * 3600
+            hi, cursor, pages = lo + 3600, None, 0
             while True:
                 p = {"limit": 1000, "min_ts": lo, "max_ts": hi}
                 if cursor:
@@ -212,9 +220,10 @@ def sample_mix(cat: dict) -> dict:
                         parlay_c += c
                         parlay_n += c * px
                 cursor = r.get("cursor")
-                if not cursor or not ts:
+                pages += 1
+                if not cursor or not ts or pages >= MAX_PAGES_PER_WINDOW:
                     break
-            print(f"  sampled {d} {h:02d}:00 ET", flush=True)
+            print(f"  sampled {d} {h:02d}:00 ET ({pages} pages)", flush=True)
     tc, tn = sum(by_c.values()) or 1, sum(by_n.values()) or 1
     sports_c = by_c.get("Sports", 0.0)
     sports_n = by_n.get("Sports", 0.0)

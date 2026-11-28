@@ -56,6 +56,8 @@ HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; mention-edge data pull)"}
 NON_SPORTS_EXACT = {
     "GOVRACE", "SENRACE", "HOURACE", "USPRESIDENT", "USPRESNOM", "USPRESPARTY",
     "VPPARTYNOM", "POTUS", "CNTRLCONG", "CNTRLHOU", "CNTRLSEN",
+    # company-metric contracts (Costco renewal rate, Target store count) and crypto
+    "COPLAT", "COPRCT", "BTC",
 }
 NON_SPORTS_RE = re.compile(r"^(EC[A-Z]*|USPRES|CNTRL|VP[A-Z]*NOM)")
 
@@ -64,7 +66,7 @@ NON_SPORTS_RE = re.compile(r"^(EC[A-Z]*|USPRES|CNTRL|VP[A-Z]*NOM)")
 SPORTS_HINT_RE = re.compile(
     r"^(MLB|NFL|NBA|NHL|NCAA|CFB|EPL|UCL|UEL|MLS|PGA|LPGA|ATP|WTA|MUSO|WUSO|"
     r"UFC|BOX|F1|NASCAR|INDYCAR|LALIGA|SERIEA|BUNDES|LIGUE1|WNBA|GOLF|TENNIS|"
-    r"SOCCER|NCAAF|NCAAM|NCAAW|LIGAMX|BRASIL)")
+    r"SOCCER|NCAAF|NCAAM|NCAAW|LIGAMX|BRASIL|MARMAD|WMARMAD)")
 
 
 def report_url(date: str) -> str:

@@ -55,7 +55,14 @@ HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; mention-edge data pull)"}
 # ~8 days.
 SPORTS_PREFIXES = {
     "aachc", "aadc", "aec", "arankc", "asc", "astatc", "atc",
-    "caoc",  # combo product - always sports
+    "caoc",  # original combo product - always sports
+    # "Combination Multi-Category Outcome Contracts" - the successor combo
+    # product (appears ~2026-10; by 10/22 it replaced caoc, at ~2/3 of all QCX
+    # volume). Counted as sports parlay, continuing the caoc series. ASSUMPTION:
+    # the report publishes no leg detail, so any non-sports legs can't be split
+    # out (see VOLUME_METHODOLOGY.md).
+    "crossd",
+    "nocufc",  # UFC "next opponent" markets
     "fptc", "ftsc", "pntcbk", "pntcbb", "pntcf", "pntcs", "tac", "tec", "tsc",
     # added after backfill audit:
     "aqc",   # "advance/qualify" contracts - fifa/cfb/mlb/nfl/wnba/atp/cbb (~$15M)
@@ -67,7 +74,7 @@ SPORTS_PREFIXES = {
     "aoc",  # e.g. "aoc-nfl-ne-sea-2026-09-09-htft-away-tie" - NFL halftime/
             # fulltime combo outcome markets. Also trivial volume.
 }
-COMBO_PREFIX = "caoc"
+COMBO_PREFIXES = {"caoc", "crossd"}
 
 # Confirmed NON-sports prefixes (politics, macro/econ, weather, culture,
 # companies, geopolitics) - excluded from the sports total.
@@ -92,6 +99,14 @@ NON_SPORTS_PREFIXES = {
     "cmovcusg", # US gubernatorial race closeness contracts
     "usmayewc", # US mayoral election winner contracts
     "ncpdc",    # cabinet/administration personnel contracts, e.g. Trump cabinet
+    # added 2026-11-27 audit: crypto / commodity up-down binaries
+    "cpceth", "cpcxrp", "cpcsol", "cpausp", "cpagsp", "cpngf", "cpwtif",
+    # added 2026-11-27 audit: politics, economics, weather, culture
+    "nclphc", "mcsc", "adwsc", "trc", "raincli", "rainc", "gsrc", "pmmsc",
+    "snapc", "rxcpc", "gbapc", "usbmpcst", "njbc", "unrtc", "pwincis",
+    "tklc", "rahec", "hucmc", "spotrc", "gfrc", "cusdc", "tpdoc",
+    "frewcusg", "frewcush", "frewcuss", "unmbc", "rvcus", "bpchc",
+    "usexpwc", "parc", "aahcsb", "thryc", "tenyc", "phc",
 }
 # Prefixes still not confidently classified - not counted either way, logged
 # to polymarket_us_unknown_prefixes.csv for periodic review. (All the
@@ -185,7 +200,7 @@ def parse_report(text: str) -> dict:
             sports_total += vol
             if vol:
                 sports_notional += vol * _price_dollars(row)
-            if prefix == COMBO_PREFIX:
+            if prefix in COMBO_PREFIXES:
                 combo_total += vol
         elif prefix in NON_SPORTS_PREFIXES:
             pass  # excluded from sports total, expected

@@ -23,12 +23,12 @@ feed are all too slow for a daily job. What *is* fast:
 
 See VOLUME_METHODOLOGY.md.
 
-First run ~15 min; daily run ~2-3 min (series list cached, only recent candles
-refetched). Kalshi has no sports-only combo product, so no combo columns.
+Daily runs are incremental (trailing days plus any gap); --full rebuilds. Kalshi has no sports-only combo product, so no combo columns.
 
 Usage:
     python kalshi_sports_daily_volume.py
-    python kalshi_sports_daily_volume.py --refresh-series   # force step 1
+    python kalshi_sports_daily_volume.py --full             # rebuild from START_DATE
+    python kalshi_sports_daily_volume.py --refresh-series   # --full + rediscover series
 """
 
 import csv
@@ -39,6 +39,7 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 
 import volume_common as vc
@@ -51,14 +52,50 @@ SERIES_CACHE_JSON = os.path.join(HERE, "kalshi_sports_series_cache.json")
 SERIES_CACHE_BUILT = os.path.join(HERE, "kalshi_sports_series_cache.built")
 ACTIVE_CACHE_JSON = os.path.join(HERE, "kalshi_active_series.json")
 ACTIVE_CACHE_BUILT = os.path.join(HERE, "kalshi_active_series.built")
-MARKET_CACHE_JSON = os.path.join(HERE, "kalshi_market_cache.json")
 
-ET_OFFSET = timedelta(hours=-4)  # EDT, valid for the Aug-Sep window
 HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; mention-edge data pull)"}
 DELAY = 0.15
 SERIES_CACHE_MAX_AGE_DAYS = 7
 ACTIVE_CACHE_MAX_AGE_DAYS = 7
-MARKET_CACHE_MAX_AGE_DAYS = 3
+# Daily runs re-pull only this many trailing days (plus any gap since the last
+# committed date) and keep older days from the committed CSVs. --full rebuilds.
+INCREMENTAL_RECHECK_DAYS = 3
+# Concurrent API requests; 429s are retried with backoff in api_get().
+WORKERS = int(os.environ.get("KALSHI_WORKERS", "4"))
+# The batch candlestick endpoint rejects >10,000 candles per request (HTTP 400).
+# 100 markets x 100+ days broke every run from 2026-11-09, so long ranges are
+# fetched in chunks of at most this many days.
+MAX_DAYS_PER_REQUEST = 60
+
+
+# --- US Eastern time, DST-aware (no tzdata dependency) --------------------
+# Kalshi's trading day is an ET calendar day. US DST: 2nd Sunday of March 02:00
+# to 1st Sunday of November 02:00 local.
+
+def _nth_sunday(year: int, month: int, n: int) -> datetime:
+    d = datetime(year, month, 1)
+    return d + timedelta(days=(6 - d.weekday()) % 7, weeks=n - 1)
+
+
+def et_offset_at(dt_utc: datetime) -> timedelta:
+    """ET offset from UTC at a naive-UTC instant."""
+    start = _nth_sunday(dt_utc.year, 3, 2) + timedelta(hours=7)    # 02:00 EST
+    end = _nth_sunday(dt_utc.year, 11, 1) + timedelta(hours=6)     # 02:00 EDT
+    return timedelta(hours=-4) if start <= dt_utc < end else timedelta(hours=-5)
+
+
+def et_midnight_ts(date_str: str) -> int:
+    """UTC epoch seconds of 00:00 Eastern on `date_str`."""
+    d = datetime.strptime(date_str, "%Y-%m-%d")
+    for off in (timedelta(hours=-4), timedelta(hours=-5)):
+        utc = d - off
+        if et_offset_at(utc) == off:
+            return int(utc.replace(tzinfo=timezone.utc).timestamp())
+    raise ValueError(date_str)             # unreachable: transitions are at 02:00
+
+
+def _shift(date_str: str, days: int) -> str:
+    return (datetime.strptime(date_str, "%Y-%m-%d") + timedelta(days=days)).strftime("%Y-%m-%d")
 
 
 def _age_days(date_str) -> float:
@@ -150,16 +187,16 @@ def sports_category_series() -> set[str]:
     return {s["ticker"] for s in out}
 
 
-def active_sports_series(force: bool = False) -> list[str]:
-    if not force and os.path.exists(ACTIVE_CACHE_JSON):
+def active_sports_series(start_ts: int, full: bool = False, force: bool = False) -> list[str]:
+    """Sports series with an event closing at/after `start_ts`. Only a full run
+    uses the committed cache; an incremental run scans just its short window."""
+    if full and not force and os.path.exists(ACTIVE_CACHE_JSON):
         built = _read_built(ACTIVE_CACHE_BUILT)
         if built is not None and _age_days(built) < ACTIVE_CACHE_MAX_AGE_DAYS:
             with open(ACTIVE_CACHE_JSON, "r", encoding="utf-8") as f:
                 return json.load(f)
 
     cat = sports_category_series()
-    start_ts = int((datetime.strptime(vc.START_DATE, "%Y-%m-%d")
-                    .replace(tzinfo=timezone.utc) - ET_OFFSET).timestamp())
     active: set[str] = set()
     # Open events are few; settled/closed are many but the *set* of series
     # saturates fast, so stop a status once 40 straight pages add nothing new.
@@ -181,9 +218,10 @@ def active_sports_series(force: bool = False) -> list[str]:
                     break
         print(f"  /events status={status}: ~{n} events -> {len(active)} active series so far")
     result = sorted(active)
-    with open(ACTIVE_CACHE_JSON, "w", encoding="utf-8") as f:
-        json.dump(result, f, indent=1)
-    _write_built(ACTIVE_CACHE_BUILT)
+    if full:
+        with open(ACTIVE_CACHE_JSON, "w", encoding="utf-8") as f:
+            json.dump(result, f, indent=1)
+        _write_built(ACTIVE_CACHE_BUILT)
     return result
 
 
@@ -191,43 +229,27 @@ def series_of(ticker: str) -> str:
     return ticker.split("-", 1)[0]
 
 
-def discover_markets(series_list: list[str], start_ts: int) -> list[str]:
-    """Enumerate markets to price, cached for MARKET_CACHE_MAX_AGE_DAYS so the
-    daily run skips this ~8-min step most days."""
-    if os.path.exists(MARKET_CACHE_JSON):
-        age = (time.time() - os.path.getmtime(MARKET_CACHE_JSON)) / 86400
+def _series_markets(series: str, start_ts: int) -> list[str]:
+    out = []
+    for m in _paginate("/markets",
+                       {"series_ticker": series, "limit": 1000, "min_close_ts": start_ts},
+                       "markets"):
         try:
-            cached = json.load(open(MARKET_CACHE_JSON, encoding="utf-8"))
-        except Exception:
-            cached = {}
-        if (age < MARKET_CACHE_MAX_AGE_DAYS
-                and cached.get("start_date") == vc.START_DATE
-                and cached.get("min_volume") == MIN_MARKET_VOLUME):
-            print(f"  using cached market list ({len(cached['tickers'])} markets, "
-                  f"{age * 24:.0f}h old)")
-            return cached["tickers"]
-
-    tickers = _discover_markets_live(series_list, start_ts)
-    with open(MARKET_CACHE_JSON, "w", encoding="utf-8") as f:
-        json.dump({"start_date": vc.START_DATE, "min_volume": MIN_MARKET_VOLUME,
-                   "tickers": tickers}, f)
-    return tickers
+            if float(m.get("volume_fp") or m.get("volume") or 0) >= MIN_MARKET_VOLUME:
+                out.append(m["ticker"])
+        except (TypeError, ValueError):
+            pass
+    return out
 
 
-def _discover_markets_live(series_list: list[str], start_ts: int) -> list[str]:
-    tickers = []
-    for i, s in enumerate(series_list, 1):
-        for m in _paginate("/markets",
-                           {"series_ticker": s, "limit": 1000, "min_close_ts": start_ts},
-                           "markets"):
-            try:
-                if float(m.get("volume_fp") or m.get("volume") or 0) >= MIN_MARKET_VOLUME:
-                    tickers.append(m["ticker"])
-            except (TypeError, ValueError):
-                pass
-        if i % 100 == 0:
-            print(f"  discovered {i}/{len(series_list)} series -> {len(tickers)} markets", end="\r")
-    print(f"  discovered {len(series_list)} series -> {len(tickers)} markets to price      ")
+def discover_markets(series_list: list[str], start_ts: int) -> list[str]:
+    tickers: list[str] = []
+    with ThreadPoolExecutor(max_workers=WORKERS) as ex:
+        for i, got in enumerate(ex.map(lambda s: _series_markets(s, start_ts), series_list), 1):
+            tickers.extend(got)
+            if i % 200 == 0:
+                print(f"  discovered {i}/{len(series_list)} series -> {len(tickers)} markets", flush=True)
+    print(f"  discovered {len(series_list)} series -> {len(tickers)} markets to price", flush=True)
     return tickers
 
 
@@ -256,68 +278,137 @@ def _candle_price(c: dict) -> float:
 
 
 def et_date_of(end_period_ts: int) -> str:
-    dt_et = datetime.fromtimestamp(end_period_ts, tz=timezone.utc) + ET_OFFSET
-    return (dt_et - timedelta(seconds=1)).strftime("%Y-%m-%d")
+    """ET date of a candle; it covers the interval just BEFORE end_period_ts."""
+    dt = datetime.fromtimestamp(end_period_ts - 1, tz=timezone.utc).replace(tzinfo=None)
+    return (dt + et_offset_at(dt)).strftime("%Y-%m-%d")
 
 
-def collect(tickers: list[str], start_ts: int, end_ts: int):
+def _segments(first_date: str, last_date: str) -> list[tuple[str, str, str]]:
+    """Split [first_date, last_date] into requests. Daily candles are fixed 24h
+    blocks from start_ts, which only line up with ET midnight while the UTC
+    offset is constant, so a DST-change day (23h/25h) is fetched hourly. Daily
+    runs are capped at MAX_DAYS_PER_REQUEST."""
+    out: list[tuple[str, str, str]] = []
+    run: list[str] = []
+
+    def flush():
+        for i in range(0, len(run), MAX_DAYS_PER_REQUEST):
+            part = run[i:i + MAX_DAYS_PER_REQUEST]
+            out.append(("daily", part[0], part[-1]))
+        run.clear()
+
+    d = first_date
+    while d <= last_date:
+        nxt = _shift(d, 1)
+        if et_midnight_ts(nxt) - et_midnight_ts(d) != 86400:
+            flush()
+            out.append(("hourly", d, d))
+        else:
+            run.append(d)
+        d = nxt
+    flush()
+    return out
+
+
+def collect(tickers: list[str], first_date: str, last_date: str):
     totals, notional, by_series = {}, {}, {}
-    for i in range(0, len(tickers), 100):
-        batch = tickers[i:i + 100]
-        data = api_get("/markets/candlesticks", {
-            "market_tickers": ",".join(batch),
-            "period_interval": 1440,
-            "start_ts": start_ts,
-            "end_ts": end_ts,
-        })
-        for market in data.get("markets", []):
-            ser = series_of(market.get("market_ticker", ""))
-            for c in market.get("candlesticks", []):
-                vol = float(c.get("volume_fp") or c.get("volume") or 0)
-                if vol <= 0:
-                    continue
-                d = et_date_of(c["end_period_ts"])
-                if not vc.in_range(d):
-                    continue
-                totals[d] = totals.get(d, 0.0) + vol
-                notional[d] = notional.get(d, 0.0) + vol * _candle_price(c)
-                by_series[(d, ser)] = by_series.get((d, ser), 0.0) + vol
-        print(f"  candlesticks {min(i + 100, len(tickers))}/{len(tickers)}", end="\r")
-    print()
+    for kind, a, b in _segments(first_date, last_date):
+        interval = 1440 if kind == "daily" else 60
+        s_ts, e_ts = et_midnight_ts(a), et_midnight_ts(_shift(b, 1))
+        per_market = (e_ts - s_ts) // (interval * 60) + 1     # +1: inclusive start
+        size = max(1, min(100, 10000 // per_market))
+        batches = [tickers[i:i + size] for i in range(0, len(tickers), size)]
+
+        def fetch(batch):
+            return api_get("/markets/candlesticks", {
+                "market_tickers": ",".join(batch), "period_interval": interval,
+                "start_ts": s_ts, "end_ts": e_ts}).get("markets", [])
+
+        with ThreadPoolExecutor(max_workers=WORKERS) as ex:
+            for n, markets in enumerate(ex.map(fetch, batches), 1):
+                for market in markets:
+                    ser = series_of(market.get("market_ticker", ""))
+                    for c in market.get("candlesticks", []):
+                        vol = float(c.get("volume_fp") or c.get("volume") or 0)
+                        if vol <= 0:
+                            continue
+                        d = et_date_of(c["end_period_ts"])
+                        # The API also returns the candle ending AT start_ts (the
+                        # previous day, only partly covered) - drop anything
+                        # outside this segment.
+                        if not (a <= d <= b) or not vc.in_range(d):
+                            continue
+                        totals[d] = totals.get(d, 0.0) + vol
+                        notional[d] = notional.get(d, 0.0) + vol * _candle_price(c)
+                        by_series[(d, ser)] = by_series.get((d, ser), 0.0) + vol
+                if n % 100 == 0 or n == len(batches):
+                    print(f"  candlesticks [{kind} {a}..{b}] batch {n}/{len(batches)}", flush=True)
     return totals, notional, by_series
+
+
+def _read_csv_rows(path: str) -> list[dict]:
+    if not os.path.exists(path):
+        return []
+    with open(path, newline="", encoding="utf-8") as f:
+        return list(csv.DictReader(f))
 
 
 def main():
     force_series = "--refresh-series" in sys.argv
+    full = "--full" in sys.argv or force_series
+    last_date = vc.yesterday()
 
-    start_ts = int((datetime.strptime(vc.START_DATE, "%Y-%m-%d")
-                    .replace(tzinfo=timezone.utc) - ET_OFFSET).timestamp())
-    end_ts = int((datetime.strptime(vc.yesterday(), "%Y-%m-%d")
-                  .replace(tzinfo=timezone.utc) - ET_OFFSET + timedelta(days=1)).timestamp())
+    old_totals = _read_csv_rows(TOTALS_CSV)
+    old_series = _read_csv_rows(BY_SERIES_CSV)
+    first_old = min((r["date"] for r in old_totals), default=None)
+    if not full and (not old_totals or not old_series or first_old > vc.START_DATE):
+        print("No usable history on disk - doing a full rebuild.")
+        full = True
 
-    series_list = active_sports_series(force=force_series)
-    print(f"{len(series_list)} active sports series.")
+    if full:
+        win_start = vc.START_DATE
+    else:
+        newest = max(r["date"] for r in old_totals)
+        win_start = max(vc.START_DATE, _shift(newest, -INCREMENTAL_RECHECK_DAYS))
+    win_start = min(win_start, last_date)
+    print(f"{'FULL' if full else 'Incremental'} run: ET dates {win_start}..{last_date}", flush=True)
+
+    start_ts = et_midnight_ts(win_start)
+    series_list = active_sports_series(start_ts, full=full, force=force_series)
+    print(f"{len(series_list)} active sports series.", flush=True)
     tickers = discover_markets(series_list, start_ts)
     if not tickers:
-        print("No markets to price.")
-        return
+        raise SystemExit("No markets to price - leaving existing CSVs untouched.")
 
-    print(f"Fetching daily candlesticks for {len(tickers)} markets...")
-    totals, notional, by_series = collect(tickers, start_ts, end_ts)
+    print(f"Fetching candlesticks for {len(tickers)} markets...", flush=True)
+    totals, notional, by_series = collect(tickers, win_start, last_date)
+    if not totals:
+        raise SystemExit("API returned no volume at all - leaving existing CSVs untouched.")
 
-    totals_rows = [
-        {"date": d,
-         "kalshi_sports_volume": round(totals[d], 2),
-         "kalshi_sports_notional_est": round(notional.get(d, 0.0), 2)}
-        for d in sorted(totals)
-    ]
-    series_rows = [
-        {"date": d, "series": s, "volume": round(v, 2)}
-        for (d, s), v in sorted(by_series.items())
-    ]
-    for r in totals_rows:
+    new_totals = [{"date": d,
+                   "kalshi_sports_volume": round(totals[d], 2),
+                   "kalshi_sports_notional_est": round(notional.get(d, 0.0), 2)}
+                  for d in sorted(totals)]
+    new_series = [{"date": d, "series": s, "volume": round(v, 2)}
+                  for (d, s), v in sorted(by_series.items())]
+
+    # How re-pulled days moved against the committed values (audit trail).
+    prev = {r["date"]: float(r["kalshi_sports_volume"]) for r in old_totals}
+    for r in new_totals:
+        if prev.get(r["date"]):
+            chg = (r["kalshi_sports_volume"] / prev[r["date"]] - 1) * 100
+            print(f"  re-pulled {r['date']}: {prev[r['date']]:,.0f} -> "
+                  f"{r['kalshi_sports_volume']:,.0f} ({chg:+.2f}%)")
+    for r in new_totals:
         print(f"  {r['date']}: contracts = {r['kalshi_sports_volume']:,.0f}  "
               f"|  notional est = {r['kalshi_sports_notional_est']:,.0f}")
+
+    if full:
+        totals_rows, series_rows = new_totals, new_series
+    else:
+        # Older days are settled and immutable: keep them as committed.
+        totals_rows = [r for r in old_totals if r["date"] < win_start] + new_totals
+        series_rows = [r for r in old_series if r["date"] < win_start] + new_series
 
     vc.write_csv(TOTALS_CSV,
                  ["date", "kalshi_sports_volume", "kalshi_sports_notional_est"],

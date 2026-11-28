@@ -35,6 +35,15 @@ def _keep_awake(on: bool) -> None:
     except Exception:  # noqa: BLE001
         pass
 
+# Per-step wall-clock caps (minutes); they only bite when a source hangs or is
+# rate-limited. Without them one slow step used up the whole CI job and nothing
+# was committed.
+DEFAULT_TIMEOUT_MIN = 20
+STEP_TIMEOUT_MIN = {
+    "kalshi_sports_daily_volume.py": 60,
+    "kalshi_total_volume.py": 35,
+}
+
 STEPS = [
     "novig_daily_volume.py",
     "dkex_daily_volume.py",
@@ -66,10 +75,16 @@ def main():
         for script in STEPS:
             print(f"\n----- {script} -----")
             t0 = time.time()
-            proc = subprocess.run([PY, "-u", script], cwd=HERE)
+            limit = STEP_TIMEOUT_MIN.get(script, DEFAULT_TIMEOUT_MIN) * 60
+            try:
+                rc = subprocess.run([PY, "-u", script], cwd=HERE, timeout=limit).returncode
+            except subprocess.TimeoutExpired:
+                # One slow source must not stop the later steps or the commit.
+                print(f"!!!!! {script} exceeded {limit // 60} min - killed, moving on")
+                rc = 124
             dt = time.time() - t0
-            results[script] = proc.returncode
-            print(f"----- {script}: exit {proc.returncode} in {dt:.0f}s -----")
+            results[script] = rc
+            print(f"----- {script}: exit {rc} in {dt:.0f}s -----")
     finally:
         _keep_awake(False)
 
